@@ -1,6 +1,6 @@
 # The Plug
 ## Disclaimer! System created for educational purposes only.
-Drug service store based on Beta Reputation System with frontend, backend microservice architecture, docker deployment and CI/CD DevOps usage.
+Drug service store based on Beta Reputation System.
 ## Run Locally
 ### Run with Docker
 ### Run backend
