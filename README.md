@@ -4,7 +4,9 @@ Drug service store based on Beta Reputation System.
 ## Run Locally
 ### Run with Docker
 ### Run backend
+Django
 ### Run frontend
+React, Vue, Svelte or Ember
 ## Roadmap
 - [ ] build project diagrams
 - [ ] build backend application
