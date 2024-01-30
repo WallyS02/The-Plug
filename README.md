@@ -13,5 +13,6 @@ Drug service store based on Beta Reputation System.
 - [ ] build github workflow cicd
 - [ ] complete final README
 - [ ] deploy application
+- [ ] decompose backend application to microservices
 ## Authors
 - [@WallyS02](https://github.com/WallyS02) everything
