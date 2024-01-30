@@ -6,12 +6,12 @@ Drug service store based on Beta Reputation System with frontend, backend micros
 ### Run backend
 ### Run frontend
 ## Roadmap
-- [] build project diagrams
-- [] build backend application
-- [] build frontend application
-- [] build docker deployment
-- [] build github workflow cicd
-- [] complete final README
-- [] deploy application
+- [ ] build project diagrams
+- [ ] build backend application
+- [ ] build frontend application
+- [ ] build docker deployment
+- [ ] build github workflow cicd
+- [ ] complete final README
+- [ ] deploy application
 ## Authors
 - [@WallyS02](https://github.com/WallyS02) everything
