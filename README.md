@@ -1,6 +1,6 @@
 # The Plug
 ## Disclaimer! System created for educational purposes only.
-Drug service store based on Beta Reputation System.
+Drug dealing service store based on Beta Reputation System.
 ## Run Locally
 ### Run with Docker
 ### Run backend
