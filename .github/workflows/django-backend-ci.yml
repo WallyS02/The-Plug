@@ -1,4 +1,4 @@
-name: The Plug backend CI
+name: The Plug Django REST backend CI
 
 on:
   push:
