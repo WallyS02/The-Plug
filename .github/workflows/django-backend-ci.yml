@@ -36,6 +36,11 @@ jobs:
       - name: Run Tests
         run: |
           python backend/the_plug_backend_django/manage.py test
+        env:
+          NAME: ${{ secrets.POSTGRES_DB_NAME }}
+          USER: ${{ secrets.POSTGRES_USER }}
+          PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          HOST: ${{ secrets.POSTGRES_HOST }}
       - name: Build and push Docker Image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
