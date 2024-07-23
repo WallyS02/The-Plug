@@ -3,9 +3,6 @@ S
 #the_plug_backend_django/settings.py,e\6\e6da8362b3b4fa3619b6e93d62fc6fa3a38e1b0c
 =
 api/models.py,5\d\5de3a0d32813236411441702f4133a7730141c5b
-:
-
-db.sqlite3,9\0\907ac5e500f6286c18519bf943721af4c97e50d5
 <
 api/tests.py,9\9\994f4e4447555648891e91af99ba04f94944e3c2
 ;
