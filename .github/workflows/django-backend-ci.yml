@@ -39,7 +39,7 @@ jobs:
       - name: Build and push Docker Image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
-            image: keepitup2023/magjob-backend
+            image: wallys02/the-plug
             tags: latest
             registry: docker.io
             dockerfile: backend/the_plug_backend_django/Dockerfile
