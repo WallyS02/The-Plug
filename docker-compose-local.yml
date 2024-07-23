@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  the-plug-backend:
+    image: the-plug-backend:latest
+    restart: always
+    depends_on:
+      - pgadmin
+    #environment:
+    # - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+
+  the-plug-frontend:
+    image: the-plug-frontend:latest
+    restart: always
+    ports:
+      - "8080:80"
+    #environment:
+    # API_URL: http://magjob-backend:8080/api
+    depends_on:
+      - the-plug-backend
+
+  db:
+    image: postgres:15.5-bullseye
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=postgres
+
+  pgadmin:
+    image: dpage/pgadmin4:2023-11-20-2
+    restart: always
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - ./database/pgadmin:/var/lib/pgadmin/data
+    depends_on:
+      - db
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - the-plug-frontend
+
+  grafana:
+    image: grafana/grafana:10.2.1
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
