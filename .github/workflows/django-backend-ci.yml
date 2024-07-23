@@ -1,0 +1,47 @@
+name: The Plug backend CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - backend/the_plug_backend_django/**
+  workflow_dispatch:
+
+jobs:
+  sonarcloud-scan-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build-and-deploy-to-registry-backend:
+    needs: [ sonarcloud-scan-backend ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run Tests
+        run: |
+          python manage.py test
+      - name: Build and push Docker Image
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+            image: keepitup2023/magjob-backend
+            tags: latest
+            registry: docker.io
+            dockerfile: backend/the_plug_backend_django/Dockerfile
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
