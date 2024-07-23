@@ -35,7 +35,7 @@ jobs:
           pip install -r backend/the_plug_backend_django/requirements.txt
       - name: Run Tests
         run: |
-          python manage.py test
+          python backend/the_plug_backend_django/manage.py test
       - name: Build and push Docker Image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
