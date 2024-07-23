@@ -2,15 +2,20 @@ version: '3'
 
 services:
   the-plug-backend:
-    image: the-plug-backend:latest
+    image: wallys02/the-plug-backend:latest
     restart: always
+    ports:
+      - "80:8080"
     depends_on:
       - pgadmin
-    #environment:
-    # - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+    environment:
+     - NAME=postgres
+     - USER=admin
+     - PASSWORD=admin
+     - HOST=db
 
   the-plug-frontend:
-    image: the-plug-frontend:latest
+    image: wallys02/the-plug-frontend:latest
     restart: always
     ports:
       - "8080:80"
