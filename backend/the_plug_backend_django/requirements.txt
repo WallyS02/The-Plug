@@ -2,4 +2,4 @@ django
 djangorestframework
 environs
 psycopg2-binary
-environ
+django-environ
