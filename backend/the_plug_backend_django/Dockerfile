@@ -5,9 +5,9 @@ WORKDIR /app
 RUN apk update
 RUN apk add pkgconfig gcc musl-dev bash
 
-COPY requirements.txt /app
-RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/the_plug_backend_django/requirements.txt /app
+RUN pip install --no-cache-dir -r backend/the_plug_backend_django/requirements.txt
 
-COPY . /app
+COPY backend/the_plug_backend_django/. /app
 ENTRYPOINT ["python3"]
-CMD ["manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["backend/the_plug_backend_django/manage.py", "runserver", "0.0.0.0:8080"]
