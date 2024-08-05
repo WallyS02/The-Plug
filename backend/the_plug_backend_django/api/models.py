@@ -1,23 +1,48 @@
 import uuid
 
+from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
 # Create your models here.
 
-class AppUser(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid5,
-        editable=False
-    )
-    login = models.CharField(max_length=50, blank=False, null=False)
-    hashed_password = models.CharField(max_length=100, blank=False, null=False)
+class AppUserManager(BaseUserManager):
+    def create_user(self, username, password, **extra_fields):
+        if not username:
+            raise ValueError("The Username must be set")
+        user = self.model(login=username, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, username, password, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+        return self.create_user(username, password, **extra_fields)
+
+
+class AppUser(AbstractUser):
+    username = models.CharField(max_length=50, blank=False, null=False, unique=True)
+    email = None
+    first_name = None
+    last_name = None
     client = models.OneToOneField('Client', on_delete=models.CASCADE, related_name='app_user', null=True)
     plug = models.OneToOneField('Plug', on_delete=models.CASCADE, related_name='app_user', null=True)
 
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = []
+
+    objects = AppUserManager()
+
     def __str__(self):
-        return self.login
+        return self.username
 
 
 class Client(models.Model):
@@ -43,7 +68,7 @@ class Location(models.Model):
 class Meeting(models.Model):
     id = models.UUIDField(
         primary_key=True,
-        default=uuid.uuid5,
+        default=uuid.uuid4,
         editable=False
     )
     isAcceptedByPlug = models.BooleanField()
@@ -65,7 +90,7 @@ class Rating(models.Model):
 class ChosenOffer(models.Model):
     id = models.UUIDField(
         primary_key=True,
-        default=uuid.uuid5,
+        default=uuid.uuid4,
         editable=False
     )
 
@@ -76,7 +101,7 @@ class ChosenOffer(models.Model):
 class DrugOffer(models.Model):
     id = models.UUIDField(
         primary_key=True,
-        default=uuid.uuid5,
+        default=uuid.uuid4,
         editable=False
     )
     grams_in_stock = models.IntegerField()
@@ -88,12 +113,7 @@ class DrugOffer(models.Model):
 
 
 class Drug(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid5,
-        editable=False
-    )
-    name = models.CharField(max_length=50, blank=False, null=False)
+    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     description = models.TextField()
     drug_offer = models.ForeignKey('DrugOffer', on_delete=models.CASCADE, null=True)
     drug_parameter = models.ForeignKey('DrugParameter', on_delete=models.CASCADE, null=True)
@@ -103,12 +123,7 @@ class Drug(models.Model):
 
 
 class Category(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid5,
-        editable=False
-    )
-    name = models.CharField(max_length=50, blank=False, null=False)
+    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     drug = models.ForeignKey('Drug', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
@@ -116,7 +131,7 @@ class Category(models.Model):
 
 
 class DrugParameter(models.Model):
-    name = models.CharField(max_length=50, blank=False, null=False)
+    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
 
     def __str__(self):
         return self.name

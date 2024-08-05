@@ -5,7 +5,9 @@ from .models import AppUser, Client, Plug, Location, Meeting, Rating, ChosenOffe
 class AppUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppUser
-        fields = ['id', 'login']
+        fields = '__all__'
+        read_only_fields = ['id']
+        write_only_fields = ['password']
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -30,6 +32,7 @@ class MeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
         fields = '__all__'
+        read_only_fields = ['id']
 
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -42,24 +45,28 @@ class ChosenOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChosenOffer
         fields = '__all__'
+        read_only_fields = ['id']
 
 
 class DrugOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = DrugOffer
         fields = '__all__'
+        read_only_fields = ['id']
 
 
 class DrugSerializer(serializers.ModelSerializer):
     class Meta:
         model = Drug
         fields = '__all__'
+        read_only_fields = ['id']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
+        read_only_fields = ['id']
 
 
 class DrugParameterSerializer(serializers.ModelSerializer):
