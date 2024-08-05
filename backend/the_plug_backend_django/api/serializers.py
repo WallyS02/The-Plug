@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AppUser, Client, Plug, Location, Meeting, Rating, ChosenOffer, DrugOffer, Drug, Category, DrugParameter
+from .models import AppUser, Client, Plug, Location, Meeting, Rating, ChosenOffer, DrugOffer, Drug
 
 
 class AppUserSerializer(serializers.ModelSerializer):
@@ -60,16 +60,3 @@ class DrugSerializer(serializers.ModelSerializer):
         model = Drug
         fields = '__all__'
         read_only_fields = ['id']
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
-        read_only_fields = ['id']
-
-
-class DrugParameterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DrugParameter
-        fields = '__all__'

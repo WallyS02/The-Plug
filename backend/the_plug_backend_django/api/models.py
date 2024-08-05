@@ -114,24 +114,9 @@ class DrugOffer(models.Model):
 
 class Drug(models.Model):
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
+    wikipedia_link = models.URLField(max_length=500, blank=False, null=False)
     description = models.TextField()
     drug_offer = models.ForeignKey('DrugOffer', on_delete=models.CASCADE, null=True)
-    drug_parameter = models.ForeignKey('DrugParameter', on_delete=models.CASCADE, null=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Category(models.Model):
-    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
-    drug = models.ForeignKey('Drug', on_delete=models.CASCADE, null=True)
-
-    def __str__(self):
-        return self.name
-
-
-class DrugParameter(models.Model):
-    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
 
     def __str__(self):
         return self.name

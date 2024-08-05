@@ -6,11 +6,9 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import AppUser, Client, Plug, Location, Meeting, Rating, ChosenOffer, DrugOffer, Drug, Category, \
-    DrugParameter
+from .models import AppUser, Client, Plug, Location, Meeting, Rating, ChosenOffer, DrugOffer, Drug
 from .serializers import AppUserSerializer, ClientSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, \
-    RatingSerializer, ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer, CategorySerializer, \
-    DrugParameterSerializer
+    RatingSerializer, ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer
 
 
 # Create your views here.
@@ -203,50 +201,6 @@ class DrugCreate(generics.CreateAPIView):
 class DrugRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Drug.objects.all()
     serializer_class = DrugSerializer
-    lookup_field = 'pk'
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class CategoryList(generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class CategoryCreate(generics.CreateAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    lookup_field = 'pk'
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class DrugParameterList(generics.ListAPIView):
-    queryset = DrugParameter.objects.all()
-    serializer_class = DrugParameterSerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class DrugParameterCreate(generics.CreateAPIView):
-    queryset = DrugParameter.objects.all()
-    serializer_class = DrugParameterSerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class DrugParameterRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = DrugParameter.objects.all()
-    serializer_class = DrugParameterSerializer
     lookup_field = 'pk'
 
 

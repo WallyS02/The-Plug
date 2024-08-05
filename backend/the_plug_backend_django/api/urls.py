@@ -28,12 +28,6 @@ urlpatterns = [
     path('drug/', views.DrugList.as_view(), name='drug-list-view'),
     path('drug/', views.DrugCreate.as_view(), name='drug-create'),
     path('drug/<int:pk>/', views.DrugRetrieveUpdateDestroy.as_view(), name='drug-retrieve-update-destroy-view'),
-    path('category/', views.CategoryList.as_view(), name='category-list-view'),
-    path('category/', views.CategoryCreate.as_view(), name='category-create'),
-    path('category/<int:pk>/', views.CategoryRetrieveUpdateDestroy.as_view(), name='category-retrieve-update-destroy-view'),
-    path('drug-parameter/', views.DrugParameterList.as_view(), name='drug-parameter-list-view'),
-    path('drug-parameter/', views.DrugParameterCreate.as_view(), name='drug-parameter-create'),
-    path('drug-parameter/<int:pk>/', views.DrugParameterRetrieveUpdateDestroy.as_view(), name='drug-parameter-retrieve-update-destroy-view'),
     re_path('login', views.login),
     re_path('register', views.register)
 ]
