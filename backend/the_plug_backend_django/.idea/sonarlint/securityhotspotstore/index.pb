@@ -34,3 +34,9 @@ Dockerfile,6\6\6651ddff6eb82c840ced7c1dddee15c6e1913dd4
 db-script.sh,5\8\58aeb4a80ae08115021134726aa1523e94ee30db
 J
 api/migrations/__init__.py,7\8\78db5e935d8352b3194116332a39f029f4f53b90
+@
+requirements.txt,1\9\19359a61ae2446b51b549167b014da2fcf265768
+ƒ
+Sapi/migrations/0005_alter_appuser_options_rename_login_appuser_username_and_more.py,0\4\04d9debca075b71c9b1e274f91089506cab500f2
+N
+api/migrations/0001_initial.py,9\e\9e5945823f96972c70750b4b35cb7c172c006aad
