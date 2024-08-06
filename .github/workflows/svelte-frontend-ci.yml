@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - frontend/the_plug_frontend_svelte/**
+      - frontend/the_plug_svelte_frontend/**
   workflow_dispatch:
 
 jobs:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend/the_plug_frontend_svelte
+        working-directory: frontend/the_plug_svelte_frontend
     steps:
       - uses: actions/checkout@v4
       - name: Set up NodeJS
@@ -44,7 +44,7 @@ jobs:
             image: wallys02/the-plug-frontend
             tags: latest
             registry: docker.io
-            dockerfile: frontend/the_plug_frontend_svelte/Dockerfile
+            dockerfile: frontend/the_plug_svelte_frontend/Dockerfile
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
   
