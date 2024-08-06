@@ -23,15 +23,14 @@ jobs:
   build-and-deploy-to-registry-frontend:
     needs: [ sonarcloud-scan-frontend ]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./the_plug_frontend_svelte
     steps:
       - uses: actions/checkout@v4
       - name: Set up NodeJS
         uses: actions/setup-node@v4
         with:
          node-version: 21
+      - name: Change working directory
+        run: cd frontend/the_plug_frontend_svelte
       - name: Install dependencies with npm
         run: npm install
       - name: Test with npm
