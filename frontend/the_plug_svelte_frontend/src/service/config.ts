@@ -1,4 +1,4 @@
-export const API_URL = "http://localhost:8080/api/";
+export const API_URL = import.meta.env.VITE_API_URL;
 
 export async function sendRequest(link: string, requestOptions: {}): Promise<any> {
     const response = await fetch(API_URL + link, requestOptions);

@@ -11,4 +11,7 @@ export default defineConfig({
     port: 80,
   },
   plugins: [svelte()],
+  define: {
+    'process.env': process.env
+  }
 })
