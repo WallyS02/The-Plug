@@ -18,5 +18,5 @@ ENV API_URL http://localhost:8080/api/
 
 EXPOSE 80
 
-ADD dist/magjob-frontend /usr/share/nginx/html/
+ADD dist/ /usr/share/nginx/html/
 ADD docker/etc/nginx/templates/ /etc/nginx/templates/
