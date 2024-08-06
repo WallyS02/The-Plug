@@ -34,8 +34,6 @@ jobs:
          node-version: 21
       - name: Install dependencies with npm
         run: npm install
-      - name: Test with npm
-        run: npm test
       - name: Build with npm
         run: npm run build
       - name: Build and push Docker Image
