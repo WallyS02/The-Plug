@@ -4,8 +4,6 @@ services:
   the-plug-backend:
     image: wallys02/the-plug-backend:latest
     restart: always
-    ports:
-      - "8080:8080"
     depends_on:
       - pgadmin
     environment:
@@ -20,7 +18,7 @@ services:
     ports:
       - "80:80"
     environment:
-     API_URL: http://the-plug-backend:8080/api
+     VITE_API_URL: http://the-plug-backend:8080/api/
     depends_on:
       - the-plug-backend
 
