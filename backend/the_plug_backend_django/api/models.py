@@ -1,5 +1,3 @@
-import uuid
-
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -30,11 +28,12 @@ class AppUserManager(BaseUserManager):
 
 class AppUser(AbstractUser):
     username = models.CharField(max_length=50, blank=False, null=False, unique=True)
+    isPartner = models.BooleanField(default=False)
+    isSlanderer = models.BooleanField(default=False)
     email = None
     first_name = None
     last_name = None
-    client = models.OneToOneField('Client', on_delete=models.CASCADE, related_name='app_user', null=True)
-    plug = models.OneToOneField('Plug', on_delete=models.CASCADE, related_name='app_user', null=True)
+    plug = models.OneToOneField('Plug', on_delete=models.SET_NULL, related_name='app_user', null=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
@@ -45,93 +44,57 @@ class AppUser(AbstractUser):
         return self.username
 
 
-class Client(models.Model):
-    isPartner = models.BooleanField()
-    isSlanderer = models.BooleanField()
-    meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE, null=True)
-
-
 class Plug(models.Model):
-    rating = models.FloatField()
-    location = models.ForeignKey('Location', on_delete=models.CASCADE, null=True)
-    drug_offer = models.ForeignKey('DrugOffer', on_delete=models.CASCADE, null=True)
+    rating = models.FloatField(blank=True, null=True)
 
 
 class Location(models.Model):
     longitude = models.FloatField()
     latitude = models.FloatField()
+    street_name = models.CharField(max_length=50, blank=True, null=True)
+    street_number = models.CharField(max_length=50, blank=True, null=True)
+    city = models.CharField(max_length=50, blank=True, null=True)
+    plug = models.ForeignKey('Plug', on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.longitude) + ', ' + str(self.latitude)
 
 
 class Meeting(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
-    isAcceptedByPlug = models.BooleanField()
+    id = models.AutoField(primary_key=True)
+    isAcceptedByPlug = models.BooleanField(default=False)
     date = models.DateTimeField()
-    rating = models.OneToOneField('Rating', on_delete=models.CASCADE, related_name='meeting', null=True)
-    chosen_offer = models.ForeignKey('ChosenOffer', on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey('AppUser', on_delete=models.CASCADE, related_name='meeting')
+    isHighOrLowClientSatisfaction = models.CharField(max_length=4, blank=True, default='')
+    isHighOrLowPlugSatisfaction = models.CharField(max_length=4, blank=True, default='')
 
     def __str__(self):
-        return self.id + ', ' + self.date
-
-
-class Rating(models.Model):
-    isHighOrLowSatisfaction = models.CharField(max_length=4)
-
-    def __str__(self):
-        return self.isHighOrLowSatisfaction
+        return str(self.id) + ', ' + str(self.date)
 
 
 class ChosenOffer(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
+    drug_offer = models.ForeignKey('DrugOffer', on_delete=models.CASCADE)
+    meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class DrugOffer(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
+    id = models.AutoField(primary_key=True)
     grams_in_stock = models.IntegerField()
     price_per_gram = models.FloatField()
-    chosen_offer = models.ForeignKey('ChosenOffer', on_delete=models.CASCADE, null=True)
+    description = models.TextField(blank=True)
+    drug = models.ForeignKey('Drug', on_delete=models.CASCADE)
+    plug = models.ForeignKey('Plug', on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.id + ', ' + str(self.grams_in_stock) + ', ' + str(self.price_per_gram)
+        return str(self.id) + ', ' + str(self.grams_in_stock) + ', ' + str(self.price_per_gram)
 
 
 class Drug(models.Model):
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
-    description = models.TextField()
-    drug_offer = models.ForeignKey('DrugOffer', on_delete=models.CASCADE, null=True)
-    drug_parameter = models.ForeignKey('DrugParameter', on_delete=models.CASCADE, null=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Category(models.Model):
-    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
-    drug = models.ForeignKey('Drug', on_delete=models.CASCADE, null=True)
-
-    def __str__(self):
-        return self.name
-
-
-class DrugParameter(models.Model):
-    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
+    wikipedia_link = models.URLField(max_length=500, blank=False, null=False)
 
     def __str__(self):
         return self.name

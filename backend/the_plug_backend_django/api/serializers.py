@@ -1,25 +1,28 @@
 from rest_framework import serializers
-from .models import AppUser, Client, Plug, Location, Meeting, Rating, ChosenOffer, DrugOffer, Drug, Category, DrugParameter
+from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
+
+
+class PlugSerializer(serializers.ModelSerializer):
+    app_user = serializers.PrimaryKeyRelatedField(queryset=AppUser.objects.all(), required=False, write_only=True)
+
+    class Meta:
+        model = Plug
+        fields = '__all__'
+
+    def create(self, validated_data):
+        app_user = validated_data.pop('app_user', None)
+        plug = Plug.objects.create(**validated_data)
+        if app_user:
+            app_user.plug = plug
+            app_user.save()
+        return plug
 
 
 class AppUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppUser
         fields = '__all__'
-        read_only_fields = ['id']
         write_only_fields = ['password']
-
-
-class ClientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Client
-        fields = '__all__'
-
-
-class PlugSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Plug
-        fields = '__all__'
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -32,44 +35,21 @@ class MeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
         fields = '__all__'
-        read_only_fields = ['id']
-
-
-class RatingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Rating
-        fields = '__all__'
 
 
 class ChosenOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChosenOffer
         fields = '__all__'
-        read_only_fields = ['id']
 
 
 class DrugOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = DrugOffer
         fields = '__all__'
-        read_only_fields = ['id']
 
 
 class DrugSerializer(serializers.ModelSerializer):
     class Meta:
         model = Drug
-        fields = '__all__'
-        read_only_fields = ['id']
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
-        read_only_fields = ['id']
-
-
-class DrugParameterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DrugParameter
         fields = '__all__'
