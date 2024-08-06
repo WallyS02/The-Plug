@@ -19,8 +19,8 @@ services:
     restart: always
     ports:
       - "80:80"
-    #environment:
-    # API_URL: http://magjob-backend:8080/api
+    environment:
+     API_URL: http://the-plug-backend:8080/api
     depends_on:
       - the-plug-backend
 
