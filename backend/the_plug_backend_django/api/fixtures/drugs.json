@@ -1,0 +1,282 @@
+[
+  {
+    "model": "api.drug",
+    "pk": 1,
+    "fields": {
+      "name": "Bath Salts",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Bath_salts_(drug)"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 2,
+    "fields": {
+      "name": "Cocaine",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Cocaine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 3,
+    "fields": {
+      "name": "MDMA",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/MDMA"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 4,
+    "fields": {
+      "name": "Flakka",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Alpha-Pyrrolidinopentiophenone"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 5,
+    "fields": {
+      "name": "Heroin",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Heroin"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 6,
+    "fields": {
+      "name": "LSD",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/LSD"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 7,
+    "fields": {
+      "name": "Cannabis",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Cannabis_(drug)"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 8,
+    "fields": {
+      "name": "Methamphetamine",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Methamphetamine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 9,
+    "fields": {
+      "name": "Shrooms",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Psilocybin_mushroom"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 10,
+    "fields": {
+      "name": "Salvia",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Salvia_divinorum"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 11,
+    "fields": {
+      "name": "Ayahuasca",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Ayahuasca"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 12,
+    "fields": {
+      "name": "Spice",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Synthetic_cannabinoids"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 13,
+    "fields": {
+      "name": "Benzo",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Benzodiazepine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 14,
+    "fields": {
+      "name": "GHB",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Gamma-Hydroxybutyric_acid"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 15,
+    "fields": {
+      "name": "Ketamine",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Ketamine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 16,
+    "fields": {
+      "name": "Mescaline",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Mescaline"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 17,
+    "fields": {
+      "name": "PCP",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Phencyclidine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 18,
+    "fields": {
+      "name": "Oxy",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Oxycodone"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 19,
+    "fields": {
+      "name": "Khat",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Khat"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 20,
+    "fields": {
+      "name": "Kratom",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Mitragyna_speciosa"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 21,
+    "fields": {
+      "name": "DXM",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Dextromethorphan"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 22,
+    "fields": {
+      "name": "Loperamide",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Loperamide"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 23,
+    "fields": {
+      "name": "Speed",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Amphetamine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 24,
+    "fields": {
+      "name": "Inhalant",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Inhalant"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 25,
+    "fields": {
+      "name": "Methadone",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Methadone"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 26,
+    "fields": {
+      "name": "Fentanyl",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Fentanyl"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 27,
+    "fields": {
+      "name": "Opium",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Opium"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 28,
+    "fields": {
+      "name": "DMT",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/N,N-Dimethyltryptamine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 29,
+    "fields": {
+      "name": "Mephedrone",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Mephedrone"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 30,
+    "fields": {
+      "name": "Steroid",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Steroid"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 31,
+    "fields": {
+      "name": "Xanax",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Alprazolam"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 32,
+    "fields": {
+      "name": "Xylazine",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Xylazine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 33,
+    "fields": {
+      "name": "Crack",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Crack_cocaine"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 34,
+    "fields": {
+      "name": "Edibles",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Cannabis_edible"
+    }
+  },
+  {
+    "model": "api.drug",
+    "pk": 35,
+    "fields": {
+      "name": "Cannabis Concentrate",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Cannabis_concentrate"
+    }
+  }
+]

@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
@@ -6,9 +7,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import AppUser, Client, Plug, Location, Meeting, Rating, ChosenOffer, DrugOffer, Drug
-from .serializers import AppUserSerializer, ClientSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, \
-    RatingSerializer, ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer
+from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
+from .serializers import AppUserSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer
 
 
 # Create your views here.
@@ -27,27 +27,9 @@ class AppUserRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AppUserSerializer
     lookup_field = 'pk'
 
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class ClientList(generics.ListAPIView):
-    queryset = Client.objects.all()
-    serializer_class = ClientSerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class ClientCreate(generics.CreateAPIView):
-    queryset = Client.objects.all()
-    serializer_class = ClientSerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class ClientRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Client.objects.all()
-    serializer_class = ClientSerializer
-    lookup_field = 'pk'
+    def patch(self, request, *args, **kwargs):
+        request.data['password'] = make_password(request.data['password'])
+        return self.partial_update(request, *args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -118,28 +100,6 @@ class MeetingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class RatingList(generics.ListAPIView):
-    queryset = Rating.objects.all()
-    serializer_class = RatingSerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class RatingCreate(generics.CreateAPIView):
-    queryset = Rating.objects.all()
-    serializer_class = RatingSerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Rating.objects.all()
-    serializer_class = RatingSerializer
-    lookup_field = 'pk'
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
 class ChosenOfferList(generics.ListAPIView):
     queryset = ChosenOffer.objects.all()
     serializer_class = ChosenOfferSerializer
@@ -204,12 +164,71 @@ class DrugRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'pk'
 
 
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class UserMeetings(generics.ListAPIView):
+    serializer_class = MeetingSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Meeting.objects.filter(user=user)
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class UserPlug(generics.RetrieveAPIView):
+    serializer_class = PlugSerializer
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        plug = user.plug
+
+        if not plug:
+            return Response({"detail": "Plug not found for this user."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(plug)
+        return Response(serializer.data)
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class DrugDrugOffers(generics.ListAPIView):
+    serializer_class = DrugOfferSerializer
+
+    def get_queryset(self):
+        drug_id = self.kwargs.get('id')
+        drug = get_object_or_404(Drug, pk=drug_id)
+        return DrugOffer.objects.filter(drug=drug)
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class PlugDrugOffers(generics.ListAPIView):
+    serializer_class = DrugOfferSerializer
+
+    def get_queryset(self):
+        plug_id = self.kwargs.get('id')
+        plug = get_object_or_404(Plug, pk=plug_id)
+        return DrugOffer.objects.filter(plug=plug)
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class PlugLocations(generics.ListAPIView):
+    serializer_class = LocationSerializer
+
+    def get_queryset(self):
+        plug_id = self.kwargs.get('id')
+        plug = get_object_or_404(Plug, pk=plug_id)
+        return Location.objects.filter(plug=plug)
+
+
 @api_view(['POST'])
 def login(request):
     user = get_object_or_404(AppUser, username=request.data['username'])
     if not user.check_password(request.data['password']):
         return Response({'detail': 'Not found'}, status=status.HTTP_400_BAD_REQUEST)
-    token, created = Token.objects.get_or_create(user=user)
+    token, _ = Token.objects.get_or_create(user=user)
     serializer = AppUserSerializer(instance=user)
     return Response({'token': token.key, 'user': serializer.data})
 
