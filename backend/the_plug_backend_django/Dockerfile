@@ -1,13 +1,12 @@
-FROM --platform=$BUILDPLATFORM python:3.10-alpine AS builder
-EXPOSE 8080
+FROM python:3.11-alpine
 WORKDIR /app
-
-RUN apk update
-RUN apk add pkgconfig gcc musl-dev bash
 
 COPY backend/the_plug_backend_django/requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/the_plug_backend_django/. /app
+
+EXPOSE 8080
+
 ENTRYPOINT ["python3"]
 CMD ["manage.py", "runserver", "0.0.0.0:8080"]
