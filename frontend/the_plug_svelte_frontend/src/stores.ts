@@ -1,5 +1,6 @@
-import {type Writable, writable} from 'svelte/store';
+import { persisted } from 'svelte-persisted-store'
 
-export const account_id: Writable<string | undefined> = writable<string | undefined>();
-export const username: Writable<string | undefined> = writable<string | undefined>();
-export const token: Writable<string | undefined>  = writable<string | undefined>();
+export const account_id = persisted<string>('account_id', '');
+export const username = persisted<string>('username', '');
+export const token = persisted<string>('token', '');
+export const plug_id = persisted<string>('plug_id', '');

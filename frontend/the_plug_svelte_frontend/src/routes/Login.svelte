@@ -1,7 +1,8 @@
 <script lang="ts">
     import {login} from "../service/user-service";
-    import {username, token, account_id} from "../stores";
+    import {username, token, account_id, plug_id} from "../stores";
     import {push} from "svelte-spa-router";
+    import {getPlugByUser} from "../service/plug-service";
 
     let usernameValue: string;
     let password: string;
@@ -13,7 +14,15 @@
             username.set(response.body.user.username);
             token.set(response.body.token);
             account_id.set(response.body.user.id);
-            await push('/');
+            response = await getPlugByUser();
+            if (response.status === 200) {
+                plug_id.set(response.body.id)
+                await push('/');
+            }
+            else {
+                plug_id.set('')
+                await push('/');
+            }
         } else if (response.status === 404) {
             errors = 'No user found of given username';
         } else {
