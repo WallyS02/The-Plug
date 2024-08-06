@@ -22,6 +22,7 @@
     "vite": "^5.3.4"
   },
   "dependencies": {
+    "@types/node": "^22.1.0",
     "@types/uuid": "^10.0.0",
     "svelte-persisted-store": "^0.11.0",
     "svelte-spa-router": "^4.0.1"
