@@ -14,7 +14,7 @@ LABEL maintainer=""
 
 ENV VERSION="0.0.1"
 
-ENV VITE_API_URL="http://localhost:8080/api/"
+ENV API_URL="http://localhost:8080"
 
 EXPOSE 80
 

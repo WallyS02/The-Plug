@@ -11,6 +11,7 @@ services:
      - USER=admin
      - PASSWORD=admin
      - HOST=db
+     - WEB_APP_URL=http://the-plug-frontend
 
   the-plug-frontend:
     image: wallys02/the-plug-frontend:latest
@@ -18,7 +19,7 @@ services:
     ports:
       - "80:80"
     environment:
-     VITE_API_URL: http://the-plug-backend:8080/api/
+     API_URL: http://the-plug-backend:8080
     depends_on:
       - the-plug-backend
 
