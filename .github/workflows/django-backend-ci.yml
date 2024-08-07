@@ -44,6 +44,7 @@ jobs:
           USER: ${{ secrets.POSTGRES_USER }}
           PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           HOST: ${{ secrets.POSTGRES_HOST }}
+          WEB_APP_URL: ${{ secrets.WEB_APP_URL }}
       - name: Build and push Docker Image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
