@@ -35,12 +35,11 @@ APPEND_SLASH = False
 
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost',
-    'https://localhost'
+    env('WEB_APP_URL')
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost"
+    env('WEB_APP_URL')
 ]
 
 # Application definition
