@@ -5,8 +5,16 @@ export default {
     "./src/**/*.{svelte,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        olive: '#83781B',
+        olivine: '#A8C686',
+        asparagus: '#709255',
+        darkAsparagus: '#7B9C56',
+        darkMossGreen: '#3E5622',
+        darkGreen: '#172815',
+      },
+    },
   },
   plugins: [],
 }
-

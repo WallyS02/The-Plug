@@ -2,10 +2,10 @@
 
 </script>
 
-<main class="p-4">
+<div class="p-4 bg-darkMossGreen text-darkGreen flex flex-col items-center justify-end">
     <!-- Copyright -->
-    <div>
+    <div class="bg-darkAsparagus p-2 rounded text-center w-full max-w-md">
         The Plug © 2024
     </div>
     <!-- Copyright -->
-</main>
+</div>
