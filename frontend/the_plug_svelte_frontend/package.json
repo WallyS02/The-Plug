@@ -22,9 +22,8 @@
     "vite": "^5.3.4"
   },
   "dependencies": {
-    "@types/node": "^22.1.0",
-    "@types/uuid": "^10.0.0",
-    "maplibre-gl": "^4.5.1",
+    "leaflet": "^1.9.4",
+    "svelte-notifications": "^0.9.98",
     "svelte-persisted-store": "^0.11.0",
     "svelte-spa-router": "^4.0.1"
   }

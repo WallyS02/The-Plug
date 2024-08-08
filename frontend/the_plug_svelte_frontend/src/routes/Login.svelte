@@ -38,7 +38,7 @@
         <input type="text" id="username" name="username" bind:value={usernameValue}
                class="w-full p-2 mb-4 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
 
-        {#if errors === 'No user found with the given username'}
+        {#if errors === 'No user found of given username'}
             <p class="text-red-500 mb-4">{errors}</p>
         {/if}
 

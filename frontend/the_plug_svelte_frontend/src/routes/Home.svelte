@@ -1,6 +1,7 @@
 <script lang="ts">
+    import Map from "../lib/Map.svelte";
+    import {link} from "svelte-spa-router";
 
-import Map from "../lib/Map.svelte";
 </script>
 
 <main class="p-4 bg-darkAsparagus text-darkGreen flex flex-col items-center">
@@ -9,4 +10,8 @@ import Map from "../lib/Map.svelte";
         Find yourself the best dealer in town and enjoy your high quality drugs!
     </h3>
     <Map />
+    <section class="bg-darkMossGreen p-4 rounded-lg shadow-lg flex-1">
+        <h2 class="text-center w-full max-w-md text-2xl font-bold p-4 text-olivine">No Drug You're looking for on site?</h2>
+        <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen text-center" href="/new-drug" use:link>Request it!</a>
+    </section>
 </main>

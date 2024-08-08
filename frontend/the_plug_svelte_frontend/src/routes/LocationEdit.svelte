@@ -6,8 +6,9 @@
         getLocation,
         updateLocationRequest
     } from "../service/location-service";
-    import {push} from "svelte-spa-router";
+    import {pop, push} from "svelte-spa-router";
     import {plug_id} from "../stores";
+    import {getNotificationsContext} from "svelte-notifications";
 
     export let params = {}
     let location: Location = {} as Location;
@@ -19,9 +20,16 @@
     let city: string | undefined;
 
     let updateLocationErrors: any;
-    let isLocationSuccessfullyUpdated: boolean;
     let deleteLocationErrors: any;
-    let isLocationSuccessfullyDeleted: boolean;
+
+    const { addNotification } = getNotificationsContext();
+
+    const notify = (text: string) => addNotification({
+        text: text,
+        position: 'top-center',
+        type: 'success',
+        removeAfter: 3000
+    });
 
     onMount(async () => {
         location = await getLocation(params.id);
@@ -49,9 +57,7 @@
             location.street_name = streetName;
             location.street_number = streetNumber;
             location.city = city;
-            setTimeout(() => {
-                isLocationSuccessfullyUpdated = true;
-            }, 1500);
+            notify('Successfully updated Location!');
         } else {
             updateLocationErrors = response.body;
         }
@@ -60,6 +66,16 @@
 </script>
 
 <main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col gap-6">
+    <div class="flex-wrap items-center">
+        <!-- Back Button -->
+        <button on:click={() => {pop()}} class="p-1.5 flex bg-darkMossGreen text-olivine hover:bg-darkGreen transition-colors duration-300 rounded m-auto">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back
+        </button>
+    </div>
+
     <!-- Location Details and Update Form -->
     <div class="flex gap-6">
         <!-- Location Details -->
@@ -76,10 +92,7 @@
                     Delete
                 </button>
                 {#if deleteLocationErrors}
-                    <p class="text-red-500">Something went wrong</p>
-                {/if}
-                {#if isLocationSuccessfullyDeleted}
-                    <p class="text-green-500">Successfully deleted Location!</p>
+                    <p class="text-red-500">Something went wrong, {deleteLocationErrors}</p>
                 {/if}
             </ul>
         </section>
@@ -108,10 +121,7 @@
                     Submit
                 </button>
                 {#if updateLocationErrors}
-                    <p class="text-red-500">Something went wrong</p>
-                {/if}
-                {#if isLocationSuccessfullyUpdated}
-                    <p class="text-green-500">Successfully updated Location!</p>
+                    <p class="text-red-500">Something went wrong, {updateLocationErrors}</p>
                 {/if}
             </form>
         </section>

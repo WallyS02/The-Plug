@@ -6,6 +6,7 @@
     import {createDrugOffer, deleteDrugOfferRequest, getPlugDrugOffers} from "../service/drug-offer-service";
     import {getDrugs} from "../service/drug-service";
     import {createLocation, deleteLocationRequest, getPlugLocations} from "../service/location-service";
+    import {getNotificationsContext} from "svelte-notifications";
 
     let drugOffers: DrugOffer[] = [];
     let drugs: Drug[] = [];
@@ -24,13 +25,18 @@
 
     let addDrugOfferErrors: any;
     let deleteDrugOfferErrors: any;
-    let isDrugOfferSuccessfullyAdded: boolean;
-    let isDrugOfferSuccessfullyDeleted: boolean;
 
     let addLocationErrors: any;
     let deleteLocationErrors: any;
-    let isLocationSuccessfullyAdded: boolean;
-    let isLocationSuccessfullyDeleted: boolean;
+
+    const { addNotification } = getNotificationsContext();
+
+    const notify = (text: string) => addNotification({
+        text: text,
+        position: 'top-center',
+        type: 'success',
+        removeAfter: 3000
+    });
 
     onMount(async () => {
         drugOffers = await getPlugDrugOffers($plug_id);
@@ -42,9 +48,7 @@
         let response = await deleteDrugOfferRequest(drugOfferId);
         if (response === undefined) {
             drugOffers = drugOffers.filter(drugOffer => { return drugOffer.id !== drugOfferId });
-            setTimeout(() => {
-                isDrugOfferSuccessfullyDeleted = true;
-            }, 1500);
+            notify('Successfully deleted Drug Offer!');
         } else {
             deleteDrugOfferErrors = response.body;
         }
@@ -57,9 +61,7 @@
             if (response.status === 201) {
                 event.target.reset();
                 drugOffers = [...drugOffers, response.body];
-                setTimeout(() => {
-                    isDrugOfferSuccessfullyAdded = true;
-                }, 1500);
+                notify('Successfully added Drug Offer!');
             } else {
                 addDrugOfferErrors = response.body;
             }
@@ -70,9 +72,7 @@
         let response = await deleteLocationRequest(locationId.toString());
         if (response === undefined) {
             locations = locations.filter(location => { return location.id !== locationId });
-            setTimeout(() => {
-                isLocationSuccessfullyDeleted = true;
-            }, 1500);
+            notify('Successfully deleted Location!');
         } else {
             deleteLocationErrors = response.body;
         }
@@ -83,9 +83,7 @@
         if (response.status === 201) {
             event.target.reset();
             locations = [...locations, response.body];
-            setTimeout(() => {
-                isLocationSuccessfullyAdded = true;
-            }, 1500);
+            notify('Successfully added Location!');
         } else {
             addLocationErrors = response.body;
         }
@@ -114,10 +112,7 @@
                                 Delete
                             </button>
                             {#if deleteDrugOfferErrors}
-                                <p class="text-red-500">Something went wrong</p>
-                            {/if}
-                            {#if isDrugOfferSuccessfullyDeleted}
-                                <p class="text-green-500">Successfully deleted Drug Offer!</p>
+                                <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
                             {/if}
                         </li>
                     {/each}
@@ -153,10 +148,7 @@
                     Submit
                 </button>
                 {#if addDrugOfferErrors}
-                    <p class="text-red-500">Something went wrong</p>
-                {/if}
-                {#if isDrugOfferSuccessfullyAdded}
-                    <p class="text-green-500">Successfully added new Drug Offer!</p>
+                    <p class="text-red-500">Something went wrong, {addDrugOfferErrors}</p>
                 {/if}
             </form>
         </section>
@@ -184,10 +176,7 @@
                                 Delete
                             </button>
                             {#if deleteLocationErrors}
-                                <p class="text-red-500">Something went wrong</p>
-                            {/if}
-                            {#if isLocationSuccessfullyDeleted}
-                                <p class="text-green-500">Successfully deleted Location!</p>
+                                <p class="text-red-500">Something went wrong, {deleteLocationErrors}</p>
                             {/if}
                         </li>
                     {/each}
@@ -221,10 +210,7 @@
                     Submit
                 </button>
                 {#if addLocationErrors}
-                    <p class="text-red-500">Something went wrong</p>
-                {/if}
-                {#if isLocationSuccessfullyAdded}
-                    <p class="text-green-500">Successfully added new Location!</p>
+                    <p class="text-red-500">Something went wrong, {addLocationErrors}</p>
                 {/if}
             </form>
         </section>

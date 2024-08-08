@@ -2,22 +2,28 @@
     import {register} from "../service/user-service";
     import {username, token, account_id} from "../stores";
     import {push} from "svelte-spa-router";
+    import { getNotificationsContext } from 'svelte-notifications';
 
     let usernameValue: string;
     let password: string;
     let errors: any;
-    let isRegistrationSuccessful: boolean = false;
+    const { addNotification } = getNotificationsContext();
+
+    const notify = (text: string) => addNotification({
+        text: text,
+        position: 'top-center',
+        type: 'success',
+        removeAfter: 3000
+    });
 
     async function handleRegistration() {
         let response = await register(usernameValue, password);
         if (response.status === 201) {
-            isRegistrationSuccessful = true;
             username.set(response.body.user.username);
             token.set(response.body.token);
             account_id.set(response.body.user.id);
-            setTimeout(() => {
-                push('/');
-            }, 2500);
+            notify('Registration successful!')
+            await push('/');
         } else {
             errors = response.body;
         }
@@ -45,9 +51,5 @@
 
         <input type="submit" value="Submit"
                class="w-full p-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine"/>
-
-        {#if isRegistrationSuccessful}
-            <p class="text-green-500 mt-4">Registration successful!</p>
-        {/if}
     </form>
 </main>

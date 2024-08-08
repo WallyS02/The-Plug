@@ -8,7 +8,8 @@
         getDrugOffer,
         updateDrugOfferRequest
     } from "../service/drug-offer-service";
-    import {push} from "svelte-spa-router";
+    import {pop, push} from "svelte-spa-router";
+    import {getNotificationsContext} from "svelte-notifications";
 
     export let params = {}
     let drugOffer: DrugOffer = {} as DrugOffer;
@@ -21,9 +22,16 @@
     let description: string;
 
     let updateDrugOfferErrors: any;
-    let isDrugOfferSuccessfullyUpdated: boolean;
     let deleteDrugOfferErrors: any;
-    let isDrugOfferSuccessfullyDeleted: boolean;
+
+    const { addNotification } = getNotificationsContext();
+
+    const notify = (text: string) => addNotification({
+        text: text,
+        position: 'top-center',
+        type: 'success',
+        removeAfter: 3000
+    });
 
     onMount(async () => {
         drugOffer = await getDrugOffer(params.id);
@@ -51,9 +59,7 @@
         if (drug) {
             let response = await updateDrugOfferRequest(drugOffer.id, drug.id, gramsInStock, pricePerGram, description);
             if (response.status === 200) {
-                setTimeout(() => {
-                    isDrugOfferSuccessfullyUpdated = true;
-                }, 1500);
+                notify('Successfully updated Drug Offer!');
             } else {
                 updateDrugOfferErrors = response.body;
             }
@@ -63,6 +69,16 @@
 </script>
 
 <main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col gap-6">
+    <div class="flex-wrap items-center">
+        <!-- Back Button -->
+        <button on:click={() => {pop()}} class="p-1.5 flex bg-darkMossGreen text-olivine hover:bg-darkGreen transition-colors duration-300 rounded m-auto">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back
+        </button>
+    </div>
+
     <!-- Drug Offer Details -->
     <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
         <h2 class="text-2xl font-bold mb-4">Drug Offer Details</h2>
@@ -79,10 +95,7 @@
                 Delete
             </button>
             {#if deleteDrugOfferErrors}
-                <p class="text-red-500">Something went wrong</p>
-            {/if}
-            {#if isDrugOfferSuccessfullyDeleted}
-                <p class="text-green-500">Successfully deleted Drug Offer!</p>
+                <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
             {/if}
         </div>
     </section>
@@ -109,14 +122,11 @@
             <input type="text" id="description" name="description" bind:value={description}
                    class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
             <button type="submit"
-                    class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen">
+                    class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
                 Submit
             </button>
             {#if updateDrugOfferErrors}
-                <p class="text-red-500">Something went wrong</p>
-            {/if}
-            {#if isDrugOfferSuccessfullyUpdated}
-                <p class="text-green-500">Successfully updated Drug Offer!</p>
+                <p class="text-red-500">Something went wrong, {updateDrugOfferErrors}</p>
             {/if}
         </form>
     </section>

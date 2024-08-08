@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import maplibregl from 'maplibre-gl';
 
     let map: any;
     let markers: any[] = [];
@@ -25,16 +24,7 @@
     });
 
     function initializeMap(location: {longitude: number, latitude: number}) {
-        map = new maplibregl.Map({
-            container: 'map',
-            style: 'https://demotiles.maplibre.org/style.json',
-            center: [location.longitude, location.latitude],
-            zoom: 10
-        });
 
-        for (let marker of markers) {
-            new maplibregl.Marker().setLngLat([marker.longitude, marker.latitude]).addTo(map);
-        }
     }
 </script>
 

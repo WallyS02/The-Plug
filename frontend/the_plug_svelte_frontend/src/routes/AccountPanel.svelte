@@ -1,11 +1,12 @@
 <script lang="ts">
     import type {Meeting} from "../models";
-    import {link} from 'svelte-spa-router';
-    import {account_id, plug_id, username} from "../stores";
+    import {link, push} from 'svelte-spa-router';
+    import {account_id, plug_id, token, username} from "../stores";
     import {onMount} from "svelte";
     import {getClientMeetings} from "../service/meeting-service";
-    import {updateUser} from "../service/user-service";
+    import {deleteUserRequest, updateUser} from "../service/user-service";
     import {createPlugRequest, deletePlugRequest} from "../service/plug-service";
+    import {getNotificationsContext} from "svelte-notifications";
 
     let meetings: Meeting[] = [];
 
@@ -16,12 +17,18 @@
 
     let password: string;
     let changeErrors: any;
+    let deleteErrors: any;
     let createPlugErrors: any;
     let deletePlugErrors: any;
 
-    let isCreated: boolean = false;
-    let isDeleted: boolean = false;
-    let isChanged: boolean = false;
+    const { addNotification } = getNotificationsContext();
+
+    const notify = (text: string) => addNotification({
+        text: text,
+        position: 'top-center',
+        type: 'success',
+        removeAfter: 3000
+    });
 
     onMount(async () => {
         meetings = await getClientMeetings($account_id);
@@ -31,14 +38,24 @@
         if (usernameValue) {
             let response = await updateUser(usernameValue, password);
             if (response.status === 200) {
-                username.set(response.body.user.username);
-                isChanged = true;
-                setTimeout(() => {
-                    isChanged = false;
-                }, 2500);
+                username.set(response.body.username);
+                notify('Username and password successfully changed!');
             } else {
                 changeErrors = response.body;
             }
+        }
+    }
+
+    async function deleteAccount() {
+        let response = await deleteUserRequest($account_id);
+        if (response === undefined) {
+            account_id.set('');
+            username.set('');
+            token.set('');
+            notify('Account successfully deleted!');
+            await push('/')
+        } else {
+            deleteErrors = response.body;
         }
     }
 
@@ -46,9 +63,7 @@
         let response = await createPlugRequest();
         if (response.status === 201) {
             plug_id.set(response.body.id);
-            setTimeout(() => {
-                isCreated = true;
-            }, 2500);
+            notify('Plug Account successfully created!');
         } else {
             createPlugErrors = response.body;
         }
@@ -58,9 +73,7 @@
         let response = await deletePlugRequest();
         if (response === undefined) {
             plug_id.set('');
-            setTimeout(() => {
-                isDeleted = true;
-            }, 2500);
+            notify('Plug Account successfully deleted!');
         } else {
             deletePlugErrors = response.body;
         }
@@ -88,32 +101,38 @@
                     {/each}
                 </ul>
             {:else}
-                <p>No meetings requested from you yet!</p>
+                <p>No meetings requested from or for you yet!</p>
             {/if}
         </section>
 
         <!-- Account Settings Section -->
         <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
-            <h2 class="text-2xl font-bold mb-4">Account Settings</h2>
-            <p class="text-lg mb-4">Change username or password</p>
-            <form on:submit|preventDefault={handleChange} class="space-y-4">
-                <label for="username" class="block text-xl font-semibold mb-2">Username:</label>
-                <input type="text" id="username" name="username" bind:value={usernameValue}
-                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-                <label for="password" class="block text-xl font-semibold mb-2">Password:</label>
-                <input type="password" id="password" name="password" bind:value={password}
-                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-                <button type="submit"
-                        class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
-                    Submit
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold mb-4">Account Settings</h2>
+                <p class="text-lg mb-4">Change username or password</p>
+                <form on:submit|preventDefault={handleChange} class="space-y-4">
+                    <label for="username" class="block text-xl font-semibold mb-2">Username:</label>
+                    <input type="text" id="username" name="username" bind:value={usernameValue}
+                           class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                    <label for="password" class="block text-xl font-semibold mb-2">Password:</label>
+                    <input type="password" id="password" name="password" bind:value={password}
+                           class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                    <button type="submit"
+                            class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
+                        Submit
+                    </button>
+                    {#if changeErrors}
+                        <p class="text-red-500">Something went wrong, {changeErrors}</p>
+                    {/if}
+                </form>
+                <button on:click={deleteAccount}
+                        class="w-full px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete Account
                 </button>
-                {#if changeErrors}
-                    <p class="text-red-500">Something went wrong</p>
+                {#if deleteErrors}
+                    <p class="text-red-500">Something went wrong, {deleteErrors}</p>
                 {/if}
-                {#if isChanged}
-                    <p class="text-green-500">Username and password successfully changed!</p>
-                {/if}
-            </form>
+            </div>
         </section>
     </div>
 
@@ -125,21 +144,15 @@
                     class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
                 Create Plug Account
             </button>
-            {#if isCreated}
-                <p class="text-green-500">Plug Account successfully created!</p>
-            {/if}
             {#if createPlugErrors}
-                <p class="text-red-500">Something went wrong</p>
+                <p class="text-red-500">Something went wrong, {createPlugErrors}</p>
             {/if}
             <button on:click={deletePlug}
                     class="w-full px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
                 Delete Plug Account
             </button>
-            {#if isDeleted}
-                <p class="text-green-500">Plug Account successfully deleted!</p>
-            {/if}
             {#if deletePlugErrors}
-                <p class="text-red-500">Something went wrong</p>
+                <p class="text-red-500">Something went wrong, {deletePlugErrors}</p>
             {/if}
         </div>
     </section>
