@@ -6,10 +6,16 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.core.mail import send_mail
 
 from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
-from .serializers import AppUserSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer
+from .serializers import AppUserSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, \
+    ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer
 
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Create your views here.
 
@@ -221,6 +227,19 @@ class PlugLocations(generics.ListAPIView):
         plug_id = self.kwargs.get('id')
         plug = get_object_or_404(Plug, pk=plug_id)
         return Location.objects.filter(plug=plug)
+
+
+@api_view(['POST'])
+def send_new_drug_request_mail(request):
+    send_mail(
+        'New Drug to Add',
+        'Request to add drug by Name: ' + request.data['name'] + ' and Wikipedia Link: ' + request.data[
+            'wikipedia_link'] + '. Check it out!',
+        None,
+        [env('EM_ACCOUNT')],
+        fail_silently=False,
+    )
+    return Response({}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
