@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import make_password
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
@@ -16,6 +17,7 @@ import environ
 
 env = environ.Env()
 environ.Env.read_env()
+
 
 # Create your views here.
 
@@ -60,11 +62,45 @@ class PlugRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'pk'
 
 
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
 class LocationList(generics.ListAPIView):
-    queryset = Location.objects.all()
     serializer_class = LocationSerializer
+
+    def get_queryset(self):
+        north = self.request.query_params.get('north')
+        south = self.request.query_params.get('south')
+        east = self.request.query_params.get('east')
+        west = self.request.query_params.get('west')
+        plug_id = self.request.query_params.get('plug')
+
+        if not all([north, south, east, west]):
+            return Location.objects.none()
+
+        try:
+            north = float(north)
+            south = float(south)
+            east = float(east)
+            west = float(west)
+        except ValueError:
+            return Location.objects.none()
+
+        if plug_id != '':
+            plug = get_object_or_404(Plug, pk=plug_id)
+
+            return Location.objects.filter(
+                ~Q(plug=plug),
+                latitude__lte=north,
+                latitude__gte=south,
+                longitude__lte=west,
+                longitude__gte=east
+            )
+
+        else:
+            return Location.objects.filter(
+                latitude__lte=north,
+                latitude__gte=south,
+                longitude__lte=west,
+                longitude__gte=east
+            )
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -226,9 +262,34 @@ class PlugLocations(generics.ListAPIView):
     def get_queryset(self):
         plug_id = self.kwargs.get('id')
         plug = get_object_or_404(Plug, pk=plug_id)
-        return Location.objects.filter(plug=plug)
+
+        north = self.request.query_params.get('north')
+        south = self.request.query_params.get('south')
+        east = self.request.query_params.get('east')
+        west = self.request.query_params.get('west')
+
+        if not all([north, south, east, west]):
+            return Location.objects.none()
+
+        try:
+            north = float(north)
+            south = float(south)
+            east = float(east)
+            west = float(west)
+        except ValueError:
+            return Location.objects.none()
+
+        return Location.objects.filter(
+            plug=plug,
+            latitude__lte=north,
+            latitude__gte=south,
+            longitude__lte=west,
+            longitude__gte=east
+        )
 
 
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def send_new_drug_request_mail(request):
     send_mail(
@@ -258,7 +319,7 @@ def register(request):
     if serializer.is_valid():
         serializer.save()
         user = AppUser.objects.get(username=serializer.data['username'])
-        user.set_password(serializer.data['password'])
+        user.set_password(request.data['password'])
         user.save()
         token = Token.objects.create(user=user)
         return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
