@@ -12,6 +12,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "@tsconfig/svelte": "^5.0.4",
+    "@types/leaflet": "^1.9.12",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.41",
     "svelte": "^4.2.18",
@@ -23,7 +24,7 @@
   },
   "dependencies": {
     "leaflet": "^1.9.4",
-    "svelte-notifications": "^0.9.98",
+    "svelte-notifications": "github:louchebem06/svelte-notifications#fix-warn-vite-plugin-svelte",
     "svelte-persisted-store": "^0.11.0",
     "svelte-spa-router": "^4.0.1"
   }

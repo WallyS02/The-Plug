@@ -6,7 +6,7 @@ token.subscribe((value) => {
     tokenValue = value;
 });
 
-export async function getPlugLocations(plugId: string): Promise<any> {
+export async function getPlugLocations(plugId: string, north: number, south: number, west: number, east: number): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -15,7 +15,7 @@ export async function getPlugLocations(plugId: string): Promise<any> {
         }
     }
 
-    let response = await sendRequest('location/plug/' + plugId + '/', requestOptions);
+    let response = await sendRequest('location/plug/' + plugId + '/?north=' + north + '&south=' + south + '&west=' + west + '&east=' + east, requestOptions);
     return response.body;
 }
 
@@ -57,7 +57,7 @@ export async function getLocation(locationId: string): Promise<any> {
     return response.body;
 }
 
-export async function updateLocationRequest(locationId: string, latitude: number, longitude: number, street_name?: string, street_number?: string, city?: string): Promise<any> {
+export async function updateLocationRequest(locationId: string, latitude: string, longitude: string, street_name?: string, street_number?: string, city?: string): Promise<any> {
     const requestOptions: {} = {
         method: 'PATCH',
         headers: {
@@ -68,4 +68,16 @@ export async function updateLocationRequest(locationId: string, latitude: number
     }
 
     return await sendRequest('location/' + locationId + '/', requestOptions);
+}
+
+export async function getLocationsRequest(north: number, south: number, west: number, east: number, plugId: string): Promise<any> {
+    const requestOptions: {} = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${tokenValue}`
+        }
+    }
+
+    return await sendRequest('location/list/?north=' + north + '&south=' + south + '&west=' + west + '&east=' + east + '&plug=' + plugId, requestOptions);
 }

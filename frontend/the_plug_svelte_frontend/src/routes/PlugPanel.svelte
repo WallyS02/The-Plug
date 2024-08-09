@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type {Drug, DrugOffer, Location} from "../models";
+    import {type Drug, type DrugOffer, type Location, MapMode} from "../models";
     import {link} from 'svelte-spa-router';
     import {onMount} from "svelte";
     import {plug_id} from "../stores";
@@ -7,10 +7,10 @@
     import {getDrugs} from "../service/drug-service";
     import {createLocation, deleteLocationRequest, getPlugLocations} from "../service/location-service";
     import {getNotificationsContext} from "svelte-notifications";
+    import Map from "../lib/Map.svelte";
 
     let drugOffers: DrugOffer[] = [];
     let drugs: Drug[] = [];
-    let locations: Location[] = [];
 
     let drugName: string;
     let gramsInStock: number;
@@ -27,7 +27,7 @@
     let deleteDrugOfferErrors: any;
 
     let addLocationErrors: any;
-    let deleteLocationErrors: any;
+    //let deleteLocationErrors: any;
 
     const { addNotification } = getNotificationsContext();
 
@@ -40,7 +40,7 @@
 
     onMount(async () => {
         drugOffers = await getPlugDrugOffers($plug_id);
-        locations = await getPlugLocations($plug_id);
+        //locations = await getPlugLocations($plug_id);
         drugs = await getDrugs();
     });
 
@@ -68,7 +68,7 @@
         }
     }
 
-    async function deleteLocation(locationId: number) {
+    /*async function deleteLocation(locationId: number) {
         let response = await deleteLocationRequest(locationId.toString());
         if (response === undefined) {
             locations = locations.filter(location => { return location.id !== locationId });
@@ -76,13 +76,12 @@
         } else {
             deleteLocationErrors = response.body;
         }
-    }
+    }*/
 
     const createNewLocation = async (event: any) => {
         let response = await createLocation($plug_id, parseFloat(longitude), parseFloat(latitude), streetName, streetNumber, city);
         if (response.status === 201) {
             event.target.reset();
-            locations = [...locations, response.body];
             notify('Successfully added Location!');
         } else {
             addLocationErrors = response.body;
@@ -158,7 +157,7 @@
     <div class="flex flex-col md:flex-row gap-6">
         <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
             <h2 class="text-2xl font-bold mb-4">Your Locations</h2>
-            {#if locations.length > 0}
+            <!--{#if locations.length > 0}
                 <ul class="space-y-4">
                     {#each locations as location}
                         <li class="border border-asparagus p-4 rounded">
@@ -183,12 +182,13 @@
                 </ul>
             {:else}
                 <p>No Locations from You yet!</p>
-            {/if}
+            {/if}-->
+            <Map mode={MapMode.AddLocation} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude}/>
         </section>
 
         <!-- Add New Location Section -->
         <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
-            <h2 class="text-2xl font-bold mb-4">Add New Location</h2>
+            <h2 class="text-2xl font-bold mb-4">Add New Location, click on the map to set coordinates!</h2>
             <form on:submit|preventDefault={createNewLocation} class="space-y-4">
                 <label for="longitude" class="block text-xl font-semibold mb-2">Longitude:</label>
                 <input type="text" id="longitude" name="longitude" bind:value={longitude}

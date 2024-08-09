@@ -57,3 +57,9 @@ export interface Drug {
     wikipedia_link: string;
     //drugOffer: DrugOffer[];
 }
+
+export enum MapMode {
+    Browse,
+    AddLocation,
+    EditLocation,
+}

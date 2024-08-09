@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type {Location} from "../models";
+    import {type Location, MapMode} from "../models";
     import {onMount} from "svelte";
     import {
         deleteLocationRequest,
@@ -9,12 +9,13 @@
     import {pop, push} from "svelte-spa-router";
     import {plug_id} from "../stores";
     import {getNotificationsContext} from "svelte-notifications";
+    import Map from "../lib/Map.svelte";
 
-    export let params = {}
+    export let params = {};
     let location: Location = {} as Location;
 
-    let longitude: number;
-    let latitude: number;
+    let longitude: string;
+    let latitude: string;
     let streetName: string | undefined;
     let streetNumber: string | undefined;
     let city: string | undefined;
@@ -33,8 +34,8 @@
 
     onMount(async () => {
         location = await getLocation(params.id);
-        longitude = location.longitude;
-        latitude = location.latitude;
+        longitude = location.longitude.toString();
+        latitude = location.latitude.toString();
         streetName = location.street_name;
         streetNumber = location.street_number;
         city = location.city;
@@ -52,8 +53,8 @@
     async function updateLocation() {
         let response = await updateLocationRequest(location.id.toString(), latitude, longitude, streetName, streetNumber, city);
         if (response.status === 200) {
-            location.longitude = longitude;
-            location.latitude = latitude;
+            location.longitude = Number(longitude);
+            location.latitude = Number(latitude);
             location.street_name = streetName;
             location.street_number = streetNumber;
             location.city = city;
@@ -81,7 +82,7 @@
         <!-- Location Details -->
         <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
             <h2 class="text-2xl font-bold mb-4">Location Details</h2>
-            <ul class="space-y-4">
+            <!--<ul class="space-y-4">
                 <li class="text-xl"><strong>Latitude:</strong> {location.latitude}</li>
                 <li class="text-xl"><strong>Longitude:</strong> {location.longitude}</li>
                 <li class="text-xl"><strong>Street Name:</strong> {location.street_name}</li>
@@ -94,7 +95,8 @@
                 {#if deleteLocationErrors}
                     <p class="text-red-500">Something went wrong, {deleteLocationErrors}</p>
                 {/if}
-            </ul>
+            </ul>-->
+            <Map mode={MapMode.EditLocation} editedLocationId={params.id} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude}/>
         </section>
 
         <!-- Update Location Form -->

@@ -8,7 +8,12 @@
         token.set('');
         plug_id.set('');
 
-        push('/')
+        if (location.pathname === '/') {
+            window.location.reload();
+        }
+        else {
+            push('/');
+        }
     }
 </script>
 
