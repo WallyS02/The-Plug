@@ -2,13 +2,17 @@ services:
   the-plug-backend:
     image: wallys02/the-plug-backend:latest
     restart: always
+    ports:
+      - "8080:8080"
     depends_on:
       - pgadmin
     environment:
      - DB_NAME=${POSTGRES_DB}
      - DB_USER=${POSTGRES_USER}
      - DB_PASSWORD=${POSTGRES_PASSWORD}
-     - DB_HOST=${DB_HOST}
+     - DB_HOST=db
+     - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+     - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
      - WEB_APP_URL=http://the-plug-frontend
 
   the-plug-frontend:
