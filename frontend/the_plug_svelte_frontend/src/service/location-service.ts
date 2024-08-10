@@ -1,5 +1,6 @@
 import {sendRequest} from "./config";
 import {token} from "../stores";
+import type {Drug} from "../models";
 
 let tokenValue: string | undefined;
 token.subscribe((value) => {
@@ -70,7 +71,15 @@ export async function updateLocationRequest(locationId: string, latitude: string
     return await sendRequest('location/' + locationId + '/', requestOptions);
 }
 
-export async function getLocationsRequest(north: number, south: number, west: number, east: number, plugId: string): Promise<any> {
+function buildListQuery(params: number[], prefix: string) {
+    let query = '';
+    for (const element of params) {
+        query += `${prefix}${element}`;
+    }
+    return query;
+}
+
+export async function getLocationsRequest(north: number, south: number, west: number, east: number, plugId: string, chosenDrugs?: Drug[], chosenPlugs?: {id: number, username: string}[]): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -79,5 +88,13 @@ export async function getLocationsRequest(north: number, south: number, west: nu
         }
     }
 
-    return await sendRequest('location/list/?north=' + north + '&south=' + south + '&west=' + west + '&east=' + east + '&plug=' + plugId, requestOptions);
+    if (chosenDrugs && chosenDrugs.length > 0 && chosenPlugs && chosenPlugs.length > 0) {
+        return await sendRequest('location/list/?north=' + north + '&south=' + south + '&west=' + west + '&east=' + east + '&plug=' + plugId + buildListQuery(chosenDrugs?.map(drug => drug.id), '&drugs=') + buildListQuery(chosenPlugs?.map(plug => plug.id), '&plugs='), requestOptions);
+    } else if (chosenDrugs && chosenDrugs.length > 0) {
+        return await sendRequest('location/list/?north=' + north + '&south=' + south + '&west=' + west + '&east=' + east + '&plug=' + plugId + buildListQuery(chosenDrugs?.map(drug => drug.id), '&drugs='), requestOptions);
+    } else if (chosenPlugs && chosenPlugs.length > 0) {
+        return await sendRequest('location/list/?north=' + north + '&south=' + south + '&west=' + west + '&east=' + east + '&plug=' + plugId + buildListQuery(chosenPlugs?.map(plug => plug.id), '&plugs='), requestOptions);
+    } else {
+        return await sendRequest('location/list/?north=' + north + '&south=' + south + '&west=' + west + '&east=' + east + '&plug=' + plugId, requestOptions);
+    }
 }

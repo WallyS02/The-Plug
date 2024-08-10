@@ -8,7 +8,7 @@
         token.set('');
         plug_id.set('');
 
-        if (location.pathname === '/') {
+        if (location.href.split('/')[4] === '') {
             window.location.reload();
         }
         else {

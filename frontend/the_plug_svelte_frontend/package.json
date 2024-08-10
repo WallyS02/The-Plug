@@ -23,6 +23,7 @@
     "vite": "^5.3.4"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.6.0",
     "leaflet": "^1.9.4",
     "svelte-notifications": "github:louchebem06/svelte-notifications#fix-warn-vite-plugin-svelte",
     "svelte-persisted-store": "^0.11.0",

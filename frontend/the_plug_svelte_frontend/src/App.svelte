@@ -13,12 +13,14 @@
   import DrugEdit from "./routes/DrugOfferEdit.svelte";
   import LocationEdit from "./routes/LocationEdit.svelte";
   import RequestNewDrug from "./routes/RequestNewDrug.svelte";
+  import RatingInfo from "./routes/RatingInfo.svelte";
 
   const routes = {
     '/': Home,
     '/register': Register,
     '/login': Login,
     '/new-drug': RequestNewDrug,
+    '/rating-info': RatingInfo,
     '/account/:id': AccountPanel,
     '/plug/:id': PlugPanel,
     '/drug-offer/:id': DrugEdit,
