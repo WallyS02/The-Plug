@@ -47,6 +47,7 @@
             await push('/plug/' + $plug_id);
         } else {
             deleteLocationErrors = response.body;
+            notify('Something went wrong, ' + deleteLocationErrors);
         }
     }
 
@@ -82,25 +83,11 @@
         <!-- Location Details -->
         <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
             <h2 class="text-2xl font-bold mb-4">Location Details</h2>
-            <!--<ul class="space-y-4">
-                <li class="text-xl"><strong>Latitude:</strong> {location.latitude}</li>
-                <li class="text-xl"><strong>Longitude:</strong> {location.longitude}</li>
-                <li class="text-xl"><strong>Street Name:</strong> {location.street_name}</li>
-                <li class="text-xl"><strong>Street Number:</strong> {location.street_number}</li>
-                <li class="text-xl"><strong>City:</strong> {location.city}</li>
-                <button on:click={() => deleteLocation(location.id)}
-                        class="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                    Delete
-                </button>
-                {#if deleteLocationErrors}
-                    <p class="text-red-500">Something went wrong, {deleteLocationErrors}</p>
-                {/if}
-            </ul>-->
             <Map mode={MapMode.EditLocation} editedLocationId={params.id} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude}/>
         </section>
 
         <!-- Update Location Form -->
-        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1 space-y-4">
             <h2 class="text-2xl font-bold mb-4">Update Location</h2>
             <form on:submit|preventDefault={updateLocation} class="space-y-4">
                 <label for="longitude" class="block text-xl font-semibold mb-2">Longitude:</label>
@@ -126,6 +113,12 @@
                     <p class="text-red-500">Something went wrong, {updateLocationErrors}</p>
                 {/if}
             </form>
+            <div class="">
+                <button on:click={() => deleteLocation(params.id)}
+                        class="w-full px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete
+                </button>
+            </div>
         </section>
     </div>
 </main>

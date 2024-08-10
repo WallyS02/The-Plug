@@ -5,7 +5,7 @@
     import {plug_id} from "../stores";
     import {createDrugOffer, deleteDrugOfferRequest, getPlugDrugOffers} from "../service/drug-offer-service";
     import {getDrugs} from "../service/drug-service";
-    import {createLocation, deleteLocationRequest, getPlugLocations} from "../service/location-service";
+    import {createLocation} from "../service/location-service";
     import {getNotificationsContext} from "svelte-notifications";
     import Map from "../lib/Map.svelte";
 
@@ -27,7 +27,6 @@
     let deleteDrugOfferErrors: any;
 
     let addLocationErrors: any;
-    //let deleteLocationErrors: any;
 
     const { addNotification } = getNotificationsContext();
 
@@ -40,7 +39,6 @@
 
     onMount(async () => {
         drugOffers = await getPlugDrugOffers($plug_id);
-        //locations = await getPlugLocations($plug_id);
         drugs = await getDrugs();
     });
 
@@ -67,16 +65,6 @@
             }
         }
     }
-
-    /*async function deleteLocation(locationId: number) {
-        let response = await deleteLocationRequest(locationId.toString());
-        if (response === undefined) {
-            locations = locations.filter(location => { return location.id !== locationId });
-            notify('Successfully deleted Location!');
-        } else {
-            deleteLocationErrors = response.body;
-        }
-    }*/
 
     const createNewLocation = async (event: any) => {
         let response = await createLocation($plug_id, parseFloat(longitude), parseFloat(latitude), streetName, streetNumber, city);
@@ -157,32 +145,6 @@
     <div class="flex flex-col md:flex-row gap-6">
         <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
             <h2 class="text-2xl font-bold mb-4">Your Locations</h2>
-            <!--{#if locations.length > 0}
-                <ul class="space-y-4">
-                    {#each locations as location}
-                        <li class="border border-asparagus p-4 rounded">
-                            <p><strong>Latitude:</strong> {location.latitude}</p>
-                            <p><strong>Longitude:</strong> {location.longitude}</p>
-                            <p><strong>Street Name:</strong> {location.street_name}</p>
-                            <p><strong>Street Number:</strong> {location.street_number}</p>
-                            <p><strong>City:</strong> {location.city}</p>
-                            <a use:link={'/location/' + location.id}
-                               class="inline-block mt-2 px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
-                                Edit
-                            </a>
-                            <button on:click={() => deleteLocation(location.id)}
-                                    class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                                Delete
-                            </button>
-                            {#if deleteLocationErrors}
-                                <p class="text-red-500">Something went wrong, {deleteLocationErrors}</p>
-                            {/if}
-                        </li>
-                    {/each}
-                </ul>
-            {:else}
-                <p>No Locations from You yet!</p>
-            {/if}-->
             <Map mode={MapMode.AddLocation} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude}/>
         </section>
 

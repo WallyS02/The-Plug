@@ -10,7 +10,6 @@
     } from "../service/location-service";
     import {getNotificationsContext} from "svelte-notifications";
     import {plug_id} from "../stores";
-    import {push} from "svelte-spa-router";
 
     const { addNotification } = getNotificationsContext();
 
@@ -88,10 +87,10 @@
     async function deleteLocation(locationId: number) {
         let response = await deleteLocationRequest(locationId.toString());
         if (response === undefined) {
-            if (mode === MapMode.EditLocation) {
-                await push('/plug/' + $plug_id);
-            }
-            locations = locations.filter(location => { return location.id !== locationId });
+            locations = locations.filter(location => {
+                return location.id !== locationId
+            });
+            setMarkers();
             notify('Successfully deleted Location!');
         } else {
             deleteLocationErrors = response.body;
@@ -130,8 +129,8 @@
                             Edit
                         </a>
                         <button
+                            id="delete-${location.id}"
                             class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            onclick="deleteLocation(${location.id})"
                         >
                             Delete
                         </button>
@@ -143,18 +142,20 @@
                         ${location.street_name} ${location.street_number}
                         <br> ${location.city}
                         <br>
-                        <button
-                            class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            onclick="deleteLocation(${location.id})"
-                        >
-                            Delete
-                        </button>
                     `;
                     break;
                 }
             }
-            L.marker([location.latitude, location.longitude]).addTo(layerGroup)
+            const marker = L.marker([location.latitude, location.longitude]).addTo(layerGroup)
                 .bindPopup(markerDescription!);
+
+            if (mode === MapMode.AddLocation) {
+                marker.on('popupopen', function () {
+                    document.getElementById(`delete-${location.id}`)!.addEventListener('click', function () {
+                        deleteLocation(location.id);
+                    });
+                });
+            }
         }
     }
 
