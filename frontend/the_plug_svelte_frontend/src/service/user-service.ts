@@ -41,3 +41,15 @@ export async function updateUser(username: string, password: string): Promise<an
 
     return await sendRequest('user/' + accountIdValue + '/', requestOptions);
 }
+
+export async function deleteUserRequest(userId: string): Promise<any> {
+    const requestOptions: {} = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${tokenValue}`
+        }
+    }
+
+    return await sendRequest('user/' + userId + '/', requestOptions);
+}

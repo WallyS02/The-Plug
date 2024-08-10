@@ -1,32 +1,41 @@
 <script lang="ts">
-    import type {Location} from "../models";
+    import {type Location, MapMode} from "../models";
     import {onMount} from "svelte";
     import {
         deleteLocationRequest,
         getLocation,
         updateLocationRequest
     } from "../service/location-service";
-    import {push} from "svelte-spa-router";
+    import {pop, push} from "svelte-spa-router";
     import {plug_id} from "../stores";
+    import {getNotificationsContext} from "svelte-notifications";
+    import Map from "../lib/Map.svelte";
 
-    export let params = {}
+    export let params = {};
     let location: Location = {} as Location;
 
-    let longitude: number;
-    let latitude: number;
+    let longitude: string;
+    let latitude: string;
     let streetName: string | undefined;
     let streetNumber: string | undefined;
     let city: string | undefined;
 
     let updateLocationErrors: any;
-    let isLocationSuccessfullyUpdated: boolean;
     let deleteLocationErrors: any;
-    let isLocationSuccessfullyDeleted: boolean;
+
+    const { addNotification } = getNotificationsContext();
+
+    const notify = (text: string) => addNotification({
+        text: text,
+        position: 'top-center',
+        type: 'success',
+        removeAfter: 3000
+    });
 
     onMount(async () => {
         location = await getLocation(params.id);
-        longitude = location.longitude;
-        latitude = location.latitude;
+        longitude = location.longitude.toString();
+        latitude = location.latitude.toString();
         streetName = location.street_name;
         streetNumber = location.street_number;
         city = location.city;
@@ -38,20 +47,19 @@
             await push('/plug/' + $plug_id);
         } else {
             deleteLocationErrors = response.body;
+            notify('Something went wrong, ' + deleteLocationErrors);
         }
     }
 
     async function updateLocation() {
         let response = await updateLocationRequest(location.id.toString(), latitude, longitude, streetName, streetNumber, city);
         if (response.status === 200) {
-            location.longitude = longitude;
-            location.latitude = latitude;
+            location.longitude = Number(longitude);
+            location.latitude = Number(latitude);
             location.street_name = streetName;
             location.street_number = streetNumber;
             location.city = city;
-            setTimeout(() => {
-                isLocationSuccessfullyUpdated = true;
-            }, 1500);
+            notify('Successfully updated Location!');
         } else {
             updateLocationErrors = response.body;
         }
@@ -59,44 +67,58 @@
 
 </script>
 
-<main class="p-4">
-    <div>
-        <p>Your Location of ID: </p>
-        <ul>
-            <li>{location.latitude}</li>
-            <li>{location.longitude}</li>
-            <li>{location.street_name}</li>
-            <li>{location.street_number}</li>
-            <li>{location.city}</li>
-            <button on:click={() => deleteLocation(location.id)}>Delete</button>
-            {#if deleteLocationErrors}
-                <p>Something went wrong</p>
-            {/if}
-            {#if isLocationSuccessfullyDeleted}
-                <p>Successfully deleted Location!</p>
-            {/if}
-        </ul>
+<main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col gap-6">
+    <div class="flex-wrap items-center">
+        <!-- Back Button -->
+        <button on:click={() => {pop()}} class="p-1.5 flex bg-darkMossGreen text-olivine hover:bg-darkGreen transition-colors duration-300 rounded m-auto">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back
+        </button>
     </div>
-    <div>
-        <p>Update Location</p>
-        <form on:submit|preventDefault={updateLocation}>
-            <label for="longitude">Longitude:</label><br>
-            <input type="text" id="longitude" name="longitude" bind:value={longitude}><br>
-            <label for="latitude">Latitude:</label><br>
-            <input type="text" id="latitude" name="latitude" bind:value={latitude}><br>
-            <label for="street_name">Street Name (optional):</label><br>
-            <input type="text" id="street_name" name="street_name" bind:value={streetName}><br>
-            <label for="street_number">Street Number (optional):</label><br>
-            <input type="text" id="street_number" name="street_number" bind:value={streetNumber}><br>
-            <label for="city">City (optional):</label><br>
-            <input type="text" id="city" name="city" bind:value={city}><br>
-            <input type="submit" value="Submit">
-            {#if updateLocationErrors}
-                <p>Something went wrong</p>
-            {/if}
-            {#if isLocationSuccessfullyUpdated}
-                <p>Successfully updated Location!</p>
-            {/if}
-        </form>
+
+    <!-- Location Details and Update Form -->
+    <div class="flex gap-6">
+        <!-- Location Details -->
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+            <h2 class="text-2xl font-bold mb-4">Location Details</h2>
+            <Map mode={MapMode.EditLocation} editedLocationId={params.id} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude}/>
+        </section>
+
+        <!-- Update Location Form -->
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1 space-y-4">
+            <h2 class="text-2xl font-bold mb-4">Update Location</h2>
+            <form on:submit|preventDefault={updateLocation} class="space-y-4">
+                <label for="longitude" class="block text-xl font-semibold mb-2">Longitude:</label>
+                <input type="text" id="longitude" name="longitude" bind:value={longitude}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="latitude" class="block text-xl font-semibold mb-2">Latitude:</label>
+                <input type="text" id="latitude" name="latitude" bind:value={latitude}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="street_name" class="block text-xl font-semibold mb-2">Street Name (optional):</label>
+                <input type="text" id="street_name" name="street_name" bind:value={streetName}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="street_number" class="block text-xl font-semibold mb-2">Street Number (optional):</label>
+                <input type="text" id="street_number" name="street_number" bind:value={streetNumber}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="city" class="block text-xl font-semibold mb-2">City (optional):</label>
+                <input type="text" id="city" name="city" bind:value={city}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <button type="submit"
+                        class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
+                    Submit
+                </button>
+                {#if updateLocationErrors}
+                    <p class="text-red-500">Something went wrong, {updateLocationErrors}</p>
+                {/if}
+            </form>
+            <div class="">
+                <button on:click={() => deleteLocation(params.id)}
+                        class="w-full px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete
+                </button>
+            </div>
+        </section>
     </div>
 </main>

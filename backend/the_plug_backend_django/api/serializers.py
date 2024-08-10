@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
 
 
@@ -11,18 +13,21 @@ class PlugSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         app_user = validated_data.pop('app_user', None)
+        if app_user is None or app_user.plug is not None:
+            raise ValidationError("User already has Plug account.")
         plug = Plug.objects.create(**validated_data)
-        if app_user:
-            app_user.plug = plug
-            app_user.save()
+        plug.app_user = app_user
+        app_user.plug = plug
+        plug.save()
+        app_user.save()
         return plug
 
 
 class AppUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppUser
-        fields = '__all__'
-        write_only_fields = ['password']
+        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', 'username', 'password', 'isPartner', 'isSlanderer', 'plug']
 
 
 class LocationSerializer(serializers.ModelSerializer):

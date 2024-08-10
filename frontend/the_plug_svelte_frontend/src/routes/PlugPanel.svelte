@@ -1,15 +1,16 @@
 <script lang="ts">
-    import type {Drug, DrugOffer, Location} from "../models";
+    import {type Drug, type DrugOffer, type Location, MapMode} from "../models";
     import {link} from 'svelte-spa-router';
     import {onMount} from "svelte";
     import {plug_id} from "../stores";
     import {createDrugOffer, deleteDrugOfferRequest, getPlugDrugOffers} from "../service/drug-offer-service";
     import {getDrugs} from "../service/drug-service";
-    import {createLocation, deleteLocationRequest, getPlugLocations} from "../service/location-service";
+    import {createLocation} from "../service/location-service";
+    import {getNotificationsContext} from "svelte-notifications";
+    import Map from "../lib/Map.svelte";
 
     let drugOffers: DrugOffer[] = [];
     let drugs: Drug[] = [];
-    let locations: Location[] = [];
 
     let drugName: string;
     let gramsInStock: number;
@@ -24,17 +25,20 @@
 
     let addDrugOfferErrors: any;
     let deleteDrugOfferErrors: any;
-    let isDrugOfferSuccessfullyAdded: boolean;
-    let isDrugOfferSuccessfullyDeleted: boolean;
 
     let addLocationErrors: any;
-    let deleteLocationErrors: any;
-    let isLocationSuccessfullyAdded: boolean;
-    let isLocationSuccessfullyDeleted: boolean;
+
+    const { addNotification } = getNotificationsContext();
+
+    const notify = (text: string) => addNotification({
+        text: text,
+        position: 'top-center',
+        type: 'success',
+        removeAfter: 3000
+    });
 
     onMount(async () => {
         drugOffers = await getPlugDrugOffers($plug_id);
-        locations = await getPlugLocations($plug_id);
         drugs = await getDrugs();
     });
 
@@ -42,9 +46,7 @@
         let response = await deleteDrugOfferRequest(drugOfferId);
         if (response === undefined) {
             drugOffers = drugOffers.filter(drugOffer => { return drugOffer.id !== drugOfferId });
-            setTimeout(() => {
-                isDrugOfferSuccessfullyDeleted = true;
-            }, 1500);
+            notify('Successfully deleted Drug Offer!');
         } else {
             deleteDrugOfferErrors = response.body;
         }
@@ -57,24 +59,10 @@
             if (response.status === 201) {
                 event.target.reset();
                 drugOffers = [...drugOffers, response.body];
-                setTimeout(() => {
-                    isDrugOfferSuccessfullyAdded = true;
-                }, 1500);
+                notify('Successfully added Drug Offer!');
             } else {
                 addDrugOfferErrors = response.body;
             }
-        }
-    }
-
-    async function deleteLocation(locationId: number) {
-        let response = await deleteLocationRequest(locationId.toString());
-        if (response === undefined) {
-            locations = locations.filter(location => { return location.id !== locationId });
-            setTimeout(() => {
-                isLocationSuccessfullyDeleted = true;
-            }, 1500);
-        } else {
-            deleteLocationErrors = response.body;
         }
     }
 
@@ -82,10 +70,7 @@
         let response = await createLocation($plug_id, parseFloat(longitude), parseFloat(latitude), streetName, streetNumber, city);
         if (response.status === 201) {
             event.target.reset();
-            locations = [...locations, response.body];
-            setTimeout(() => {
-                isLocationSuccessfullyAdded = true;
-            }, 1500);
+            notify('Successfully added Location!');
         } else {
             addLocationErrors = response.body;
         }
@@ -93,102 +78,103 @@
 
 </script>
 
-<main class="p-4">
-    <div>
-        <p>Your Drug Offers</p>
-        <ul>
+<main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col space-y-6">
+    <div class="flex flex-col md:flex-row gap-6">
+        <!-- Drug Offers Section -->
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+            <h2 class="text-2xl font-bold mb-4">Your Drug Offers</h2>
             {#if drugOffers.length > 0}
-                {#each drugOffers as drugOffer}
-                    <li>{drugs.find(drug => drug.id === drugOffer.drug)?.name}</li>
-                    <li>{drugOffer.grams_in_stock}</li>
-                    <li>{drugOffer.price_per_gram}</li>
-                    <button>
-                        <a use:link={'/drug-offer/' + drugOffer.id}>Edit</a>
-                    </button>
-                    <button on:click={() => deleteDrugOffer(drugOffer.id)}>Delete</button>
-                    {#if deleteDrugOfferErrors}
-                        <p>Something went wrong</p>
-                    {/if}
-                    {#if isDrugOfferSuccessfullyDeleted}
-                        <p>Successfully deleted Drug Offer!</p>
-                    {/if}
-                {/each}
+                <ul class="space-y-4">
+                    {#each drugOffers as drugOffer}
+                        <li class="border border-asparagus p-4 rounded">
+                            <p><strong>Drug:</strong> {drugs.find(drug => drug.id === drugOffer.drug)?.name}</p>
+                            <p><strong>Grams in Stock:</strong> {drugOffer.grams_in_stock}</p>
+                            <p><strong>Price per Gram:</strong> {drugOffer.price_per_gram}</p>
+                            <a use:link={'/drug-offer/' + drugOffer.id}
+                               class="inline-block mt-2 px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
+                                Edit
+                            </a>
+                            <button on:click={() => deleteDrugOffer(drugOffer.id)}
+                                    class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                Delete
+                            </button>
+                            {#if deleteDrugOfferErrors}
+                                <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
+                            {/if}
+                        </li>
+                    {/each}
+                </ul>
             {:else}
                 <p>No Drug Offers from You yet!</p>
             {/if}
-        </ul>
+        </section>
+
+        <!-- Add New Drug Offer Section -->
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+            <h2 class="text-2xl font-bold mb-4">Add New Drug Offer</h2>
+            <form on:submit|preventDefault={createNewDrugOffer} class="space-y-4">
+                <label for="drug" class="block text-xl font-semibold mb-2">Drug Type:</label>
+                <input list="drugs" id="drug" name="drug" bind:value={drugName}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <datalist id="drugs">
+                    {#each drugs as drug}
+                        <option value={drug.name}/>
+                    {/each}
+                </datalist>
+                <label for="grams_in_stock" class="block text-xl font-semibold mb-2">Grams in Stock:</label>
+                <input type="number" id="grams_in_stock" name="grams_in_stock" bind:value={gramsInStock} step="0.01"
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="price_per_gram" class="block text-xl font-semibold mb-2">Price per Gram:</label>
+                <input type="number" id="price_per_gram" name="price_per_gram" bind:value={pricePerGram} step="0.01"
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="description" class="block text-xl font-semibold mb-2">Additional Description:</label>
+                <input type="text" id="description" name="description" bind:value={description}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <button type="submit"
+                        class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
+                    Submit
+                </button>
+                {#if addDrugOfferErrors}
+                    <p class="text-red-500">Something went wrong, {addDrugOfferErrors}</p>
+                {/if}
+            </form>
+        </section>
     </div>
-    <div>
-        <p>Add new Drug Offer</p>
-        <form on:submit|preventDefault={createNewDrugOffer}>
-            <label for="drug">Drug type:</label><br>
-            <input list="drugs" id="drug" name="drug" bind:value={drugName}><br>
-            <datalist id="drugs">
-                {#each drugs as drug}
-                    <option value={drug.name}>
-                {/each}
-            </datalist>
-            <label for="grams_in_stock">Grams in stock:</label><br>
-            <input type="number" id="grams_in_stock" name="grams_in_stock" bind:value={gramsInStock} step="0.01"><br>
-            <label for="price_per_gram">Price per Gram:</label><br>
-            <input type="number" id="price_per_gram" name="price_per_gram" bind:value={pricePerGram} step="0.01"><br>
-            <label for="description">Additional description:</label><br>
-            <input type="text" id="description" name="description" bind:value={description}><br>
-            <input type="submit" value="Submit">
-            {#if addDrugOfferErrors}
-                <p>Something went wrong</p>
-            {/if}
-            {#if isDrugOfferSuccessfullyAdded}
-                <p>Successfully added new Drug Offer!</p>
-            {/if}
-        </form>
-    </div>
-    <div>
-        <p>Your Locations</p>
-        <ul>
-            {#if locations.length > 0}
-                {#each locations as location}
-                    <li>{location.latitude}</li>
-                    <li>{location.longitude}</li>
-                    <li>{location.street_name}</li>
-                    <li>{location.street_number}</li>
-                    <li>{location.city}</li>
-                    <button>
-                        <a use:link={'/location/' + location.id}>Edit</a>
-                    </button>
-                    <button on:click={() => deleteLocation(location.id)}>Delete</button>
-                    {#if deleteLocationErrors}
-                        <p>Something went wrong</p>
-                    {/if}
-                    {#if isLocationSuccessfullyDeleted}
-                        <p>Successfully deleted Location!</p>
-                    {/if}
-                {/each}
-            {:else}
-                <p>No Locations from You yet!</p>
-            {/if}
-        </ul>
-    </div>
-    <div>
-        <p>Add new Location</p>
-        <form on:submit|preventDefault={createNewLocation}>
-            <label for="longitude">Longitude:</label><br>
-            <input type="text" id="longitude" name="longitude" bind:value={longitude}><br>
-            <label for="latitude">Latitude:</label><br>
-            <input type="text" id="latitude" name="latitude" bind:value={latitude}><br>
-            <label for="street_name">Street Name (optional):</label><br>
-            <input type="text" id="street_name" name="street_name" bind:value={streetName}><br>
-            <label for="street_number">Street Number (optional):</label><br>
-            <input type="text" id="street_number" name="street_number" bind:value={streetNumber}><br>
-            <label for="city">City (optional):</label><br>
-            <input type="text" id="city" name="city" bind:value={city}><br>
-            <input type="submit" value="Submit">
-            {#if addLocationErrors}
-                <p>Something went wrong</p>
-            {/if}
-            {#if isLocationSuccessfullyAdded}
-                <p>Successfully added new Location!</p>
-            {/if}
-        </form>
+
+    <!-- Locations Section -->
+    <div class="flex flex-col md:flex-row gap-6">
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+            <h2 class="text-2xl font-bold mb-4">Your Locations</h2>
+            <Map mode={MapMode.AddLocation} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude}/>
+        </section>
+
+        <!-- Add New Location Section -->
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+            <h2 class="text-2xl font-bold mb-4">Add New Location, click on the map to set coordinates!</h2>
+            <form on:submit|preventDefault={createNewLocation} class="space-y-4">
+                <label for="longitude" class="block text-xl font-semibold mb-2">Longitude:</label>
+                <input type="text" id="longitude" name="longitude" bind:value={longitude}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="latitude" class="block text-xl font-semibold mb-2">Latitude:</label>
+                <input type="text" id="latitude" name="latitude" bind:value={latitude}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="street_name" class="block text-xl font-semibold mb-2">Street Name (optional):</label>
+                <input type="text" id="street_name" name="street_name" bind:value={streetName}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="street_number" class="block text-xl font-semibold mb-2">Street Number (optional):</label>
+                <input type="text" id="street_number" name="street_number" bind:value={streetNumber}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="city" class="block text-xl font-semibold mb-2">City (optional):</label>
+                <input type="text" id="city" name="city" bind:value={city}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <button type="submit"
+                        class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
+                    Submit
+                </button>
+                {#if addLocationErrors}
+                    <p class="text-red-500">Something went wrong, {addLocationErrors}</p>
+                {/if}
+            </form>
+        </section>
     </div>
 </main>

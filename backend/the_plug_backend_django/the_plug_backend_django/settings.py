@@ -42,6 +42,15 @@ CORS_ALLOWED_ORIGINS = [
     env('WEB_APP_URL')
 ]
 
+# SMTP Mail service
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = env('EM_ACCOUNT')
+EMAIL_HOST_PASSWORD = env('EM_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -95,10 +104,10 @@ WSGI_APPLICATION = 'the_plug_backend_django.wsgi.application'
 DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env('NAME'),
-        "USER": env('USER'),
-        "PASSWORD": env('PASSWORD'),
-        "HOST": env('HOST'),
+        "NAME": env('DB_NAME'),
+        "USER": env('DB_USER'),
+        "PASSWORD": env('DB_PASSWORD'),
+        "HOST": env('DB_HOST'),
         "PORT": "5432",
     }
 }

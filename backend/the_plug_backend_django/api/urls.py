@@ -27,6 +27,7 @@ urlpatterns = [
     path('drug-offer/drug/<id>/', views.DrugDrugOffers.as_view(), name='drug-drug-offers'),
     path('drug-offer/plug/<id>/', views.PlugDrugOffers.as_view(), name='plug-drug-offers'),
     path('location/plug/<id>/', views.PlugLocations.as_view(), name='plug-locations'),
+    path('new-drug/', views.send_new_drug_request_mail, name='new-drug-request-mail'),
     re_path('login', views.login),
     re_path('register', views.register),
 ]

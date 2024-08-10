@@ -4,9 +4,11 @@ Drug dealing service store based on Beta Reputation System.
 ## Run Locally
 ### Run with Docker
 ### Run backend
-Django, Flask, Phoenix, Gin, Ruby on Rails
+#### Django
+Possibly also Flask, Phoenix, Gin, Ruby on Rails
 ### Run frontend
-React, Vue, Svelte or Ember
+#### Svelte
+Possibly also React, Vue or Ember
 ## Roadmap
 - [ ] build project diagrams
 - [ ] build backend application
