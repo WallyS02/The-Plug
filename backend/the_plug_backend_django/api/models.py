@@ -67,6 +67,7 @@ class Meeting(models.Model):
     user = models.ForeignKey('AppUser', on_delete=models.CASCADE, related_name='meeting')
     isHighOrLowClientSatisfaction = models.CharField(max_length=4, blank=True, default='')
     isHighOrLowPlugSatisfaction = models.CharField(max_length=4, blank=True, default='')
+    location_id = models.IntegerField()
 
     def __str__(self):
         return str(self.id) + ', ' + str(self.date)

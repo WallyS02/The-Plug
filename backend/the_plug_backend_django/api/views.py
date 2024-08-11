@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
@@ -177,11 +177,41 @@ class MeetingCreate(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         meeting_date = request.data.get('date')
+        location_id = request.data.get('location_id')
+
+        if location_id:
+            location = get_object_or_404(Location, pk=location_id)
+            plug = location.plug
+        else:
+            return Response({"error": "Provide location id."}, status=status.HTTP_400_BAD_REQUEST)
 
         if meeting_date:
-            meeting_date = timezone.make_aware(make_naive(datetime.fromisoformat(meeting_date)))
+            try:
+                meeting_date = timezone.make_aware(make_naive(datetime.fromisoformat(meeting_date)))
+            except ValueError:
+                return Response({"error": "Invalid date format."}, status=status.HTTP_400_BAD_REQUEST)
+
             if meeting_date <= timezone.now():
                 return Response({"error": "Meeting date must be in the future."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if plug:
+                how_many_minutes_of_break = 30
+
+                time_window_start = meeting_date - timedelta(minutes=how_many_minutes_of_break)
+                time_window_end = meeting_date + timedelta(minutes=how_many_minutes_of_break)
+
+                overlapping_meetings = Meeting.objects.filter(
+                    chosenoffer__drug_offer__plug=plug,
+                    date__range=(time_window_start, time_window_end)
+                )
+
+                if overlapping_meetings.exists():
+                    return Response({"error": "There is already a meeting within 30 minutes of the provided time."},
+                                    status=status.HTTP_409_CONFLICT)
+            else:
+                return Response({"error": "Provide plug id."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Provide meeting date."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -194,9 +224,38 @@ class MeetingCreate(generics.CreateAPIView):
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class MeetingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    class MeetingWithPlugInfoSerializer(MeetingSerializer):
+        username = serializers.CharField()
+        plug_id = serializers.IntegerField()
+
     queryset = Meeting.objects.all()
-    serializer_class = MeetingSerializer
+    serializer_class = MeetingWithPlugInfoSerializer
     lookup_field = 'pk'
+
+    def get(self, request, *args, **kwargs):
+        class MeetingWithPlugInfo(Meeting):
+            username = str()
+            plug_id = int()
+
+        meeting_id = kwargs.get('pk')
+        meeting = get_object_or_404(Meeting, pk=meeting_id)
+
+        meeting_with_plug_info = MeetingWithPlugInfo()
+        meeting_with_plug_info.id = meeting.id
+        meeting_with_plug_info.isAcceptedByPlug = meeting.isAcceptedByPlug
+        meeting_with_plug_info.date = meeting.date
+        meeting_with_plug_info.user = meeting.user
+        meeting_with_plug_info.isHighOrLowClientSatisfaction = meeting.isHighOrLowClientSatisfaction
+        meeting_with_plug_info.isHighOrLowPlugSatisfaction = meeting.isHighOrLowPlugSatisfaction
+        meeting_with_plug_info.location_id = meeting.location_id
+
+        chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
+
+        meeting_with_plug_info.username = chosen_offer.drug_offer.plug.app_user.username
+        meeting_with_plug_info.plug_id = chosen_offer.drug_offer.plug.id
+
+        serializer = self.get_serializer(meeting_with_plug_info)
+        return Response(serializer.data)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -234,7 +293,6 @@ class ChosenOfferCreate(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -390,6 +448,43 @@ class PlugLocations(generics.ListAPIView):
             longitude__lte=west,
             longitude__gte=east
         )
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class ChosenOfferWithDrugAndOfferInfoView(generics.ListAPIView):
+    class ChosenOfferWithDrugAndOfferInfoSerializer(ChosenOfferSerializer):
+        name = serializers.CharField()
+        wikipedia_link = serializers.CharField()
+        price_per_gram = serializers.FloatField()
+
+    serializer_class = ChosenOfferWithDrugAndOfferInfoSerializer
+
+    def get_queryset(self):
+        class ChosenOfferWithDrugAndOfferInfo(ChosenOffer):
+            name = str()
+            wikipedia_link = str()
+            price_per_gram = float()
+
+        meeting_id = self.kwargs.get('id')
+        meeting = get_object_or_404(Meeting, pk=meeting_id)
+        chosen_offers = ChosenOffer.objects.filter(meeting=meeting)
+
+        chosen_offers_with_drug_and_offer_info = []
+
+        for chosen_offer in chosen_offers:
+            chosen_offer_with_drug_and_offer_info = ChosenOfferWithDrugAndOfferInfo()
+            chosen_offer_with_drug_and_offer_info.number_of_grams = chosen_offer.number_of_grams
+            chosen_offer_with_drug_and_offer_info.drug_offer = chosen_offer.drug_offer
+            chosen_offer_with_drug_and_offer_info.meeting = chosen_offer.meeting
+
+            chosen_offer_with_drug_and_offer_info.name = chosen_offer.drug_offer.drug.name
+            chosen_offer_with_drug_and_offer_info.wikipedia_link = chosen_offer.drug_offer.drug.wikipedia_link
+            chosen_offer_with_drug_and_offer_info.price_per_gram = chosen_offer.drug_offer.price_per_gram
+
+            chosen_offers_with_drug_and_offer_info.append(chosen_offer_with_drug_and_offer_info)
+
+        return chosen_offers_with_drug_and_offer_info
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
