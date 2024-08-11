@@ -112,10 +112,10 @@
                 <p class="text-lg mb-4">Change username or password</p>
                 <form on:submit|preventDefault={handleChange} class="space-y-4">
                     <label for="username" class="block text-xl font-semibold mb-2">Username:</label>
-                    <input type="text" id="username" name="username" bind:value={usernameValue}
+                    <input type="text" id="username" name="username" bind:value={usernameValue} required
                            class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                     <label for="password" class="block text-xl font-semibold mb-2">Password:</label>
-                    <input type="password" id="password" name="password" bind:value={password}
+                    <input type="password" id="password" name="password" bind:value={password} required
                            class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                     <button type="submit"
                             class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">

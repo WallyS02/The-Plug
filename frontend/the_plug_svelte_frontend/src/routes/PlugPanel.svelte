@@ -89,7 +89,7 @@
                         <li class="border border-asparagus p-4 rounded">
                             <p><strong>Drug:</strong> {drugs.find(drug => drug.id === drugOffer.drug)?.name}</p>
                             <p><strong>Grams in Stock:</strong> {drugOffer.grams_in_stock}</p>
-                            <p><strong>Price per Gram:</strong> {drugOffer.price_per_gram}</p>
+                            <p><strong>Price per Gram (in US dollars $):</strong> {drugOffer.price_per_gram}</p>
                             <a use:link={'/drug-offer/' + drugOffer.id}
                                class="inline-block mt-2 px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
                                 Edit
@@ -114,7 +114,7 @@
             <h2 class="text-2xl font-bold mb-4">Add New Drug Offer</h2>
             <form on:submit|preventDefault={createNewDrugOffer} class="space-y-4">
                 <label for="drug" class="block text-xl font-semibold mb-2">Drug Type:</label>
-                <input list="drugs" id="drug" name="drug" bind:value={drugName}
+                <input list="drugs" id="drug" name="drug" bind:value={drugName} required
                        class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                 <datalist id="drugs">
                     {#each drugs as drug}
@@ -122,10 +122,10 @@
                     {/each}
                 </datalist>
                 <label for="grams_in_stock" class="block text-xl font-semibold mb-2">Grams in Stock:</label>
-                <input type="number" id="grams_in_stock" name="grams_in_stock" bind:value={gramsInStock} step="0.01"
+                <input type="number" id="grams_in_stock" name="grams_in_stock" bind:value={gramsInStock} step="0.01" min=0.01 required
                        class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-                <label for="price_per_gram" class="block text-xl font-semibold mb-2">Price per Gram:</label>
-                <input type="number" id="price_per_gram" name="price_per_gram" bind:value={pricePerGram} step="0.01"
+                <label for="price_per_gram" class="block text-xl font-semibold mb-2">Price per Gram (in US dollars $):</label>
+                <input type="number" id="price_per_gram" name="price_per_gram" bind:value={pricePerGram} step="0.01" min=0.01 required
                        class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                 <label for="description" class="block text-xl font-semibold mb-2">Additional Description:</label>
                 <input type="text" id="description" name="description" bind:value={description}
@@ -153,10 +153,10 @@
             <h2 class="text-2xl font-bold mb-4">Add New Location, click on the map to set coordinates!</h2>
             <form on:submit|preventDefault={createNewLocation} class="space-y-4">
                 <label for="longitude" class="block text-xl font-semibold mb-2">Longitude:</label>
-                <input type="text" id="longitude" name="longitude" bind:value={longitude}
+                <input type="text" id="longitude" name="longitude" bind:value={longitude} required
                        class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                 <label for="latitude" class="block text-xl font-semibold mb-2">Latitude:</label>
-                <input type="text" id="latitude" name="latitude" bind:value={latitude}
+                <input type="text" id="latitude" name="latitude" bind:value={latitude} required
                        class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                 <label for="street_name" class="block text-xl font-semibold mb-2">Street Name (optional):</label>
                 <input type="text" id="street_name" name="street_name" bind:value={streetName}

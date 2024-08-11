@@ -37,6 +37,7 @@ export interface Meeting {
 
 export interface ChosenOffer {
     id: string;
+    no_of_grams: number;
     meeting: number;
     drug_offer: number;
 }

@@ -73,15 +73,16 @@
             }
         }
 
+        plugs = Array.from(
+            new Map(
+                locations.map((location) => [location.plug + location.username, {
+                    id: location.plug,
+                    username: location.username
+                }])
+            ).values()
+        );
+
         if (reloadFilterChoices) {
-            plugs = Array.from(
-                new Map(
-                    locations.map((location) => [location.plug + location.username, {
-                        id: location.plug,
-                        username: location.username
-                    }])
-                ).values()
-            );
             chosenPlugs = [];
 
             drugs = await getDrugs();
@@ -165,7 +166,7 @@
                     if ($account_id !== '' && $username !== '' && $token !== '') {
                         requestMeetingButton = `<br> <a
                             class="inline-block mt-2 px-4 py-2 bg-olivine text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine"
-                            href="/#/request-meeting/${location.plug}"
+                            href="/#/request-meeting/${location.id}"
                         >
                             Request Meeting
                         </a>`;
@@ -191,13 +192,13 @@
                             ${generateStars(location.rating!)}
                         </div>
                         ${ratingInfo}
-                        ${offeredDrugsInfo}
                         <br> <a
                             class="hover:underline"
                             href="/#/rating-info"
                         >
                             See more about out rating system
                         </a>
+                        ${offeredDrugsInfo}
                         ${requestMeetingButton}
                     `;
                     break;
@@ -335,7 +336,7 @@
 
 {#if mode === MapMode.Browse}
     <div class="p-4 bg-darkMossGreen rounded-lg mb-4 text-olivine">
-        <label for="drug" class="block text-xl font-semibold mb-2">Select Drug You need from the list:</label>
+        <label for="drug" class="block text-xl font-semibold mb-2">Select Drugs You need from the list:</label>
         <input list="drugs" id="drug" name="drug" bind:value={chosenDrugName} on:input={addToChosenDrug}
                class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
         <datalist id="drugs">
@@ -347,7 +348,7 @@
             <p class="text-red-600 mt-2">{drugSelectionErrors}</p>
         {/if}
 
-        <label for="plug" class="block text-xl font-semibold mb-2 mt-4">Select Plug You want by typing and choosing from the list:</label>
+        <label for="plug" class="block text-xl font-semibold mb-2 mt-4">Select Plugs You want by typing and choosing from the list:</label>
         <input list="plugs" id="plug" name="plug" bind:value={chosenPlugUsername} on:input={addToChosenPlug}
                class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
         <datalist id="plugs">

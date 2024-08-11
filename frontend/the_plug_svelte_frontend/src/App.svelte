@@ -26,7 +26,7 @@
     '/drug-offer/:id': DrugEdit,
     '/location/:id': LocationEdit,
     '/meeting/:id': MeetingPanel,
-    '/request-meeting/:plug-id': RequestMeeting,
+    '/request-meeting/:id': RequestMeeting,
     '*': NotFound,
   }
 </script>

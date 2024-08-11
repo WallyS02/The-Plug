@@ -91,10 +91,10 @@
             <h2 class="text-2xl font-bold mb-4">Update Location</h2>
             <form on:submit|preventDefault={updateLocation} class="space-y-4">
                 <label for="longitude" class="block text-xl font-semibold mb-2">Longitude:</label>
-                <input type="text" id="longitude" name="longitude" bind:value={longitude}
+                <input type="text" id="longitude" name="longitude" bind:value={longitude} required
                        class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                 <label for="latitude" class="block text-xl font-semibold mb-2">Latitude:</label>
-                <input type="text" id="latitude" name="latitude" bind:value={latitude}
+                <input type="text" id="latitude" name="latitude" bind:value={latitude} required
                        class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
                 <label for="street_name" class="block text-xl font-semibold mb-2">Street Name (optional):</label>
                 <input type="text" id="street_name" name="street_name" bind:value={streetName}
