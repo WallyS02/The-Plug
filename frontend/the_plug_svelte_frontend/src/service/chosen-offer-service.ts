@@ -18,3 +18,16 @@ export async function createChosenOfferRequest(drugOfferId: string, meetingId: s
 
     return await sendRequest('chosen-offer/', requestOptions);
 }
+
+export async function getMeetingChosenOffersWithDrugAndOfferInfo(meetingId: string): Promise<any> {
+    const requestOptions: {} = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${tokenValue}`
+        }
+    }
+
+    let response = await sendRequest('chosen-offer/meeting/' + meetingId + '/', requestOptions);
+    return response.body;
+}

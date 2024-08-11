@@ -31,13 +31,14 @@ export interface Meeting {
     isHighOrLowClientSatisfaction: string;
     isHighOrLowPlugSatisfaction: string;
     date: Date;
+    location_id: string;
     user: number;
     //chosen_offer: ChosenOffer[];
 }
 
 export interface ChosenOffer {
     id: string;
-    no_of_grams: number;
+    number_of_grams: number;
     meeting: number;
     drug_offer: number;
 }
@@ -63,4 +64,5 @@ export enum MapMode {
     Browse,
     AddLocation,
     EditLocation,
+    MeetingPanel
 }

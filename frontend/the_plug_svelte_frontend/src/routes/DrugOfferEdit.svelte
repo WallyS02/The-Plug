@@ -1,6 +1,5 @@
 <script lang="ts">
     import type {Drug, DrugOffer} from "../models";
-    import {onMount} from "svelte";
     import {plug_id} from "../stores";
     import {getDrugs} from "../service/drug-service";
     import {
@@ -33,17 +32,17 @@
         removeAfter: 3000
     });
 
-    onMount(async () => {
+    async function prepareData() {
         drugOffer = await getDrugOffer(params.id);
         drugs = await getDrugs();
         let drugMaybeUndefined = drugs.find(drug => drug.id === drugOffer.drug);
         if (drugMaybeUndefined)
             drug = drugMaybeUndefined;
-            drugName = drug.name;
-            gramsInStock = drugOffer.grams_in_stock;
-            pricePerGram = drugOffer.price_per_gram;
-            description = drugOffer.description;
-    });
+        drugName = drug.name;
+        gramsInStock = drugOffer.grams_in_stock;
+        pricePerGram = drugOffer.price_per_gram;
+        description = drugOffer.description;
+    }
 
     async function deleteDrugOffer(drugOfferId: string) {
         let response = await deleteDrugOfferRequest(drugOfferId);
@@ -69,65 +68,76 @@
 </script>
 
 <main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col gap-6">
-    <div class="flex-wrap items-center">
-        <!-- Back Button -->
-        <button on:click={() => {pop()}} class="p-1.5 flex bg-darkMossGreen text-olivine hover:bg-darkGreen transition-colors duration-300 rounded m-auto">
-            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Back
-        </button>
-    </div>
-
-    <!-- Drug Offer Details -->
-    <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-bold mb-4">Drug Offer Details</h2>
-        <div class="space-y-4">
-            <p class="text-xl"><strong>ID:</strong> {drugOffer.id}</p>
-            <p class="text-xl"><strong>Drug Name:</strong> {drug.name}</p>
-            <p class="text-xl">
-                <strong>Wikipedia Link:</strong> <a href="{drug.wikipedia_link}" class="text-olivine hover:underline">{drug.wikipedia_link}</a>
-            </p>
-            <p class="text-xl"><strong>Grams in Stock:</strong> {drugOffer.grams_in_stock}</p>
-            <p class="text-xl"><strong>Price per Gram (in US dollars $):</strong> {drugOffer.price_per_gram}</p>
-            <button on:click={() => deleteDrugOffer(drugOffer.id)}
-                    class="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                Delete
-            </button>
-            {#if deleteDrugOfferErrors}
-                <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
-            {/if}
+    {#await prepareData()}
+        <div class="flex flex-col justify-center items-center h-screen">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-olivine mb-4"></div>
+            <p class="text-4xl font-bold text-darkMossGreen">Loading...</p>
         </div>
-    </section>
-
-    <!-- Update Drug Offer Form -->
-    <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-bold mb-4">Update Drug Offer</h2>
-        <form on:submit|preventDefault={updateDrugOffer} class="space-y-4">
-            <label for="drug" class="block text-xl font-semibold mb-2">Drug Type:</label>
-            <input list="drugs" id="drug" name="drug" bind:value={drugName} required
-                   class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-            <datalist id="drugs">
-                {#each drugs as drug}
-                    <option value={drug.name}/>
-                {/each}
-            </datalist>
-            <label for="grams_in_stock" class="block text-xl font-semibold mb-2">Grams in Stock:</label>
-            <input type="number" id="grams_in_stock" name="grams_in_stock" bind:value={gramsInStock} step="0.01" min=0.01 required
-                   class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-            <label for="price_per_gram" class="block text-xl font-semibold mb-2">Price per Gram (in US dollars $):</label>
-            <input type="number" id="price_per_gram" name="price_per_gram" bind:value={pricePerGram} step="0.01" min=0.01 required
-                   class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-            <label for="description" class="block text-xl font-semibold mb-2">Additional Description:</label>
-            <input type="text" id="description" name="description" bind:value={description}
-                   class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-            <button type="submit"
-                    class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
-                Submit
+    {:then value}
+        <div class="flex-wrap items-center">
+            <!-- Back Button -->
+            <button on:click={() => {pop()}} class="p-1.5 flex bg-darkMossGreen text-olivine hover:bg-darkGreen transition-colors duration-300 rounded m-auto">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back
             </button>
-            {#if updateDrugOfferErrors}
-                <p class="text-red-500">Something went wrong, {updateDrugOfferErrors}</p>
-            {/if}
-        </form>
-    </section>
+        </div>
+
+        <!-- Drug Offer Details -->
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold mb-4">Drug Offer Details</h2>
+            <div class="space-y-4">
+                <p class="text-xl"><strong>ID:</strong> {drugOffer.id}</p>
+                <p class="text-xl"><strong>Drug Name:</strong> {drug.name}</p>
+                <p class="text-xl">
+                    <strong>Wikipedia Link:</strong> <a href="{drug.wikipedia_link}" class="text-olivine hover:underline">{drug.wikipedia_link}</a>
+                </p>
+                <p class="text-xl"><strong>Grams in Stock:</strong> {drugOffer.grams_in_stock}</p>
+                <p class="text-xl"><strong>Price per Gram (in US dollars $):</strong> {drugOffer.price_per_gram}</p>
+                <button on:click={() => deleteDrugOffer(drugOffer.id)}
+                        class="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete
+                </button>
+                {#if deleteDrugOfferErrors}
+                    <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
+                {/if}
+            </div>
+        </section>
+
+        <!-- Update Drug Offer Form -->
+        <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold mb-4">Update Drug Offer</h2>
+            <form on:submit|preventDefault={updateDrugOffer} class="space-y-4">
+                <label for="drug" class="block text-xl font-semibold mb-2">Drug Type:</label>
+                <input list="drugs" id="drug" name="drug" bind:value={drugName} required
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <datalist id="drugs">
+                    {#each drugs as drug}
+                        <option value={drug.name}/>
+                    {/each}
+                </datalist>
+                <label for="grams_in_stock" class="block text-xl font-semibold mb-2">Grams in Stock:</label>
+                <input type="number" id="grams_in_stock" name="grams_in_stock" bind:value={gramsInStock} step="0.01" min=0.01 required
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="price_per_gram" class="block text-xl font-semibold mb-2">Price per Gram (in US dollars $):</label>
+                <input type="number" id="price_per_gram" name="price_per_gram" bind:value={pricePerGram} step="0.01" min=0.01 required
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <label for="description" class="block text-xl font-semibold mb-2">Additional Description:</label>
+                <input type="text" id="description" name="description" bind:value={description}
+                       class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+                <button type="submit"
+                        class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
+                    Submit
+                </button>
+                {#if updateDrugOfferErrors}
+                    <p class="text-red-500">Something went wrong, {updateDrugOfferErrors}</p>
+                {/if}
+            </form>
+        </section>
+    {:catch error}
+        <div class="flex justify-center items-center h-screen">
+            <p class="text-4xl font-bold text-red-600">Something went wrong!: {error.message}</p>
+        </div>
+    {/await}
 </main>
