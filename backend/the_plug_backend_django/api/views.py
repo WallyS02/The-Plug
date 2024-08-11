@@ -1,6 +1,10 @@
+from datetime import datetime
+
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
+from django.utils.timezone import make_naive
 from rest_framework import generics, status, serializers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -171,6 +175,21 @@ class MeetingCreate(generics.CreateAPIView):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
 
+    def post(self, request, *args, **kwargs):
+        meeting_date = request.data.get('date')
+
+        if meeting_date:
+            meeting_date = timezone.make_aware(make_naive(datetime.fromisoformat(meeting_date)))
+            if meeting_date <= timezone.now():
+                return Response({"error": "Meeting date must be in the future."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -192,6 +211,30 @@ class ChosenOfferList(generics.ListAPIView):
 class ChosenOfferCreate(generics.CreateAPIView):
     queryset = ChosenOffer.objects.all()
     serializer_class = ChosenOfferSerializer
+
+    def post(self, request, *args, **kwargs):
+        number_of_grams = int(request.data['number_of_grams'])
+        drug_offer_id = request.data['drug_offer']
+
+        try:
+            drug_offer = DrugOffer.objects.get(id=drug_offer_id)
+        except DrugOffer.DoesNotExist:
+            return Response({"error": "DrugOffer not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if number_of_grams > drug_offer.grams_in_stock:
+            return Response({"error": "Not enough grams in stock."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            drug_offer.grams_in_stock -= number_of_grams
+            drug_offer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -284,12 +327,35 @@ class DrugDrugOffers(generics.ListAPIView):
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class PlugDrugOffers(generics.ListAPIView):
-    serializer_class = DrugOfferSerializer
+    class PlugDrugOffersPlusNamesSerializer(DrugOfferSerializer):
+        name = serializers.CharField()
+
+    serializer_class = PlugDrugOffersPlusNamesSerializer
 
     def get_queryset(self):
+        class PlugDrugOffersPlusNames(DrugOffer):
+            name = str()
+
         plug_id = self.kwargs.get('id')
         plug = get_object_or_404(Plug, pk=plug_id)
-        return DrugOffer.objects.filter(plug=plug)
+        drug_offers = DrugOffer.objects.filter(plug=plug)
+
+        drug_offers_with_names = []
+
+        for drug_offer in drug_offers:
+            drug_offer_with_name = PlugDrugOffersPlusNames()
+            drug_offer_with_name.id = drug_offer.id
+            drug_offer_with_name.grams_in_stock = drug_offer.grams_in_stock
+            drug_offer_with_name.price_per_gram = drug_offer.price_per_gram
+            drug_offer_with_name.description = drug_offer.description
+            drug_offer_with_name.drug = drug_offer.drug
+            drug_offer_with_name.plug = drug_offer.plug
+
+            drug_offer_with_name.name = drug_offer.drug.name
+
+            drug_offers_with_names.append(drug_offer_with_name)
+
+        return drug_offers_with_names
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])

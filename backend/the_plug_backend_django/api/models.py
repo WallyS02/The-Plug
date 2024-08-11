@@ -73,6 +73,7 @@ class Meeting(models.Model):
 
 
 class ChosenOffer(models.Model):
+    number_of_grams = models.IntegerField()
     drug_offer = models.ForeignKey('DrugOffer', on_delete=models.CASCADE)
     meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
 
