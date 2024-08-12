@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import make_naive
-from rest_framework import generics, status, serializers
+from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -13,9 +13,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.core.mail import send_mail
 
+from .currencies import currencies
 from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
 from .serializers import AppUserSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, \
-    ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer
+    ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer, PlugDrugOffersPlusNamesSerializer, \
+    ChosenOfferWithDrugAndOfferInfoSerializer, MeetingWithPlugInfoSerializer, \
+    LocationPlusPlugUsernameAndRatingSerializer, MeetingWithPlugInfoAndChosenOfferNamesSerializer
 
 import environ
 
@@ -39,9 +42,34 @@ class AppUserRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AppUserSerializer
     lookup_field = 'pk'
 
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get('pk')
+        user = AppUser.objects.get(pk=user_id)
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+
     def patch(self, request, *args, **kwargs):
+        user_id = kwargs.get('pk')
+        user = AppUser.objects.get(pk=user_id)
+
+        if user != request.user:
+            return Response({"error": "Only User assigned to this User can update it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
         request.data['password'] = make_password(request.data['password'])
-        return self.partial_update(request, *args, **kwargs)
+
+        return super().patch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        user_id = kwargs.get('pk')
+        user = AppUser.objects.get(pk=user_id)
+
+        if user != request.user:
+            return Response({"error": "Only User assigned to this User can delete it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        return super().delete(request, *args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -65,13 +93,35 @@ class PlugRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PlugSerializer
     lookup_field = 'pk'
 
+    def get(self, request, *args, **kwargs):
+        plug_id = kwargs.get('pk')
+        plug = Plug.objects.get(pk=plug_id)
+
+        serializer = self.get_serializer(plug)
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        plug_id = kwargs.get('pk')
+        plug = Plug.objects.get(pk=plug_id)
+
+        if plug.app_user != request.user:
+            return Response({"error": "Only User assigned to this Plug can update it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        return super().patch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        location_id = kwargs.get('pk')
+        location = Location.objects.get(pk=location_id)
+
+        if location.plug.app_user != request.user:
+            return Response({"error": "Only User assigned to this Plug can delete it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        return super().delete(request, *args, **kwargs)
+
 
 class LocationList(generics.ListAPIView):
-    class LocationPlusPlugUsernameAndRatingSerializer(LocationSerializer):
-        username = serializers.CharField()
-        rating = serializers.FloatField()
-        offered_drugs = serializers.ListField(child=serializers.CharField())
-
     serializer_class = LocationPlusPlugUsernameAndRatingSerializer
 
     def get_queryset(self):
@@ -94,16 +144,7 @@ class LocationList(generics.ListAPIView):
         except ValueError:
             return Location.objects.none()
 
-        class LocationPlusPlugUsernameAndRating(Location):
-            username = str()
-            rating = float()
-            offered_drugs = []
-
-        def map_to_id(drug_offer):
-            return drug_offer.drug_id
-
         q = Q()
-
         q &= Q(latitude__lte=north)
         q &= Q(latitude__gte=south)
         q &= Q(longitude__lte=west)
@@ -111,7 +152,6 @@ class LocationList(generics.ListAPIView):
 
         if plug_id != '':
             plug = get_object_or_404(Plug, pk=plug_id)
-
             q &= ~Q(plug=plug)
 
         if drugs:
@@ -120,31 +160,7 @@ class LocationList(generics.ListAPIView):
         if plugs:
             q &= Q(plug__in=plugs)
 
-        locations = Location.objects.filter(q).distinct()
-
-        locations_plus_plug_usernames_and_ratings = []
-
-        for location in locations:
-            location_plus_plug_username_and_rating = LocationPlusPlugUsernameAndRating()
-            location_plus_plug_username_and_rating.id = location.id
-            location_plus_plug_username_and_rating.longitude = location.longitude
-            location_plus_plug_username_and_rating.latitude = location.latitude
-            location_plus_plug_username_and_rating.street_name = location.street_name
-            location_plus_plug_username_and_rating.street_number = location.street_number
-            location_plus_plug_username_and_rating.city = location.city
-            location_plus_plug_username_and_rating.plug = location.plug
-            location_plus_plug_username_and_rating.username = location.plug.app_user.username
-            location_plus_plug_username_and_rating.rating = location.plug.rating
-
-            drug_offers = DrugOffer.objects.filter(plug=location.plug)
-            drug_offers = list(map(map_to_id, drug_offers))
-            drugs = Drug.objects.filter(id__in=drug_offers)
-
-            location_plus_plug_username_and_rating.offered_drugs = drugs
-
-            locations_plus_plug_usernames_and_ratings.append(location_plus_plug_username_and_rating)
-
-        return locations_plus_plug_usernames_and_ratings
+        return Location.objects.filter(q).distinct()
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -161,12 +177,32 @@ class LocationRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
     lookup_field = 'pk'
 
+    def get(self, request, *args, **kwargs):
+        location_id = kwargs.get('pk')
+        location = Location.objects.get(pk=location_id)
 
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class MeetingList(generics.ListAPIView):
-    queryset = Meeting.objects.all()
-    serializer_class = MeetingSerializer
+        serializer = self.get_serializer(location)
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        location_id = kwargs.get('pk')
+        location = Location.objects.get(pk=location_id)
+
+        if location.plug.app_user != request.user:
+            return Response({"error": "Only User assigned to this Location can update it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        return super().patch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        location_id = kwargs.get('pk')
+        location = Location.objects.get(pk=location_id)
+
+        if location.plug.app_user != request.user:
+            return Response({"error": "Only User assigned to this Location can delete it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        return super().delete(request, *args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -195,10 +231,8 @@ class MeetingCreate(generics.CreateAPIView):
                 return Response({"error": "Meeting date must be in the future."}, status=status.HTTP_400_BAD_REQUEST)
 
             if plug:
-                how_many_minutes_of_break = 30
-
-                time_window_start = meeting_date - timedelta(minutes=how_many_minutes_of_break)
-                time_window_end = meeting_date + timedelta(minutes=how_many_minutes_of_break)
+                time_window_start = meeting_date - timedelta(minutes=plug.minimal_break_between_meetings_in_minutes)
+                time_window_end = meeting_date + timedelta(minutes=plug.minimal_break_between_meetings_in_minutes)
 
                 overlapping_meetings = Meeting.objects.filter(
                     chosenoffer__drug_offer__plug=plug,
@@ -223,46 +257,25 @@ class MeetingCreate(generics.CreateAPIView):
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class MeetingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    class MeetingWithPlugInfoSerializer(MeetingSerializer):
-        username = serializers.CharField()
-        plug_id = serializers.IntegerField()
-
+class MeetingRetrieve(generics.RetrieveAPIView):
     queryset = Meeting.objects.all()
     serializer_class = MeetingWithPlugInfoSerializer
     lookup_field = 'pk'
 
     def get(self, request, *args, **kwargs):
-        class MeetingWithPlugInfo(Meeting):
-            username = str()
-            plug_id = int()
-
         meeting_id = kwargs.get('pk')
         meeting = get_object_or_404(Meeting, pk=meeting_id)
 
-        meeting_with_plug_info = MeetingWithPlugInfo()
-        meeting_with_plug_info.id = meeting.id
-        meeting_with_plug_info.isAcceptedByPlug = meeting.isAcceptedByPlug
-        meeting_with_plug_info.date = meeting.date
-        meeting_with_plug_info.user = meeting.user
-        meeting_with_plug_info.isHighOrLowClientSatisfaction = meeting.isHighOrLowClientSatisfaction
-        meeting_with_plug_info.isHighOrLowPlugSatisfaction = meeting.isHighOrLowPlugSatisfaction
-        meeting_with_plug_info.location_id = meeting.location_id
+        chosen_offers = ChosenOffer.objects.filter(meeting=meeting)
 
-        chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
+        chosen_offer = chosen_offers.first()
 
-        meeting_with_plug_info.username = chosen_offer.drug_offer.plug.app_user.username
-        meeting_with_plug_info.plug_id = chosen_offer.drug_offer.plug.id
+        if chosen_offer.drug_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
+            return Response({"error": "Only Users assigned to this Meeting can retrieve it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = self.get_serializer(meeting_with_plug_info)
+        serializer = self.get_serializer(meeting)
         return Response(serializer.data)
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class ChosenOfferList(generics.ListAPIView):
-    queryset = ChosenOffer.objects.all()
-    serializer_class = ChosenOfferSerializer
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -297,14 +310,6 @@ class ChosenOfferCreate(generics.CreateAPIView):
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class ChosenOfferRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = ChosenOffer.objects.all()
-    serializer_class = ChosenOfferSerializer
-    lookup_field = 'pk'
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
 class DrugOfferList(generics.ListAPIView):
     queryset = DrugOffer.objects.all()
     serializer_class = DrugOfferSerializer
@@ -324,6 +329,39 @@ class DrugOfferRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DrugOfferSerializer
     lookup_field = 'pk'
 
+    def get(self, request, *args, **kwargs):
+        drug_offer_id = kwargs.get('pk')
+        drug_offer = DrugOffer.objects.get(pk=drug_offer_id)
+
+        if drug_offer.plug.app_user != request.user:
+            return Response({"error": "Only Users assigned to this Drug Offer can retrieve it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = self.get_serializer(drug_offer)
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        drug_offer_id = kwargs.get('pk')
+        drug_offer = DrugOffer.objects.get(pk=drug_offer_id)
+
+        if drug_offer.plug.app_user != request.user:
+            return Response({"error": "Only Users assigned to this Drug Offer can update it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        if not any(f'{currency["name"]} ({currency["symbol"]})' == request.data['currency'] for currency in currencies):
+            return Response({"error": "Currency is not in supported currencies."}, status=status.HTTP_400_BAD_REQUEST)
+        return super().patch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        drug_offer_id = kwargs.get('pk')
+        drug_offer = DrugOffer.objects.get(pk=drug_offer_id)
+
+        if drug_offer.plug.app_user != request.user:
+            return Response({"error": "Only Users assigned to this Drug Offer can delete it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        return super().delete(request, *args, **kwargs)
+
 
 class DrugList(generics.ListAPIView):
     queryset = Drug.objects.all()
@@ -332,27 +370,35 @@ class DrugList(generics.ListAPIView):
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class DrugCreate(generics.CreateAPIView):
-    queryset = Drug.objects.all()
-    serializer_class = DrugSerializer
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-class DrugRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Drug.objects.all()
-    serializer_class = DrugSerializer
-    lookup_field = 'pk'
-
-
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
 class UserMeetings(generics.ListAPIView):
-    serializer_class = MeetingSerializer
+    serializer_class = MeetingWithPlugInfoAndChosenOfferNamesSerializer
 
     def get_queryset(self):
         user = self.request.user
-        return Meeting.objects.filter(user=user)
+        meetings = Meeting.objects.filter(user=user)
+        meeting = meetings.first()
+        if meeting and meeting.user == user:
+            return meetings
+        else:
+            return Meeting.objects.none()
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class PlugMeetings(generics.ListAPIView):
+    serializer_class = MeetingWithPlugInfoAndChosenOfferNamesSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        plug_id = self.kwargs.get('id')
+        meetings = Meeting.objects.filter(chosenoffer__drug_offer__plug__id=plug_id).distinct()
+
+        if meetings.exists():
+            meeting = meetings.first()
+            plug = Plug.objects.filter(drugoffer__chosenoffer__meeting=meeting).first()
+            if plug and plug.app_user == user:
+                return meetings
+        return Meeting.objects.none()
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -385,35 +431,12 @@ class DrugDrugOffers(generics.ListAPIView):
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class PlugDrugOffers(generics.ListAPIView):
-    class PlugDrugOffersPlusNamesSerializer(DrugOfferSerializer):
-        name = serializers.CharField()
-
     serializer_class = PlugDrugOffersPlusNamesSerializer
 
     def get_queryset(self):
-        class PlugDrugOffersPlusNames(DrugOffer):
-            name = str()
-
         plug_id = self.kwargs.get('id')
         plug = get_object_or_404(Plug, pk=plug_id)
-        drug_offers = DrugOffer.objects.filter(plug=plug)
-
-        drug_offers_with_names = []
-
-        for drug_offer in drug_offers:
-            drug_offer_with_name = PlugDrugOffersPlusNames()
-            drug_offer_with_name.id = drug_offer.id
-            drug_offer_with_name.grams_in_stock = drug_offer.grams_in_stock
-            drug_offer_with_name.price_per_gram = drug_offer.price_per_gram
-            drug_offer_with_name.description = drug_offer.description
-            drug_offer_with_name.drug = drug_offer.drug
-            drug_offer_with_name.plug = drug_offer.plug
-
-            drug_offer_with_name.name = drug_offer.drug.name
-
-            drug_offers_with_names.append(drug_offer_with_name)
-
-        return drug_offers_with_names
+        return DrugOffer.objects.filter(plug=plug)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -453,42 +476,118 @@ class PlugLocations(generics.ListAPIView):
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class ChosenOfferWithDrugAndOfferInfoView(generics.ListAPIView):
-    class ChosenOfferWithDrugAndOfferInfoSerializer(ChosenOfferSerializer):
-        name = serializers.CharField()
-        wikipedia_link = serializers.CharField()
-        price_per_gram = serializers.FloatField()
-
     serializer_class = ChosenOfferWithDrugAndOfferInfoSerializer
 
     def get_queryset(self):
-        class ChosenOfferWithDrugAndOfferInfo(ChosenOffer):
-            name = str()
-            wikipedia_link = str()
-            price_per_gram = float()
-
         meeting_id = self.kwargs.get('id')
         meeting = get_object_or_404(Meeting, pk=meeting_id)
+
         chosen_offers = ChosenOffer.objects.filter(meeting=meeting)
 
-        chosen_offers_with_drug_and_offer_info = []
+        chosen_offer = chosen_offers.first()
 
-        for chosen_offer in chosen_offers:
-            chosen_offer_with_drug_and_offer_info = ChosenOfferWithDrugAndOfferInfo()
-            chosen_offer_with_drug_and_offer_info.number_of_grams = chosen_offer.number_of_grams
-            chosen_offer_with_drug_and_offer_info.drug_offer = chosen_offer.drug_offer
-            chosen_offer_with_drug_and_offer_info.meeting = chosen_offer.meeting
+        if chosen_offer.drug_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
+            return Response({"error": "Only Users assigned to this Meeting can cancel it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
-            chosen_offer_with_drug_and_offer_info.name = chosen_offer.drug_offer.drug.name
-            chosen_offer_with_drug_and_offer_info.wikipedia_link = chosen_offer.drug_offer.drug.wikipedia_link
-            chosen_offer_with_drug_and_offer_info.price_per_gram = chosen_offer.drug_offer.price_per_gram
-
-            chosen_offers_with_drug_and_offer_info.append(chosen_offer_with_drug_and_offer_info)
-
-        return chosen_offers_with_drug_and_offer_info
+        return chosen_offers
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
+class AcceptMeeting(generics.UpdateAPIView):
+    serializer_class = MeetingSerializer
+
+    def patch(self, request, *args, **kwargs):
+        meeting_id = kwargs.get('id')
+        meeting = get_object_or_404(Meeting, pk=meeting_id)
+
+        chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
+        if chosen_offer.drug_offer.plug.app_user.id != request.user.id:
+            return Response({"error": "Only Plug assigned to this Meeting can accept it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        if meeting.isCanceled:
+            return Response({"error": "Meeting is canceled."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if meeting.isAcceptedByPlug:
+            return Response({"error": "Meeting is already accepted by Plug."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if meeting.date <= timezone.now():
+            return Response({"error": "Meeting date has passed."}, status=status.HTTP_400_BAD_REQUEST)
+
+        meeting.isAcceptedByPlug = request.data['isAccepted']
+        meeting.save()
+
+        return Response({}, status=status.HTTP_200_OK)
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class CancelMeeting(generics.UpdateAPIView):
+    serializer_class = MeetingSerializer
+
+    def patch(self, request, *args, **kwargs):
+        meeting_id = kwargs.get('id')
+        meeting = get_object_or_404(Meeting, pk=meeting_id)
+
+        chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
+        if chosen_offer.drug_offer.plug.app_user.id != request.user.id and meeting.user.id != request.user.id:
+            return Response({"error": "Only Users assigned to this Meeting can cancel it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        if meeting.isCanceled:
+            return Response({"error": "Meeting is already canceled."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if meeting.date <= timezone.now() and meeting.isAcceptedByPlug is True:
+            return Response({"error": "Meeting date has passed."}, status=status.HTTP_400_BAD_REQUEST)
+
+        chosen_offers = ChosenOffer.objects.filter(meeting=meeting)
+
+        for chosen_offer in chosen_offers:
+            drug_offer = DrugOffer.objects.get(pk=chosen_offer.drug_offer.id)
+            drug_offer.grams_in_stock += chosen_offer.number_of_grams
+            drug_offer.save()
+
+        meeting.isCanceled = request.data['isCanceled']
+        meeting.isCanceledByPlug = request.data['isCanceledByPlug']
+        meeting.save()
+
+        return Response({}, status=status.HTTP_200_OK)
+
+
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class AddRatingMeeting(generics.UpdateAPIView):
+    serializer_class = MeetingSerializer
+
+    def patch(self, request, *args, **kwargs):
+        meeting_id = kwargs.get('id')
+        meeting = get_object_or_404(Meeting, pk=meeting_id)
+
+        chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
+        if chosen_offer.drug_offer.plug.app_user.id != request.user.id and meeting.user.id != request.user.id:
+            return Response({"error": "Only Users assigned to this Meeting can add rating to it."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        if meeting.isCanceled:
+            return Response({"error": "Meeting was canceled."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not meeting.isAcceptedByPlug:
+            return Response({"error": "Meeting was not accepted by Plug."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if meeting.date >= timezone.now():
+            return Response({"error": "Meeting was not held yet."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if chosen_offer.drug_offer.plug.app_user.id == request.user.id:
+            meeting.isHighOrLowPlugSatisfaction = request.data['isHighOrLowPlugSatisfaction']
+        if meeting.user.id == request.user.id:
+            meeting.isHighOrLowClientSatisfaction = request.data['isHighOrLowClientSatisfaction']
+        meeting.save()
+
+        return Response({}, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 def send_new_drug_request_mail(request):
     send_mail(

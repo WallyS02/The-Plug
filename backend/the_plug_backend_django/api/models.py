@@ -46,6 +46,7 @@ class AppUser(AbstractUser):
 
 class Plug(models.Model):
     rating = models.FloatField(blank=True, null=True)
+    minimal_break_between_meetings_in_minutes = models.IntegerField(default=30)
 
 
 class Location(models.Model):
@@ -68,6 +69,8 @@ class Meeting(models.Model):
     isHighOrLowClientSatisfaction = models.CharField(max_length=4, blank=True, default='')
     isHighOrLowPlugSatisfaction = models.CharField(max_length=4, blank=True, default='')
     location_id = models.IntegerField()
+    isCanceled = models.BooleanField(default=False)
+    isCanceledByPlug = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id) + ', ' + str(self.date)
@@ -86,6 +89,7 @@ class DrugOffer(models.Model):
     id = models.AutoField(primary_key=True)
     grams_in_stock = models.IntegerField()
     price_per_gram = models.FloatField()
+    currency = models.CharField()
     description = models.TextField(blank=True)
     drug = models.ForeignKey('Drug', on_delete=models.CASCADE)
     plug = models.ForeignKey('Plug', on_delete=models.CASCADE)
