@@ -44,6 +44,7 @@
     export let editedLocationId: string;
     let showLoadLocationsButton: boolean = false;
     const defaultLocation = { latitude: 54.34994169778859, longitude: 18.646536868225443 };
+    export let mapClass: string;
 
     let deleteLocationErrors: any;
     let drugSelectionErrors: string = '';
@@ -86,6 +87,7 @@
                 chosenPlugs = [];
 
                 drugs = await getDrugs();
+                drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
                 chosenDrugs = [];
             }
         }
@@ -280,6 +282,7 @@
                 return drug.name !== chosenDrug?.name
             });
             chosenDrugs = [...chosenDrugs, chosenDrug!];
+            chosenDrugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
             chosenDrugName = '';
         } else {
             if (chosenDrugName !== '') {
@@ -296,6 +299,7 @@
                 return drug.name !== chosenDrug?.name
             });
             drugs = [...drugs, chosenDrug!];
+            drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
         }
         getLocations(false);
     }
@@ -398,7 +402,7 @@
     {/if}
 {:catch error}
     <div class="flex justify-center items-center h-screen">
-        <p class="text-4xl font-bold text-red-600">Something went wrong!: {error.message}</p>
+        <p class="text-4xl font-bold text-red-700">Something went wrong!: {error.message}</p>
     </div>
 {/await}
-<div id="map" class="w-full h-screen"></div>
+<div id="map" class={mapClass}></div>

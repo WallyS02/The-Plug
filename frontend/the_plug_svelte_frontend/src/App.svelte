@@ -14,6 +14,10 @@
   import LocationEdit from "./routes/LocationEdit.svelte";
   import RequestNewDrug from "./routes/RequestNewDrug.svelte";
   import RatingInfo from "./routes/RatingInfo.svelte";
+  import Locations from "./routes/Locations.svelte";
+  import DrugOffers from "./routes/DrugOffers.svelte";
+  import Meetings from "./routes/Meetings.svelte";
+  import PlugMeetings from "./routes/PlugMeetings.svelte";
 
   const routes = {
     '/': Home,
@@ -25,6 +29,10 @@
     '/plug/:id': PlugPanel,
     '/drug-offer/:id': DrugEdit,
     '/location/:id': LocationEdit,
+    '/locations/:id': Locations,
+    '/drug-offers/:id': DrugOffers,
+    '/plug-meetings/:id': PlugMeetings,
+    '/meetings/:id': Meetings,
     '/meeting/:id': MeetingPanel,
     '/request-meeting/:id': RequestMeeting,
     '*': NotFound,

@@ -47,3 +47,29 @@ export async function deletePlugRequest(): Promise<any> {
 
     return await sendRequest('plug/' + plug.body.id + '/', requestOptions);
 }
+
+export async function getPlug(plugId: string): Promise<any> {
+    const requestOptions: {} = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${tokenValue}`
+        }
+    }
+
+    let response = await sendRequest('plug/' + plugId + '/', requestOptions);
+    return response.body;
+}
+
+export async function updatePlugRequest(plugId: string, minimal_break_between_meetings_in_minutes: number): Promise<any> {
+    const requestOptions: {} = {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${tokenValue}`
+        },
+        body: JSON.stringify({ minimal_break_between_meetings_in_minutes: minimal_break_between_meetings_in_minutes })
+    }
+
+    return await sendRequest('plug/' + plugId + '/', requestOptions);
+}

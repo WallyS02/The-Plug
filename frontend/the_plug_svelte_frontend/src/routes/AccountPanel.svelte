@@ -1,13 +1,9 @@
 <script lang="ts">
-    import type {Meeting} from "../models";
-    import {link, push} from 'svelte-spa-router';
+    import {push} from 'svelte-spa-router';
     import {account_id, plug_id, token, username} from "../stores";
-    import {getClientMeetings} from "../service/meeting-service";
     import {deleteUserRequest, updateUser} from "../service/user-service";
     import {createPlugRequest, deletePlugRequest} from "../service/plug-service";
     import {getNotificationsContext} from "svelte-notifications";
-
-    let meetings: Meeting[] = [];
 
     let usernameValue: string;
     username.subscribe((value) => {
@@ -30,7 +26,7 @@
     });
 
     async function prepareData() {
-        meetings = await getClientMeetings($account_id);
+
     }
 
     async function handleChange() {
@@ -88,28 +84,6 @@
         </div>
     {:then value}
         <div class="flex flex-col md:flex-row gap-6">
-            <!-- Meetings Section -->
-            <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
-                <h2 class="text-2xl font-bold mb-4">Your Meetings</h2>
-                {#if meetings.length > 0}
-                    <ul class="space-y-4">
-                        {#each meetings as meeting}
-                            <li class="border border-asparagus p-4 rounded">
-                                <p><strong>Meeting ID:</strong> {meeting.id}</p>
-                                <p><strong>Accepted by Plug:</strong> {meeting.isAcceptedByPlug ? 'Yes' : 'No'}</p>
-                                <p><strong>Date:</strong> {meeting.date}</p>
-                                <a use:link={'/meeting/' + meeting.id}
-                                   class="inline-block mt-2 px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
-                                    Details
-                                </a>
-                            </li>
-                        {/each}
-                    </ul>
-                {:else}
-                    <p>No meetings requested from or for you yet!</p>
-                {/if}
-            </section>
-
             <!-- Account Settings Section -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
                 <div class="space-y-4">
@@ -163,7 +137,7 @@
         </section>
     {:catch error}
         <div class="flex justify-center items-center h-screen">
-            <p class="text-4xl font-bold text-red-600">Something went wrong!: {error.message}</p>
+            <p class="text-4xl font-bold text-red-700">Something went wrong!: {error.message}</p>
         </div>
     {/await}
 </main>

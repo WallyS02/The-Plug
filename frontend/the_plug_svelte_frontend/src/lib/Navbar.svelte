@@ -25,12 +25,16 @@
     </div>
     <div class="flex items-center space-x-4 mt-4 md:mt-0">
         {#if $plug_id !== ''}
+            <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/locations/' + $plug_id}>Locations</a>
+            <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/drug-offers/' + $plug_id}>Drug Offers</a>
+            <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/plug-meetings/' + $plug_id}>Plug Meetings</a>
             <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/plug/' + $plug_id}>Plug Panel</a>
         {/if}
         {#if $account_id === '' && $username === '' && $token === ''}
             <a href="/login" class="block p-2 bg-darkAsparagus hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link>Login</a>
             <a href="/register" class="block p-2 bg-darkAsparagus hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link>Register</a>
         {:else}
+            <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/meetings/' + $account_id}>Meetings</a>
             <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/account/' + $account_id}>{$username}</a>
             <button class="block p-2 bg-darkAsparagus hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" on:click={logout}>Logout</button>
         {/if}

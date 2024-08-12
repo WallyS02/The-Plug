@@ -88,7 +88,7 @@
             <!-- Location Details -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
                 <h2 class="text-2xl font-bold mb-4">Location Details</h2>
-                <Map mode={MapMode.EditLocation} editedLocationId={params.id} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude}/>
+                <Map mode={MapMode.EditLocation} editedLocationId={params.id} bind:newLocationLatitude={latitude} bind:newLocationLongitude={longitude} mapClass="w-full h-screen"/>
             </section>
 
             <!-- Update Location Form -->
@@ -128,7 +128,7 @@
         </div>
     {:catch error}
         <div class="flex justify-center items-center h-screen">
-            <p class="text-4xl font-bold text-red-600">Something went wrong!: {error.message}</p>
+            <p class="text-4xl font-bold text-red-700">Something went wrong!: {error.message}</p>
         </div>
     {/await}
 </main>

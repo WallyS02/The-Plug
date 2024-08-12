@@ -130,7 +130,7 @@
                             <div class="flex flex-col">
                                 <p class="font-semibold text-darkGreen">{chosenDrugOffer.name}</p>
                                 <p class="text-sm text-darkGreen">Grams in stock: {chosenDrugOffer.grams_in_stock}</p>
-                                <p class="text-sm text-darkGreen">Price per gram (in US dollars $): {chosenDrugOffer.price_per_gram}</p>
+                                <p class="text-sm text-darkGreen">Price per gram in {chosenDrugOffer.currency}: {chosenDrugOffer.price_per_gram}</p>
                                 <p class="text-sm text-darkGreen">Additional description: {chosenDrugOffer.description}</p>
                             </div>
                             <div class="flex items-center space-x-2">
@@ -165,7 +165,7 @@
         </form>
     {:catch error}
         <div class="flex justify-center items-center h-screen">
-            <p class="text-4xl font-bold text-red-600">Something went wrong!: {error.message}</p>
+            <p class="text-4xl font-bold text-red-700">Something went wrong!: {error.message}</p>
         </div>
     {/await}
 </main>
