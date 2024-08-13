@@ -40,10 +40,10 @@ jobs:
         run: |
           python manage.py test
         env:
-          NAME: ${{ secrets.POSTGRES_DB_NAME }}
-          USER: ${{ secrets.POSTGRES_USER }}
-          PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          HOST: ${{ secrets.POSTGRES_HOST }}
+          DB_NAME: ${{ secrets.POSTGRES_DB_NAME }}
+          DB_USER: ${{ secrets.POSTGRES_USER }}
+          DB_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DB_HOST: ${{ secrets.POSTGRES_HOST }}
           WEB_APP_URL: ${{ secrets.WEB_APP_URL }}
           EM_PASSWORD: ${{ secrets.EM_PASSWORD }}
           EM_ACCOUNT: ${{ secrets.EM_ACCOUNT }}
