@@ -1,19 +1,13 @@
 <script lang="ts">
     import {currencies, type Drug, type DrugOffer} from "../models";
+    import {link} from 'svelte-spa-router';
     import {plug_id} from "../stores";
+    import {createDrugOffer, deleteDrugOfferRequest, getPlugDrugOffers} from "../service/drug-offer-service";
     import {getDrugs} from "../service/drug-service";
-    import {
-        deleteDrugOfferRequest,
-        getDrugOffer,
-        updateDrugOfferRequest
-    } from "../service/drug-offer-service";
-    import {pop, push} from "svelte-spa-router";
     import {getNotificationsContext} from "svelte-notifications";
 
-    export let params = {}
-    let drugOffer: DrugOffer = {} as DrugOffer;
+    let drugOffers: DrugOffer[] = [];
     let drugs: Drug[] = [];
-    let drug: Drug = {} as Drug;
 
     let drugName: string;
     let gramsInStock: number;
@@ -21,7 +15,7 @@
     let currency: string;
     let description: string;
 
-    let updateDrugOfferErrors: any;
+    let addDrugOfferErrors: any;
     let deleteDrugOfferErrors: any;
 
     const { addNotification } = getNotificationsContext();
@@ -34,85 +28,77 @@
     });
 
     async function prepareData() {
-        drugOffer = await getDrugOffer(params.id);
+        drugOffers = await getPlugDrugOffers($plug_id);
         drugs = await getDrugs();
         drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
-        let drugMaybeUndefined = drugs.find(drug => drug.id === drugOffer.drug);
-        if (drugMaybeUndefined)
-            drug = drugMaybeUndefined;
-        drugName = drug.name;
-        gramsInStock = drugOffer.grams_in_stock;
-        pricePerGram = drugOffer.price_per_gram;
-        currency = drugOffer.currency;
-        description = drugOffer.description;
     }
 
     async function deleteDrugOffer(drugOfferId: string) {
         let response = await deleteDrugOfferRequest(drugOfferId);
         if (response === undefined) {
-            await push('/plug/' + $plug_id);
+            drugOffers = drugOffers.filter(drugOffer => { return drugOffer.id !== drugOfferId });
+            notify('Successfully deleted Drug Offer!');
         } else {
             deleteDrugOfferErrors = response.body;
         }
     }
 
-    async function updateDrugOffer() {
+    const createNewDrugOffer = async (event: any) => {
         let drug = drugs.find(drug => drug.name === drugName)
         if (drug) {
-            let response = await updateDrugOfferRequest(drugOffer.id, drug.id, gramsInStock, pricePerGram, currency, description);
-            if (response.status === 200) {
-                notify('Successfully updated Drug Offer!');
+            let response = await createDrugOffer(drug.id, gramsInStock, pricePerGram, currency, description);
+            if (response.status === 201) {
+                event.target.reset();
+                drugOffers = [...drugOffers, response.body];
+                notify('Successfully added Drug Offer!');
             } else {
-                updateDrugOfferErrors = response.body;
+                addDrugOfferErrors = response.body;
             }
         }
     }
-
 </script>
 
-<main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col gap-6">
+<main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col space-y-6">
     {#await prepareData()}
         <div class="flex flex-col justify-center items-center h-screen">
             <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-olivine mb-4"></div>
             <p class="text-4xl font-bold text-darkMossGreen">Loading...</p>
         </div>
     {:then value}
-        <div class="flex-wrap items-center">
-            <!-- Back Button -->
-            <button on:click={() => {pop()}} class="p-1.5 flex bg-darkMossGreen text-olivine hover:bg-darkGreen transition-colors duration-300 rounded m-auto">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                Back
-            </button>
-        </div>
-
-        <div class="flex-col gap-6 space-y-4">
-            <!-- Drug Offer Details -->
-            <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-bold mb-4">Drug Offer Details</h2>
-                <div class="space-y-4">
-                    <p class="text-xl"><strong>ID:</strong> {drugOffer.id}</p>
-                    <p class="text-xl"><strong>Drug Name:</strong> {drug.name}</p>
-                    <p class="text-xl">
-                        <strong>Wikipedia Link:</strong> <a href="{drug.wikipedia_link}" class="text-blue-400 hover:underline" target="_blank">{drug.wikipedia_link}</a>
-                    </p>
-                    <p class="text-xl"><strong>Grams in Stock:</strong> {drugOffer.grams_in_stock}</p>
-                    <p class="text-xl"><strong>Price per Gram in {drugOffer.currency}:</strong> {drugOffer.price_per_gram}</p>
-                    <button on:click={() => deleteDrugOffer(drugOffer.id)}
-                            class="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                        Delete
-                    </button>
-                    {#if deleteDrugOfferErrors}
-                        <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
-                    {/if}
-                </div>
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Drug Offers Section -->
+            <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+                <h2 class="text-2xl font-bold mb-4">Your Drug Offers</h2>
+                {#if drugOffers.length > 0}
+                    <ul class="space-y-4">
+                        {#each drugOffers as drugOffer}
+                            <li class="border border-asparagus p-4 rounded">
+                                <p><strong>Drug:</strong> {drugs.find(drug => drug.id === drugOffer.drug)?.name}</p>
+                                <p><strong>Grams in Stock:</strong> {drugOffer.grams_in_stock}</p>
+                                <p><strong>Price per Gram in {drugOffer.currency}:</strong> {drugOffer.price_per_gram}</p>
+                                <a use:link={'/drug-offer/' + drugOffer.id}
+                                   class="inline-block mt-2 px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
+                                    Edit
+                                </a>
+                                <button on:click={() => deleteDrugOffer(drugOffer.id)}
+                                        class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    Delete
+                                </button>
+                                {#if deleteDrugOfferErrors}
+                                    <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
+                                {/if}
+                            </li>
+                        {/each}
+                    </ul>
+                {:else}
+                    <p>No Drug Offers from You yet!</p>
+                {/if}
             </section>
 
-            <!-- Update Drug Offer Form -->
-            <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-bold mb-4">Update Drug Offer</h2>
-                <form on:submit|preventDefault={updateDrugOffer} class="space-y-4">
+            <!-- Add New Drug Offer Section -->
+            <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
+                <h2 class="text-2xl font-bold mb-4">Add New Drug Offer</h2>
+                <form on:submit|preventDefault={createNewDrugOffer} class="space-y-4">
                     <label for="drug" class="block text-xl font-semibold mb-2">Drug Type:</label>
                     <input list="drugs" id="drug" name="drug" bind:value={drugName} required
                            class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
@@ -142,8 +128,8 @@
                             class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
                         Submit
                     </button>
-                    {#if updateDrugOfferErrors}
-                        <p class="text-red-500">Something went wrong, {updateDrugOfferErrors}</p>
+                    {#if addDrugOfferErrors}
+                        <p class="text-red-500">Something went wrong, {addDrugOfferErrors}</p>
                     {/if}
                 </form>
             </section>

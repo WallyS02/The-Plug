@@ -28,7 +28,7 @@
 
 <main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col gap-6">
     <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-bold mb-4">Update Drug Offer</h2>
+        <h2 class="text-2xl font-bold mb-4">Request new Drug on site</h2>
         <form on:submit|preventDefault={requestNewDrug} class="space-y-4">
             <label for="name" class="block text-xl font-semibold mb-2">Name:</label>
             <input type="text" id="name" name="name" bind:value={name}

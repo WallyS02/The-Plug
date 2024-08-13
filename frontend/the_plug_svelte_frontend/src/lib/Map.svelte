@@ -1,5 +1,4 @@
 <script lang="ts">
-    import {onMount} from 'svelte';
     import {type Drug, type Location, MapMode} from "../models";
     import L from 'leaflet';
     import {
@@ -45,35 +44,36 @@
     export let editedLocationId: string;
     let showLoadLocationsButton: boolean = false;
     const defaultLocation = { latitude: 54.34994169778859, longitude: 18.646536868225443 };
+    export let mapClass: string;
 
     let deleteLocationErrors: any;
     let drugSelectionErrors: string = '';
     let plugSelectionErrors: string = '';
 
     async function getLocations(reloadFilterChoices: boolean) {
-        const bounds = map.getBounds();
+        if (mode === MapMode.Browse || mode === MapMode.AddLocation) {
+            const bounds = map.getBounds();
 
-        switch (mode) {
-            case MapMode.Browse: {
-                let response = await getLocationsRequest(bounds._northEast.lat, bounds._southWest.lat, bounds._northEast.lng, bounds._southWest.lng, $plug_id, chosenDrugs, chosenPlugs);
-                if (response.status === 200) {
-                    locations = response.body;
+            switch (mode) {
+                case MapMode.Browse: {
+                    let response = await getLocationsRequest(bounds._northEast.lat, bounds._southWest.lat, bounds._northEast.lng, bounds._southWest.lng, $plug_id, chosenDrugs, chosenPlugs);
+                    if (response.status === 200) {
+                        locations = response.body;
+                    }
+                    else {
+                        locations = [];
+                    }
+                    showLoadLocationsButton = false;
+                    break;
                 }
-                else {
-                    locations = [];
+
+                case MapMode.AddLocation: {
+                    locations = await getPlugLocations($plug_id, bounds._northEast.lat, bounds._southWest.lat, bounds._northEast.lng, bounds._southWest.lng);
+                    showLoadLocationsButton = false;
+                    break;
                 }
-                showLoadLocationsButton = false;
-                break;
             }
 
-            case MapMode.AddLocation: {
-                locations = await getPlugLocations($plug_id, bounds._northEast.lat, bounds._southWest.lat, bounds._northEast.lng, bounds._southWest.lng);
-                showLoadLocationsButton = false;
-                break;
-            }
-        }
-
-        if (reloadFilterChoices) {
             plugs = Array.from(
                 new Map(
                     locations.map((location) => [location.plug + location.username, {
@@ -82,17 +82,21 @@
                     }])
                 ).values()
             );
-            chosenPlugs = [];
 
-            drugs = await getDrugs();
-            chosenDrugs = [];
+            if (reloadFilterChoices) {
+                chosenPlugs = [];
+
+                drugs = await getDrugs();
+                drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+                chosenDrugs = [];
+            }
         }
 
         await setMarkers();
     }
 
-    onMount(async () => {
-        if (mode === MapMode.EditLocation) {
+    async function prepareData() {
+        if (mode === MapMode.EditLocation || mode === MapMode.MeetingPanel) {
             let editedLocation = await getLocation(editedLocationId);
             locations = [...locations, editedLocation];
             initializeMap({latitude: locations[0].latitude, longitude: locations[0].longitude});
@@ -112,7 +116,7 @@
         } else {
             initializeMap(defaultLocation);
         }
-    });
+    }
 
     async function deleteLocation(locationId: number) {
         let response = await deleteLocationRequest(locationId.toString());
@@ -153,83 +157,78 @@
         layerGroup.clearLayers();
         for (let location of locations) {
             let markerDescription: string;
-            switch (mode) {
-                case MapMode.Browse: {
-                    let ratingInfo = '', requestMeetingButton = '', offeredDrugsInfo = '';
-                    if (location.rating === null) {
-                        ratingInfo = 'No ratings yet'
-                    }
-                    else {
-                        ratingInfo = `Rating: ${location.rating * 100}% probability of high satisfaction`;
-                    }
-                    if ($account_id !== '' && $username !== '' && $token !== '') {
-                        requestMeetingButton = `<br> <a
-                            class="inline-block mt-2 px-4 py-2 bg-olivine text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine"
-                            href="/#/request-meeting/${location.plug}"
-                        >
-                            Request Meeting
-                        </a>`;
-                    }
-                    if (location.offered_drugs.length > 0) {
-                        offeredDrugsInfo = `
-                            <br> <br>
-                            <h3 class="font-extrabold">Offered Drugs</h3>
-                        `;
-                        for (let offeredDrug of location.offered_drugs) {
-                            offeredDrugsInfo += offeredDrug + ', '
-                        }
-                        offeredDrugsInfo = offeredDrugsInfo.substring(0, offeredDrugsInfo.length - 2);
-                    }
-                    markerDescription = `
-                        <h3 class="font-extrabold">Address</h3>
-                        ${location.street_name} ${location.street_number}
-                        <br> ${location.city}
+            if (mode === MapMode.Browse) {
+                let ratingInfo = '', requestMeetingButton = '', offeredDrugsInfo = '';
+                if (location.rating === null) {
+                    ratingInfo = 'No ratings yet'
+                }
+                else {
+                    ratingInfo = `Rating: ${location.rating * 100}% probability of high satisfaction`;
+                }
+                if ($account_id !== '' && $username !== '' && $token !== '') {
+                    requestMeetingButton = `<br> <a
+                        class="inline-block mt-2 px-4 py-2 bg-olivine text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine"
+                        href="/#/request-meeting/${location.id}"
+                    >
+                        Request Meeting
+                    </a>`;
+                }
+                if (location.offered_drugs.length > 0) {
+                    offeredDrugsInfo = `
                         <br> <br>
-                        <h3 class="font-extrabold">Plug</h3>
-                        ${location.username}
-                        <div class="flex items-center">
-                            ${generateStars(location.rating!)}
-                        </div>
-                        ${ratingInfo}
-                        ${offeredDrugsInfo}
-                        <br> <a
-                            class="hover:underline"
-                            href="/#/rating-info"
-                        >
-                            See more about out rating system
-                        </a>
-                        ${requestMeetingButton}
+                        <h3 class="font-extrabold">Offered Drugs</h3>
                     `;
-                    break;
+                    for (let offeredDrug of location.offered_drugs) {
+                        offeredDrugsInfo += offeredDrug + ', '
+                    }
+                    offeredDrugsInfo = offeredDrugsInfo.substring(0, offeredDrugsInfo.length - 2);
                 }
-                case MapMode.AddLocation: {
-                    markerDescription = `
-                        ${location.street_name} ${location.street_number}
-                        <br> ${location.city}
-                        <br>
-                        <a
-                            class="inline-block mt-2 px-4 py-2 bg-olivine text-black font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine"
-                            href="/#/location/${location.id}"
-                        >
-                            Edit
-                        </a>
-                        <button
-                            id="delete-${location.id}"
-                            class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                            Delete
-                        </button>
-                    `;
-                    break;
-                }
-                case MapMode.EditLocation: {
-                    markerDescription = `
-                        ${location.street_name} ${location.street_number}
-                        <br> ${location.city}
-                        <br>
-                    `;
-                    break;
-                }
+                markerDescription = `
+                    <h3 class="font-extrabold">Address</h3>
+                    ${location.street_name} ${location.street_number}
+                    <br> ${location.city}
+                    <br> <br>
+                    <h3 class="font-extrabold">Plug</h3>
+                    ${location.username}
+                    <div class="flex items-center">
+                        ${generateStars(location.rating!)}
+                    </div>
+                    ${ratingInfo}
+                    <br> <a
+                        class="hover:underline"
+                        href="/#/rating-info"
+                    >
+                        See more about out rating system
+                    </a>
+                    ${offeredDrugsInfo}
+                    ${requestMeetingButton}
+                `;
+            }
+            else if (mode === MapMode.AddLocation) {
+                markerDescription = `
+                    ${location.street_name} ${location.street_number}
+                    <br> ${location.city}
+                    <br>
+                    <a
+                        class="inline-block mt-2 px-4 py-2 bg-olivine text-black font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine"
+                        href="/#/location/${location.id}"
+                    >
+                        Edit
+                    </a>
+                    <button
+                        id="delete-${location.id}"
+                        class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                        Delete
+                    </button>
+                `;
+            }
+            else {
+                markerDescription = `
+                    ${location.street_name} ${location.street_number}
+                    <br> ${location.city}
+                    <br>
+                `;
             }
             const marker = L.marker([location.latitude, location.longitude]).addTo(layerGroup)
                 .bindPopup(markerDescription!);
@@ -283,6 +282,7 @@
                 return drug.name !== chosenDrug?.name
             });
             chosenDrugs = [...chosenDrugs, chosenDrug!];
+            chosenDrugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
             chosenDrugName = '';
         } else {
             if (chosenDrugName !== '') {
@@ -299,6 +299,7 @@
                 return drug.name !== chosenDrug?.name
             });
             drugs = [...drugs, chosenDrug!];
+            drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
         }
         getLocations(false);
     }
@@ -333,64 +334,75 @@
 
 </script>
 
-{#if mode === MapMode.Browse}
-    <div class="p-4 bg-darkMossGreen rounded-lg mb-4 text-olivine">
-        <label for="drug" class="block text-xl font-semibold mb-2">Select Drug You need from the list:</label>
-        <input list="drugs" id="drug" name="drug" bind:value={chosenDrugName} on:input={addToChosenDrug}
-               class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
-        <datalist id="drugs">
-            {#each drugs as drug}
-                <option value={drug.name}/>
-            {/each}
-        </datalist>
-        {#if drugSelectionErrors !== ''}
-            <p class="text-red-600 mt-2">{drugSelectionErrors}</p>
-        {/if}
-
-        <label for="plug" class="block text-xl font-semibold mb-2 mt-4">Select Plug You want by typing and choosing from the list:</label>
-        <input list="plugs" id="plug" name="plug" bind:value={chosenPlugUsername} on:input={addToChosenPlug}
-               class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
-        <datalist id="plugs">
-            {#each plugs as plug}
-                <option value={plug.username}/>
-            {/each}
-        </datalist>
-        {#if plugSelectionErrors !== ''}
-            <p class="text-red-600 mt-2">{plugSelectionErrors}</p>
-        {/if}
-
-
-        <div class="flex flex-wrap gap-2 mt-4">
-            {#each chosenDrugs as chosenDrug}
-                <div class="flex items-center p-2 bg-asparagus rounded-lg">
-                    <p class="mr-2 font-semibold text-darkGreen">{chosenDrug.name}</p>
-                    <button class="flex items-center justify-center bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-all duration-300 shadow-md"
-                            on:click={() => { removeChosenDrug(chosenDrug.name) }}>
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            {/each}
-        </div>
-
-        <div class="flex flex-wrap gap-2 mt-4">
-            {#each chosenPlugs as chosenPlug}
-                <div class="flex items-center p-2 bg-asparagus rounded-lg">
-                    <p class="mr-2 font-semibold text-darkGreen">{chosenPlug.username}</p>
-                    <button class="flex items-center justify-center bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-all duration-300 shadow-md"
-                            on:click={() => { removeChosenPlug(chosenPlug.username) }}>
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            {/each}
-        </div>
+{#await prepareData()}
+    <div class="flex flex-col justify-center items-center h-screen">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-olivine mb-4"></div>
+        <p class="text-4xl font-bold text-darkMossGreen">Loading...</p>
     </div>
-{/if}
-{#if showLoadLocationsButton && mode !== MapMode.EditLocation}
-    <div class="p-2 flex-wrap items-center">
-        <!-- Load Button -->
-        <button on:click={() => getLocations(false)} class="p-1.5 flex hover:bg-{loadButtonHoverColor} transition-colors duration-300 rounded m-auto font-bold bg-{loadButtonColor} text-{loadButtonTextColor}">
-            Load Locations in this area
-        </button>
+{:then value}
+    {#if mode === MapMode.Browse}
+        <div class="p-4 bg-darkMossGreen rounded-lg mb-4 text-olivine">
+            <label for="drug" class="block text-xl font-semibold mb-2">Select Drugs You need from the list:</label>
+            <input list="drugs" id="drug" name="drug" bind:value={chosenDrugName} on:input={addToChosenDrug}
+                   class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
+            <datalist id="drugs">
+                {#each drugs as drug}
+                    <option value={drug.name}/>
+                {/each}
+            </datalist>
+            {#if drugSelectionErrors !== ''}
+                <p class="text-red-600 mt-2">{drugSelectionErrors}</p>
+            {/if}
+
+            <label for="plug" class="block text-xl font-semibold mb-2 mt-4">Select Plugs You want by typing and choosing from the list:</label>
+            <input list="plugs" id="plug" name="plug" bind:value={chosenPlugUsername} on:input={addToChosenPlug}
+                   class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
+            <datalist id="plugs">
+                {#each plugs as plug}
+                    <option value={plug.username}/>
+                {/each}
+            </datalist>
+            {#if plugSelectionErrors !== ''}
+                <p class="text-red-600 mt-2">{plugSelectionErrors}</p>
+            {/if}
+
+
+            <div class="flex flex-wrap gap-2 mt-4">
+                {#each chosenDrugs as chosenDrug}
+                    <div class="flex items-center p-2 bg-asparagus rounded-lg">
+                        <p class="mr-2 font-semibold text-darkGreen">{chosenDrug.name}</p>
+                        <button class="flex items-center justify-center bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-all duration-300 shadow-md"
+                                on:click={() => { removeChosenDrug(chosenDrug.name) }}>
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                {/each}
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-4">
+                {#each chosenPlugs as chosenPlug}
+                    <div class="flex items-center p-2 bg-asparagus rounded-lg">
+                        <p class="mr-2 font-semibold text-darkGreen">{chosenPlug.username}</p>
+                        <button class="flex items-center justify-center bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-all duration-300 shadow-md"
+                                on:click={() => { removeChosenPlug(chosenPlug.username) }}>
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                {/each}
+            </div>
+        </div>
+    {/if}
+    {#if showLoadLocationsButton && mode !== MapMode.EditLocation && mode !== MapMode.MeetingPanel}
+        <div class="p-2 flex-wrap items-center">
+            <!-- Load Button -->
+            <button on:click={() => getLocations(false)} class="p-1.5 flex hover:bg-{loadButtonHoverColor} transition-colors duration-300 rounded m-auto font-bold bg-{loadButtonColor} text-{loadButtonTextColor}">
+                Load Locations in this area
+            </button>
+        </div>
+    {/if}
+{:catch error}
+    <div class="flex justify-center items-center h-screen">
+        <p class="text-4xl font-bold text-red-700">Something went wrong!: {error.message}</p>
     </div>
-{/if}
-<div id="map" class="w-full h-screen"></div>
+{/await}
+<div id="map" class={mapClass}></div>
