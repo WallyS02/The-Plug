@@ -9,6 +9,8 @@ from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.core.mail import send_mail
@@ -27,6 +29,19 @@ environ.Env.read_env()
 
 
 # Create your views here.
+
+class CustomMeetingsPagination(PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 10
+    page_query_param = 'page'
+
+
+class CustomDrugOffersPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 5
+    page_query_param = 'page'
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -372,21 +387,36 @@ class DrugList(generics.ListAPIView):
 @permission_classes([IsAuthenticated])
 class UserMeetings(generics.ListAPIView):
     serializer_class = MeetingWithPlugInfoAndChosenOfferNamesSerializer
+    pagination_class = CustomMeetingsPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = '__all__'
 
     def get_queryset(self):
         user = self.request.user
         meetings = Meeting.objects.filter(user=user)
+
         meeting = meetings.first()
-        if meeting and meeting.user == user:
-            return meetings
-        else:
+        if meeting is None or meeting.user != user:
             return Meeting.objects.none()
+
+        search_params = self.request.query_params.getlist('search', [])
+        if search_params:
+            q_objects = Q()
+            for param in search_params:
+                field, value = param.split('=')
+                q_objects |= Q(**{field: value})
+            meetings = meetings.filter(q_objects)
+
+        return meetings
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class PlugMeetings(generics.ListAPIView):
     serializer_class = MeetingWithPlugInfoAndChosenOfferNamesSerializer
+    pagination_class = CustomMeetingsPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = '__all__'
 
     def get_queryset(self):
         user = self.request.user
@@ -396,9 +426,19 @@ class PlugMeetings(generics.ListAPIView):
         if meetings.exists():
             meeting = meetings.first()
             plug = Plug.objects.filter(drugoffer__chosenoffer__meeting=meeting).first()
-            if plug and plug.app_user == user:
-                return meetings
-        return Meeting.objects.none()
+            if plug is None or plug.app_user != user:
+                return Meeting.objects.none()
+
+        search_params = self.request.query_params.getlist('search', [])
+        if search_params:
+            q_objects = Q()
+            for param in search_params:
+                field, value = param.split('=')
+                q_objects |= Q(**{field: value})
+            meetings = meetings.filter(q_objects)
+
+        return meetings
+
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -432,11 +472,25 @@ class DrugDrugOffers(generics.ListAPIView):
 @permission_classes([IsAuthenticated])
 class PlugDrugOffers(generics.ListAPIView):
     serializer_class = PlugDrugOffersPlusNamesSerializer
+    pagination_class = CustomDrugOffersPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = '__all__'
 
     def get_queryset(self):
         plug_id = self.kwargs.get('id')
         plug = get_object_or_404(Plug, pk=plug_id)
-        return DrugOffer.objects.filter(plug=plug)
+
+        drug_offers = DrugOffer.objects.filter(plug=plug)
+
+        search_params = self.request.query_params.getlist('search', [])
+        if search_params:
+            q_objects = Q()
+            for param in search_params:
+                field, value = param.split('=')
+                q_objects |= Q(**{field: value})
+            drug_offers = drug_offers.filter(q_objects)
+
+        return drug_offers
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
