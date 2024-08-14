@@ -6,7 +6,7 @@ token.subscribe((value) => {
     tokenValue = value;
 });
 
-export async function getClientMeetings(clientId: string | undefined): Promise<any> {
+export async function getClientMeetings(clientId: string, page: number): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -15,7 +15,7 @@ export async function getClientMeetings(clientId: string | undefined): Promise<a
         }
     }
 
-    let response = await sendRequest('meeting/user/' + clientId + '/', requestOptions);
+    let response = await sendRequest('meeting/user/' + clientId + '/?page=' + page, requestOptions);
     return response.body;
 }
 
@@ -111,7 +111,7 @@ export async function addRatingRequest(meetingId: string, isPositive: boolean, i
     return await sendRequest('meeting/' + meetingId + '/add-rating/', requestOptions);
 }
 
-export async function getPlugMeetings(plugId: string): Promise<any> {
+export async function getPlugMeetings(plugId: string, page: number): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -119,6 +119,6 @@ export async function getPlugMeetings(plugId: string): Promise<any> {
             'Authorization': `Token ${tokenValue}`
         }
     }
-    let response = await sendRequest('meeting/plug/' + plugId + '/', requestOptions);
+    let response = await sendRequest('meeting/plug/' + plugId + '/?page=' + page, requestOptions);
     return response.body;
 }

@@ -4,6 +4,7 @@
     import {account_id, plug_id} from "../stores";
     import {getClientMeetings} from "../service/meeting-service";
     import moment from "moment-timezone";
+    import Pagination from "../lib/Pagination.svelte";
 
     interface MeetingWithPlugInfoAndChosenOfferNames extends Meeting {
         plug_username: string;
@@ -13,9 +14,13 @@
     }
 
     let meetings: MeetingWithPlugInfoAndChosenOfferNames[] = [];
+    let page: number = 1;
+    let totalNumberOfObjects: number;
 
     async function prepareData() {
-        meetings = await getClientMeetings($account_id);
+        let response = await getClientMeetings($account_id, page);
+        totalNumberOfObjects = response.count;
+        meetings = response.results;
     }
 
     function printChosenOffers(chosenOffers: string[]) {
@@ -24,6 +29,13 @@
             chosenOffersString += chosenOffer + ", ";
         }
         return chosenOffersString.substring(0, chosenOffersString.length - 2)
+    }
+
+    async function changePage(pageNumber: number, maxPageNumber: number) {
+        if (pageNumber >= 1 && pageNumber <= maxPageNumber) {
+            page = Number(pageNumber);
+            await prepareData();
+        }
     }
 </script>
 
@@ -67,6 +79,7 @@
                 {/if}
             </section>
         </div>
+        <Pagination totalNumberOfObjects={totalNumberOfObjects} pageSize={4} bind:currentPage={page} pageChange={changePage} buttonColor="darkMossGreen" buttonTextColor="olivine"/>
     {:catch error}
         <div class="flex justify-center items-center h-screen">
             <p class="text-4xl font-bold text-red-700">Something went wrong!: {error.message}</p>

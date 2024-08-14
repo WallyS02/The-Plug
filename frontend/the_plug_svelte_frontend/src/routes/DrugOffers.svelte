@@ -5,6 +5,7 @@
     import {createDrugOffer, deleteDrugOfferRequest, getPlugDrugOffers} from "../service/drug-offer-service";
     import {getDrugs} from "../service/drug-service";
     import {getNotificationsContext} from "svelte-notifications";
+    import Pagination from "../lib/Pagination.svelte";
 
     let drugOffers: DrugOffer[] = [];
     let drugs: Drug[] = [];
@@ -18,6 +19,9 @@
     let addDrugOfferErrors: any;
     let deleteDrugOfferErrors: any;
 
+    let page: number = 1;
+    let totalNumberOfObjects: number;
+
     const { addNotification } = getNotificationsContext();
 
     const notify = (text: string) => addNotification({
@@ -28,7 +32,9 @@
     });
 
     async function prepareData() {
-        drugOffers = await getPlugDrugOffers($plug_id);
+        let response = await getPlugDrugOffers($plug_id, page);
+        totalNumberOfObjects = response.count;
+        drugOffers = response.results;
         drugs = await getDrugs();
         drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
     }
@@ -56,6 +62,13 @@
             }
         }
     }
+
+    async function changePage(pageNumber: number, maxPageNumber: number) {
+        if (pageNumber >= 1 && pageNumber <= maxPageNumber) {
+            page = Number(pageNumber);
+            await prepareData();
+        }
+    }
 </script>
 
 <main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col space-y-6">
@@ -70,7 +83,7 @@
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
                 <h2 class="text-2xl font-bold mb-4">Your Drug Offers</h2>
                 {#if drugOffers.length > 0}
-                    <ul class="space-y-4">
+                    <ul class="space-y-4 mb-3">
                         {#each drugOffers as drugOffer}
                             <li class="border border-asparagus p-4 rounded">
                                 <p><strong>Drug:</strong> {drugs.find(drug => drug.id === drugOffer.drug)?.name}</p>
@@ -90,6 +103,7 @@
                             </li>
                         {/each}
                     </ul>
+                    <Pagination totalNumberOfObjects={totalNumberOfObjects} pageSize={3} bind:currentPage={page} pageChange={changePage} buttonColor="asparagus" buttonTextColor="darkGreen"/>
                 {:else}
                     <p>No Drug Offers from You yet!</p>
                 {/if}
