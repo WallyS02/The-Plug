@@ -29,6 +29,7 @@
     "moment-timezone": "^0.5.45",
     "svelte-notifications": "github:louchebem06/svelte-notifications#fix-warn-vite-plugin-svelte",
     "svelte-persisted-store": "^0.11.0",
+    "svelte-select": "^5.8.3",
     "svelte-spa-router": "^4.0.1"
   }
 }

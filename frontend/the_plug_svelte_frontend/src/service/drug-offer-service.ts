@@ -9,7 +9,7 @@ plug_id.subscribe((value) => {
     plugIdValue = value;
 });
 
-export async function getPlugDrugOffers(plugId: string, page: number): Promise<any> {
+export async function getPlugDrugOffers(plugId: string, page: number, ordering: string): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -18,7 +18,7 @@ export async function getPlugDrugOffers(plugId: string, page: number): Promise<a
         }
     }
 
-    let response = await sendRequest('drug-offer/plug/' + plugId + '/?page=' + page, requestOptions);
+    let response = await sendRequest('drug-offer/plug/' + plugId + '/?page=' + page + '&ordering=' + ordering, requestOptions);
     return response.body;
 }
 

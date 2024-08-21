@@ -36,7 +36,6 @@
             <label for="wikipedia-link" class="block text-xl font-semibold mb-2">Wikipedia Link:</label>
             <input type="url" id="wikipedia-link" name="wikipedia-link" bind:value={wikipediaLink}
                    class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-            <label for="description" class="block text-xl font-semibold mb-2">Additional Description:</label>
             <button type="submit"
                     class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
                 Submit

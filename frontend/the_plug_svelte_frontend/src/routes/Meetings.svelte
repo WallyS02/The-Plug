@@ -5,6 +5,7 @@
     import {getClientMeetings} from "../service/meeting-service";
     import moment from "moment-timezone";
     import Pagination from "../lib/Pagination.svelte";
+    import Select from "svelte-select";
 
     interface MeetingWithPlugInfoAndChosenOfferNames extends Meeting {
         plug_username: string;
@@ -17,8 +18,22 @@
     let page: number = 1;
     let totalNumberOfObjects: number;
 
+    let sortingItems: {value: string, label: string}[] = [
+        {value: 'date', label: 'Date and Time Ascending'},
+        {value: '-date', label: 'Date and Time Descending'},
+        {value: 'plug_username', label: 'Plug Username Ascending'},
+        {value: '-plug_username', label: 'Plug Username Descending'},
+        {value: 'chosen_offers', label: 'Chosen Offers Ascending'},
+        {value: '-chosen_offers', label: 'Chosen Offers Descending'},
+        {value: 'isAcceptedByPlug', label: 'Meeting Acceptance Ascending'},
+        {value: '-isAcceptedByPlug', label: 'Meeting Acceptance Descending'},
+        {value: 'isCanceled', label: 'Meeting Cancellation Ascending'},
+        {value: '-isCanceled', label: 'Meeting Cancellation Descending'}
+    ];
+    let sortingValue: {value: string, label: string} = sortingItems[1];
+
     async function prepareData() {
-        let response = await getClientMeetings($account_id, page);
+        let response = await getClientMeetings($account_id, page, sortingValue.value);
         totalNumberOfObjects = response.count;
         meetings = response.results;
     }
@@ -46,6 +61,8 @@
             <p class="text-4xl font-bold text-darkMossGreen">Loading...</p>
         </div>
     {:then value}
+        <h2 class="text-2xl font-bold mb-4 text-darkGreen">Sort Meetings</h2>
+        <Select items={sortingItems} bind:value={sortingValue} class="text-darkGreen" on:change={prepareData}/>
         <div class="flex flex-col md:flex-row gap-6">
             <!-- Meetings Section -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
@@ -55,6 +72,9 @@
                         {#each meetings as meeting}
                             <li class="border border-asparagus p-4 rounded">
                                 <div class="space-y-4">
+                                    {#if meeting.isCanceled}
+                                        <p class="p-1.5 text-3xl font-bold text-white bg-red-600 rounded text-center">This meeting is canceled!</p>
+                                    {/if}
                                     <p class="font-semibold"><strong>Date (in localization timezone):</strong> {moment(meeting.date).format('DD.MM.YYYY')}</p>
                                     <p class="font-semibold"><strong>Time (in localization timezone):</strong> {moment(meeting.date).format('HH:mm')}</p>
                                     <p class="font-semibold"><strong>Plug username:</strong> {meeting.plug_username}</p>

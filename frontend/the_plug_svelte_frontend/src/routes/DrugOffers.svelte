@@ -6,6 +6,7 @@
     import {getDrugs} from "../service/drug-service";
     import {getNotificationsContext} from "svelte-notifications";
     import Pagination from "../lib/Pagination.svelte";
+    import Select from "svelte-select";
 
     let drugOffers: DrugOffer[] = [];
     let drugs: Drug[] = [];
@@ -22,6 +23,16 @@
     let page: number = 1;
     let totalNumberOfObjects: number;
 
+    let sortingItems: {value: string, label: string}[] = [
+        {value: 'name', label: 'Name Ascending'},
+        {value: '-name', label: 'Name Descending'},
+        {value: 'grams_in_stock', label: 'Grams in Stock Ascending'},
+        {value: '-grams_in_stock', label: 'Grams in Stock Descending'},
+        {value: 'price_per_gram', label: 'Price per Gram Ascending'},
+        {value: '-price_per_gram', label: 'Price per Gram Descending'}
+    ];
+    let sortingValue: {value: string, label: string} = sortingItems[0];
+
     const { addNotification } = getNotificationsContext();
 
     const notify = (text: string) => addNotification({
@@ -32,7 +43,7 @@
     });
 
     async function prepareData() {
-        let response = await getPlugDrugOffers($plug_id, page);
+        let response = await getPlugDrugOffers($plug_id, page, sortingValue.value);
         totalNumberOfObjects = response.count;
         drugOffers = response.results;
         drugs = await getDrugs();
@@ -82,6 +93,10 @@
             <!-- Drug Offers Section -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
                 <h2 class="text-2xl font-bold mb-4">Your Drug Offers</h2>
+                <div class="mb-4">
+                    <h2 class="font-bold mb-4">Sort Drug Offers</h2>
+                    <Select items={sortingItems} bind:value={sortingValue} class="text-darkGreen" on:change={prepareData}/>
+                </div>
                 {#if drugOffers.length > 0}
                     <ul class="space-y-4 mb-3">
                         {#each drugOffers as drugOffer}
