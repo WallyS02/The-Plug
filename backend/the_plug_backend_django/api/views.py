@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q
+from django.contrib.postgres.aggregates import StringAgg
+from django.db.models import Q, F
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import make_naive
@@ -399,6 +400,26 @@ class UserMeetings(generics.ListAPIView):
         if meeting is None or meeting.user != user:
             return Meeting.objects.none()
 
+        ordering = self.request.query_params.get('ordering')
+        if ordering:
+            if 'plug_username' in ordering:
+                meetings = meetings.order_by(F('chosenoffer__drug_offer__plug__app_user__username').asc())
+                if ordering.startswith('-'):
+                    meetings = meetings.order_by(F('chosenoffer__drug_offer__plug__app_user__username').desc())
+            elif 'chosen_offers' in ordering:
+                ascending = not ordering.startswith('-')
+                order_direction = '' if ascending else '-'
+
+                meetings = meetings.annotate(
+                    aggregated_offers=StringAgg(
+                        F('chosenoffer__drug_offer__drug__name'),
+                        delimiter=',',
+                        ordering='chosenoffer__drug_offer__drug__name'
+                    )
+                ).order_by(f'{order_direction}aggregated_offers')
+            else:
+                meetings = meetings.order_by(ordering)
+
         search_params = self.request.query_params.getlist('search', [])
         if search_params:
             q_objects = Q()
@@ -428,6 +449,26 @@ class PlugMeetings(generics.ListAPIView):
             plug = Plug.objects.filter(drugoffer__chosenoffer__meeting=meeting).first()
             if plug is None or plug.app_user != user:
                 return Meeting.objects.none()
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering:
+            if 'client_username' in ordering:
+                meetings = meetings.order_by(F('user__username').asc())
+                if ordering.startswith('-'):
+                    meetings = meetings.order_by(F('user__username').desc())
+            elif 'chosen_offers' in ordering:
+                ascending = not ordering.startswith('-')
+                order_direction = '' if ascending else '-'
+
+                meetings = meetings.annotate(
+                    aggregated_offers=StringAgg(
+                        F('chosenoffer__drug_offer__drug__name'),
+                        delimiter=',',
+                        ordering='chosenoffer__drug_offer__drug__name'
+                    )
+                ).order_by(f'{order_direction}aggregated_offers')
+            else:
+                meetings = meetings.order_by(ordering)
 
         search_params = self.request.query_params.getlist('search', [])
         if search_params:
@@ -481,6 +522,16 @@ class PlugDrugOffers(generics.ListAPIView):
         plug = get_object_or_404(Plug, pk=plug_id)
 
         drug_offers = DrugOffer.objects.filter(plug=plug)
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering:
+            if 'name' in ordering:
+                if ordering.startswith('-'):
+                    drug_offers = drug_offers.order_by(F('drug__name').desc())
+                else:
+                    drug_offers = drug_offers.order_by(F('drug__name').asc())
+            else:
+                drug_offers = drug_offers.order_by(ordering)
 
         search_params = self.request.query_params.getlist('search', [])
         if search_params:
