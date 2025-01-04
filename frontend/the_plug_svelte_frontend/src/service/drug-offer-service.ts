@@ -9,7 +9,7 @@ plug_id.subscribe((value) => {
     plugIdValue = value;
 });
 
-export async function getPlugDrugOffers(plugId: string, page: number, ordering: string): Promise<any> {
+export async function getPlugDrugOffers(plugId: string, page?: number, ordering?: string): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -18,7 +18,18 @@ export async function getPlugDrugOffers(plugId: string, page: number, ordering: 
         }
     }
 
-    let response = await sendRequest('drug-offer/plug/' + plugId + '/?page=' + page + '&ordering=' + ordering, requestOptions);
+    let endpoint: string = 'drug-offer/plug/' + plugId + '/';
+    if (page && ordering) {
+        endpoint += '?page=' + page + '&ordering=' + ordering;
+    }
+    else if (page) {
+        endpoint += '?page=' + page;
+    }
+    else if (ordering) {
+        endpoint += '?ordering=' + ordering;
+    }
+
+    let response = await sendRequest(endpoint, requestOptions);
     return response.body;
 }
 
