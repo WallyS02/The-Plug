@@ -560,13 +560,23 @@ class PlugDrugOffers(generics.ListAPIView):
             else:
                 drug_offers = drug_offers.order_by(ordering)
 
-        search_params = self.request.query_params.getlist('search', [])
-        if search_params:
-            q_objects = Q()
-            for param in search_params:
-                field, value = param.split('=')
-                q_objects |= Q(**{field: value})
-            drug_offers = drug_offers.filter(q_objects)
+        drug_name = self.request.query_params.get('drug_name')
+        if drug_name:
+            drug_offers = drug_offers.filter(drug__name__icontains=drug_name)
+
+        from_grams = self.request.query_params.get('from_grams')
+        to_grams = self.request.query_params.get('to_grams')
+        if from_grams:
+            drug_offers = drug_offers.filter(grams_in_stock__gte=from_grams)
+        if to_grams:
+            drug_offers = drug_offers.filter(grams_in_stock__lte=to_grams)
+
+        from_price = self.request.query_params.get('from_price')
+        to_price = self.request.query_params.get('to_price')
+        if from_price:
+            drug_offers = drug_offers.filter(price_per_gram__gte=from_price)
+        if to_price:
+            drug_offers = drug_offers.filter(price_per_gram__lte=to_price)
 
         return drug_offers
 
