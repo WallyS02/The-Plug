@@ -6,11 +6,11 @@ Drug dealing service store based on Beta Reputation System.
 ### Run backend
 ### Run frontend
 ## Roadmap
-- [ ] build project diagrams
+- [x] build project diagrams
 - [ ] build backend application
 - [ ] build frontend application
-- [ ] build docker deployment
-- [ ] build github workflow cicd
+- [x] build docker deployment
+- [x] build github workflow cicd
 - [ ] complete final README
 - [ ] deploy application
 - [ ] decompose backend application to microservices
