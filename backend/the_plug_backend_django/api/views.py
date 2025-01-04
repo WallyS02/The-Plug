@@ -420,13 +420,24 @@ class UserMeetings(generics.ListAPIView):
             else:
                 meetings = meetings.order_by(ordering)
 
-        search_params = self.request.query_params.getlist('search', [])
-        if search_params:
-            q_objects = Q()
-            for param in search_params:
-                field, value = param.split('=')
-                q_objects |= Q(**{field: value})
-            meetings = meetings.filter(q_objects)
+        plug_name = self.request.query_params.get('plug_name')
+        if plug_name:
+            meetings = meetings.filter(chosenoffer__drug_offer__plug__app_user__username__icontains=plug_name)
+
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+        if from_date:
+            from_date = datetime.fromisoformat(from_date)
+            meetings = meetings.filter(date__gte=from_date)
+        if to_date:
+            to_date = datetime.fromisoformat(to_date)
+            meetings = meetings.filter(date__lte=to_date)
+
+        chosen_offers = self.request.query_params.getlist('chosen_offers')
+        if chosen_offers:
+            meetings = meetings.filter(
+                chosenoffer__drug_offer__drug__name__in=chosen_offers
+            ).distinct()
 
         return meetings
 
@@ -516,6 +527,11 @@ class PlugDrugOffers(generics.ListAPIView):
     pagination_class = CustomDrugOffersPagination
     filter_backends = [OrderingFilter]
     ordering_fields = '__all__'
+
+    def paginate_queryset(self, queryset):
+        if self.paginator and self.request.query_params.get(self.paginator.page_query_param, None) is None:
+            return None
+        return super().paginate_queryset(queryset)
 
     def get_queryset(self):
         plug_id = self.kwargs.get('id')
