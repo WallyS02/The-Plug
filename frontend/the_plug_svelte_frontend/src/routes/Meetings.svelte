@@ -47,7 +47,6 @@
 
     async function prepareData() {
         let response = await getClientMeetings($account_id, page, sortingValue.value, searchByPlug, searchByDateFrom, searchByDateTo, searchForChosenOffers);
-        console.log(response);
         totalNumberOfObjects = response.count;
         meetings = response.results;
         if (needsReload) {
