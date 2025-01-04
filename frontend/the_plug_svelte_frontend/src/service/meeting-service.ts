@@ -6,7 +6,7 @@ token.subscribe((value) => {
     tokenValue = value;
 });
 
-export async function getClientMeetings(clientId: string | undefined): Promise<any> {
+export async function getClientMeetings(clientId: string, page: number, ordering: string, plugName: string | undefined, fromDate: string | undefined, toDate: string | undefined, chosenOffers: string[]): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -14,8 +14,22 @@ export async function getClientMeetings(clientId: string | undefined): Promise<a
             'Authorization': `Token ${tokenValue}`
         }
     }
-
-    let response = await sendRequest('meeting/user/' + clientId + '/', requestOptions);
+    let endpoint: string = 'meeting/user/' + clientId + '/?page=' + page + '&ordering=' + ordering;
+    if (plugName) {
+        endpoint += '&plug_name=' + plugName;
+    }
+    if (fromDate) {
+        endpoint += '&from_date=' + fromDate;
+    }
+    if (toDate) {
+        endpoint += '&to_date=' + toDate;
+    }
+    if (chosenOffers.length > 0) {
+        for (let chosenOffer of chosenOffers) {
+            endpoint += '&chosen_offers=' + chosenOffer;
+        }
+    }
+    let response = await sendRequest(endpoint, requestOptions);
     return response.body;
 }
 
@@ -111,7 +125,7 @@ export async function addRatingRequest(meetingId: string, isPositive: boolean, i
     return await sendRequest('meeting/' + meetingId + '/add-rating/', requestOptions);
 }
 
-export async function getPlugMeetings(plugId: string): Promise<any> {
+export async function getPlugMeetings(plugId: string, page: number, ordering: string, clientName: string | undefined, fromDate: string | undefined, toDate: string | undefined, chosenOffers: string[]): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -119,6 +133,21 @@ export async function getPlugMeetings(plugId: string): Promise<any> {
             'Authorization': `Token ${tokenValue}`
         }
     }
-    let response = await sendRequest('meeting/plug/' + plugId + '/', requestOptions);
+    let endpoint: string = 'meeting/plug/' + plugId + '/?page=' + page + '&ordering=' + ordering;
+    if (clientName) {
+        endpoint += '&client_name=' + clientName;
+    }
+    if (fromDate) {
+        endpoint += '&from_date=' + fromDate;
+    }
+    if (toDate) {
+        endpoint += '&to_date=' + toDate;
+    }
+    if (chosenOffers.length > 0) {
+        for (let chosenOffer of chosenOffers) {
+            endpoint += '&chosen_offers=' + chosenOffer;
+        }
+    }
+    let response = await sendRequest(endpoint, requestOptions);
     return response.body;
 }

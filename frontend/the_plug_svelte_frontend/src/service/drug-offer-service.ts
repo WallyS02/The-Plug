@@ -9,7 +9,7 @@ plug_id.subscribe((value) => {
     plugIdValue = value;
 });
 
-export async function getPlugDrugOffers(plugId: string): Promise<any> {
+export async function getPlugDrugOffers(plugId: string, page?: number, ordering?: string, searchByDrug?: string, searchByGrams?: number[], searchByPrice?: number[]): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -18,7 +18,40 @@ export async function getPlugDrugOffers(plugId: string): Promise<any> {
         }
     }
 
-    let response = await sendRequest('drug-offer/plug/' + plugId + '/', requestOptions);
+    let endpoint: string = 'drug-offer/plug/' + plugId + '/?';
+    if (page) {
+        endpoint += 'page=' + page;
+    }
+    if (ordering) {
+        if (endpoint.endsWith('?')) {
+            endpoint += 'ordering=' + ordering;
+        } else {
+            endpoint += '&ordering=' + ordering;
+        }
+    }
+    if (searchByDrug) {
+        if (endpoint.endsWith('?')) {
+            endpoint += 'drug_name=' + searchByDrug;
+        } else {
+            endpoint += '&drug_name=' + searchByDrug;
+        }
+    }
+    if (searchByGrams && searchByGrams?.length !== 0) {
+        if (endpoint.endsWith('?')) {
+            endpoint += 'from_grams=' + searchByGrams[0] + '&to_grams=' + searchByGrams[1];
+        } else {
+            endpoint += '&from_grams=' + searchByGrams[0] + '&to_grams=' + searchByGrams[1];
+        }
+    }
+    if (searchByPrice && searchByPrice?.length !== 0) {
+        if (endpoint.endsWith('?')) {
+            endpoint += 'from_price=' + searchByPrice[0] + '&to_price=' + searchByPrice[1];
+        } else {
+            endpoint += '&from_price=' + searchByPrice[0] + '&to_price=' + searchByPrice[1];
+        }
+    }
+
+    let response = await sendRequest(endpoint, requestOptions);
     return response.body;
 }
 

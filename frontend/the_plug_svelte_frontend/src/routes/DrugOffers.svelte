@@ -5,6 +5,9 @@
     import {createDrugOffer, deleteDrugOfferRequest, getPlugDrugOffers} from "../service/drug-offer-service";
     import {getDrugs} from "../service/drug-service";
     import {getNotificationsContext} from "svelte-notifications";
+    import Pagination from "../lib/Pagination.svelte";
+    import Select from "svelte-select";
+    import RangeSlider from 'svelte-range-slider-pips';
 
     let drugOffers: DrugOffer[] = [];
     let drugs: Drug[] = [];
@@ -18,6 +21,30 @@
     let addDrugOfferErrors: any;
     let deleteDrugOfferErrors: any;
 
+    let page: number = 1;
+    let totalNumberOfObjects: number;
+
+    let sortingItems: {value: string, label: string}[] = [
+        {value: 'name', label: 'Name Ascending'},
+        {value: '-name', label: 'Name Descending'},
+        {value: 'grams_in_stock', label: 'Grams in Stock Ascending'},
+        {value: '-grams_in_stock', label: 'Grams in Stock Descending'},
+        {value: 'price_per_gram', label: 'Price per Gram Ascending'},
+        {value: '-price_per_gram', label: 'Price per Gram Descending'}
+    ];
+    let sortingValue: {value: string, label: string} = sortingItems[0];
+
+    let needsReload: boolean = true;
+
+    let searchByDrug: string | undefined;
+    let searchByGrams: number[] = [];
+    let searchByPrice: number[] = [];
+
+    let minGrams: number;
+    let maxGrams: number;
+    let minPrice: number;
+    let maxPrice: number;
+
     const { addNotification } = getNotificationsContext();
 
     const notify = (text: string) => addNotification({
@@ -28,9 +55,34 @@
     });
 
     async function prepareData() {
-        drugOffers = await getPlugDrugOffers($plug_id);
+        let response = await getPlugDrugOffers($plug_id, page, sortingValue.value, searchByDrug, searchByGrams, searchByPrice);
+        totalNumberOfObjects = response.count;
+        drugOffers = response.results;
         drugs = await getDrugs();
         drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+        if (needsReload) {
+            await getLowestAndHighestGramsAndPrice();
+        }
+    }
+
+    async function getLowestAndHighestGramsAndPrice() {
+        let allDrugOffers: DrugOffer[] = await getPlugDrugOffers($plug_id);
+        let drugOffersGrams = allDrugOffers.map(drugOffer => {
+            return drugOffer.grams_in_stock
+        });
+        searchByGrams = [...searchByGrams, Math.min.apply(null, drugOffersGrams)];
+        searchByGrams = [...searchByGrams, Math.max.apply(null, drugOffersGrams)];
+        minGrams = searchByGrams[0];
+        maxGrams = searchByGrams[1];
+
+        let drugOffersPrices = allDrugOffers.map(drugOffer => {
+            return drugOffer.price_per_gram
+        });
+        searchByPrice = [...searchByPrice, Math.min.apply(null, drugOffersPrices)];
+        searchByPrice = [...searchByPrice, Math.max.apply(null, drugOffersPrices)];
+        minPrice = searchByPrice[0];
+        maxPrice = searchByPrice[1];
+        needsReload = false;
     }
 
     async function deleteDrugOffer(drugOfferId: string) {
@@ -56,7 +108,33 @@
             }
         }
     }
+
+    async function changePage(pageNumber: number, maxPageNumber: number) {
+        if (pageNumber >= 1 && pageNumber <= maxPageNumber) {
+            page = Number(pageNumber);
+            await prepareData();
+        }
+    }
+
+    async function clearFilters() {
+        searchByDrug = undefined;
+        await getLowestAndHighestGramsAndPrice();
+        await prepareData();
+    }
 </script>
+
+<style>
+    :root {
+        --range-slider:          #d7dada;
+        --range-handle-inactive: #7B9C56;
+        --range-handle:          #709255;
+        --range-handle-focus:    #A8C686;
+        --range-float-text:      #172815;
+        --range-pip:             #A8C686;
+        --range-pip-active:      #A8C686;
+        --range-pip-hover:       #A8C686;
+    }
+</style>
 
 <main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col space-y-6">
     {#await prepareData()}
@@ -69,8 +147,28 @@
             <!-- Drug Offers Section -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
                 <h2 class="text-2xl font-bold mb-4">Your Drug Offers</h2>
+                <div class="mb-4">
+                    <h2 class="font-bold mb-4">Sort Drug Offers</h2>
+                    <Select items={sortingItems} bind:value={sortingValue} class="text-darkGreen" on:change={prepareData}/>
+                    <label for="drug" class="block font-semibold mb-2 mt-4">Filter by drug name:</label>
+                    <input list="drugs" id="drug" name="drug" bind:value={searchByDrug} on:input={prepareData}
+                           class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
+                    <datalist id="drugs">
+                        {#each drugs as drug}
+                            <option value={drug.name}/>
+                        {/each}
+                    </datalist>
+                    <h2 class="font-bold mb-4 mt-2">Filter by grams in stock range:</h2>
+                    <RangeSlider range float pushy step={2} pips all="label" min={minGrams} max={maxGrams} bind:values={searchByGrams} on:change={prepareData}/>
+                    <h2 class="font-bold mb-4">Filter by price per gram range:</h2>
+                    <RangeSlider range float pushy step={20} pips all="label" min={minPrice} max={maxPrice} bind:values={searchByPrice} on:change={prepareData}/>
+                    <button on:click={clearFilters}
+                            class="w-full mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        Clear Filters
+                    </button>
+                </div>
                 {#if drugOffers.length > 0}
-                    <ul class="space-y-4">
+                    <ul class="space-y-4 mb-3">
                         {#each drugOffers as drugOffer}
                             <li class="border border-asparagus p-4 rounded">
                                 <p><strong>Drug:</strong> {drugs.find(drug => drug.id === drugOffer.drug)?.name}</p>
@@ -90,6 +188,7 @@
                             </li>
                         {/each}
                     </ul>
+                    <Pagination bind:totalNumberOfObjects={totalNumberOfObjects} pageSize={3} bind:currentPage={page} pageChange={changePage} buttonColor="asparagus" buttonTextColor="darkGreen"/>
                 {:else}
                     <p>No Drug Offers from You yet!</p>
                 {/if}

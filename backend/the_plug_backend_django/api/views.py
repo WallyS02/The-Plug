@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q
+from django.contrib.postgres.aggregates import StringAgg
+from django.db.models import Q, F
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import make_naive
@@ -9,6 +10,8 @@ from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.core.mail import send_mail
@@ -27,6 +30,19 @@ environ.Env.read_env()
 
 
 # Create your views here.
+
+class CustomMeetingsPagination(PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 10
+    page_query_param = 'page'
+
+
+class CustomDrugOffersPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 5
+    page_query_param = 'page'
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -372,21 +388,67 @@ class DrugList(generics.ListAPIView):
 @permission_classes([IsAuthenticated])
 class UserMeetings(generics.ListAPIView):
     serializer_class = MeetingWithPlugInfoAndChosenOfferNamesSerializer
+    pagination_class = CustomMeetingsPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = '__all__'
 
     def get_queryset(self):
         user = self.request.user
         meetings = Meeting.objects.filter(user=user)
+
         meeting = meetings.first()
-        if meeting and meeting.user == user:
-            return meetings
-        else:
+        if meeting is None or meeting.user != user:
             return Meeting.objects.none()
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering:
+            if 'plug_username' in ordering:
+                meetings = meetings.order_by(F('chosenoffer__drug_offer__plug__app_user__username').asc())
+                if ordering.startswith('-'):
+                    meetings = meetings.order_by(F('chosenoffer__drug_offer__plug__app_user__username').desc())
+            elif 'chosen_offers' in ordering:
+                ascending = not ordering.startswith('-')
+                order_direction = '' if ascending else '-'
+
+                meetings = meetings.annotate(
+                    aggregated_offers=StringAgg(
+                        F('chosenoffer__drug_offer__drug__name'),
+                        delimiter=',',
+                        ordering='chosenoffer__drug_offer__drug__name'
+                    )
+                ).order_by(f'{order_direction}aggregated_offers')
+            else:
+                meetings = meetings.order_by(ordering)
+
+        plug_name = self.request.query_params.get('plug_name')
+        if plug_name:
+            meetings = meetings.filter(chosenoffer__drug_offer__plug__app_user__username__icontains=plug_name)
+
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+        if from_date:
+            from_date = datetime.fromisoformat(from_date)
+            meetings = meetings.filter(date__gte=from_date)
+        if to_date:
+            to_date = datetime.fromisoformat(to_date)
+            meetings = meetings.filter(date__lte=to_date)
+
+        chosen_offers = self.request.query_params.getlist('chosen_offers')
+        if chosen_offers:
+            meetings = meetings.filter(
+                chosenoffer__drug_offer__drug__name__in=chosen_offers
+            ).distinct()
+
+        return meetings
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class PlugMeetings(generics.ListAPIView):
     serializer_class = MeetingWithPlugInfoAndChosenOfferNamesSerializer
+    pagination_class = CustomMeetingsPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = '__all__'
 
     def get_queryset(self):
         user = self.request.user
@@ -396,9 +458,50 @@ class PlugMeetings(generics.ListAPIView):
         if meetings.exists():
             meeting = meetings.first()
             plug = Plug.objects.filter(drugoffer__chosenoffer__meeting=meeting).first()
-            if plug and plug.app_user == user:
-                return meetings
-        return Meeting.objects.none()
+            if plug is None or plug.app_user != user:
+                return Meeting.objects.none()
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering:
+            if 'client_username' in ordering:
+                meetings = meetings.order_by(F('user__username').asc())
+                if ordering.startswith('-'):
+                    meetings = meetings.order_by(F('user__username').desc())
+            elif 'chosen_offers' in ordering:
+                ascending = not ordering.startswith('-')
+                order_direction = '' if ascending else '-'
+
+                meetings = meetings.annotate(
+                    aggregated_offers=StringAgg(
+                        F('chosenoffer__drug_offer__drug__name'),
+                        delimiter=',',
+                        ordering='chosenoffer__drug_offer__drug__name'
+                    )
+                ).order_by(f'{order_direction}aggregated_offers')
+            else:
+                meetings = meetings.order_by(ordering)
+
+        client_name = self.request.query_params.get('client_name')
+        if client_name:
+            meetings = meetings.filter(user__username__icontains=client_name)
+
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+        if from_date:
+            from_date = datetime.fromisoformat(from_date)
+            meetings = meetings.filter(date__gte=from_date)
+        if to_date:
+            to_date = datetime.fromisoformat(to_date)
+            meetings = meetings.filter(date__lte=to_date)
+
+        chosen_offers = self.request.query_params.getlist('chosen_offers')
+        if chosen_offers:
+            meetings = meetings.filter(
+                chosenoffer__drug_offer__drug__name__in=chosen_offers
+            ).distinct()
+
+        return meetings
+
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -432,11 +535,50 @@ class DrugDrugOffers(generics.ListAPIView):
 @permission_classes([IsAuthenticated])
 class PlugDrugOffers(generics.ListAPIView):
     serializer_class = PlugDrugOffersPlusNamesSerializer
+    pagination_class = CustomDrugOffersPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = '__all__'
+
+    def paginate_queryset(self, queryset):
+        if self.paginator and self.request.query_params.get(self.paginator.page_query_param, None) is None:
+            return None
+        return super().paginate_queryset(queryset)
 
     def get_queryset(self):
         plug_id = self.kwargs.get('id')
         plug = get_object_or_404(Plug, pk=plug_id)
-        return DrugOffer.objects.filter(plug=plug)
+
+        drug_offers = DrugOffer.objects.filter(plug=plug)
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering:
+            if 'name' in ordering:
+                if ordering.startswith('-'):
+                    drug_offers = drug_offers.order_by(F('drug__name').desc())
+                else:
+                    drug_offers = drug_offers.order_by(F('drug__name').asc())
+            else:
+                drug_offers = drug_offers.order_by(ordering)
+
+        drug_name = self.request.query_params.get('drug_name')
+        if drug_name:
+            drug_offers = drug_offers.filter(drug__name__icontains=drug_name)
+
+        from_grams = self.request.query_params.get('from_grams')
+        to_grams = self.request.query_params.get('to_grams')
+        if from_grams:
+            drug_offers = drug_offers.filter(grams_in_stock__gte=from_grams)
+        if to_grams:
+            drug_offers = drug_offers.filter(grams_in_stock__lte=to_grams)
+
+        from_price = self.request.query_params.get('from_price')
+        to_price = self.request.query_params.get('to_price')
+        if from_price:
+            drug_offers = drug_offers.filter(price_per_gram__gte=from_price)
+        if to_price:
+            drug_offers = drug_offers.filter(price_per_gram__lte=to_price)
+
+        return drug_offers
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])

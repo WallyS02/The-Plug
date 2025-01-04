@@ -117,4 +117,6 @@ class MeetingWithPlugInfoAndChosenOfferNamesSerializer(serializers.ModelSerializ
 
     def get_chosen_offers(self, obj):
         chosen_offers = ChosenOffer.objects.filter(meeting=obj)
-        return [chosen_offer.drug_offer.drug.name for chosen_offer in chosen_offers]
+        chosen_offers_array = [chosen_offer.drug_offer.drug.name for chosen_offer in chosen_offers]
+        chosen_offers_array.sort()
+        return chosen_offers_array
