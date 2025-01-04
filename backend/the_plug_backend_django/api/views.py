@@ -481,13 +481,24 @@ class PlugMeetings(generics.ListAPIView):
             else:
                 meetings = meetings.order_by(ordering)
 
-        search_params = self.request.query_params.getlist('search', [])
-        if search_params:
-            q_objects = Q()
-            for param in search_params:
-                field, value = param.split('=')
-                q_objects |= Q(**{field: value})
-            meetings = meetings.filter(q_objects)
+        client_name = self.request.query_params.get('client_name')
+        if client_name:
+            meetings = meetings.filter(user__username__icontains=client_name)
+
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+        if from_date:
+            from_date = datetime.fromisoformat(from_date)
+            meetings = meetings.filter(date__gte=from_date)
+        if to_date:
+            to_date = datetime.fromisoformat(to_date)
+            meetings = meetings.filter(date__lte=to_date)
+
+        chosen_offers = self.request.query_params.getlist('chosen_offers')
+        if chosen_offers:
+            meetings = meetings.filter(
+                chosenoffer__drug_offer__drug__name__in=chosen_offers
+            ).distinct()
 
         return meetings
 
