@@ -6,7 +6,7 @@ token.subscribe((value) => {
     tokenValue = value;
 });
 
-export async function getClientMeetings(clientId: string, page: number, ordering: string): Promise<any> {
+export async function getClientMeetings(clientId: string, page: number, ordering: string, plugName: string | undefined, fromDate: string | undefined, toDate: string | undefined, chosenOffers: string[]): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -14,8 +14,22 @@ export async function getClientMeetings(clientId: string, page: number, ordering
             'Authorization': `Token ${tokenValue}`
         }
     }
-
-    let response = await sendRequest('meeting/user/' + clientId + '/?page=' + page + '&ordering=' + ordering, requestOptions);
+    let endpoint: string = 'meeting/user/' + clientId + '/?page=' + page + '&ordering=' + ordering;
+    if (plugName) {
+        endpoint += '&plug_name=' + plugName;
+    }
+    if (fromDate) {
+        endpoint += '&from_date=' + fromDate;
+    }
+    if (toDate) {
+        endpoint += '&to_date=' + toDate;
+    }
+    if (chosenOffers.length > 0) {
+        for (let chosenOffer of chosenOffers) {
+            endpoint += '&chosen_offers=' + chosenOffer;
+        }
+    }
+    let response = await sendRequest(endpoint, requestOptions);
     return response.body;
 }
 

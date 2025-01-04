@@ -3,8 +3,10 @@
     export let pageSize: number;
     export let currentPage: number;
     export let pageChange;
-    let totalPages: number = Math.ceil(totalNumberOfObjects / pageSize);
-    let pagesArray: number[] = Array(totalPages).fill().map((_, i) => i + 1);
+    let totalPages: number;
+    $: totalPages = Math.ceil(totalNumberOfObjects / pageSize);
+    let pagesArray: number[];
+    $: pagesArray = Array(totalPages).fill().map((_, i) => i + 1);
 
     export let buttonColor: string;
     export let buttonTextColor: string;

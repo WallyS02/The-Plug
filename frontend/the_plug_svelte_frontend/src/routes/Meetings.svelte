@@ -32,10 +32,37 @@
     ];
     let sortingValue: {value: string, label: string} = sortingItems[1];
 
+    let plugs: string[] = [];
+    let chosenOffers: string[] = [];
+    let chosenOfferName: string;
+    let datetimeFrom: Date | undefined = undefined;
+    let datetimeTo: Date | undefined = undefined;
+
+    let needsReload: boolean = true;
+
+    let searchByPlug: string | undefined;
+    let searchByDateFrom: string | undefined;
+    let searchByDateTo: string | undefined;
+    let searchForChosenOffers: string[] = [];
+
     async function prepareData() {
-        let response = await getClientMeetings($account_id, page, sortingValue.value);
+        let response = await getClientMeetings($account_id, page, sortingValue.value, searchByPlug, searchByDateFrom, searchByDateTo, searchForChosenOffers);
+        console.log(response);
         totalNumberOfObjects = response.count;
         meetings = response.results;
+        if (needsReload) {
+            reloadPlugAndChosenOffers();
+        }
+    }
+
+    function reloadPlugAndChosenOffers() {
+        plugs = [... new Set(meetings.map(meeting => {
+            return meeting.plug_username
+        }))];
+        chosenOffers = [... new Set(meetings.flatMap(meeting => {
+            return meeting.chosen_offers
+        }))];
+        needsReload = false;
     }
 
     function printChosenOffers(chosenOffers: string[]) {
@@ -52,6 +79,48 @@
             await prepareData();
         }
     }
+
+    async function prepareDate() {
+        if (datetimeFrom && datetimeTo) {
+            searchByDateFrom = datetimeFrom.toString();
+            searchByDateTo = datetimeTo.toString();
+        } else if (datetimeFrom) {
+            searchByDateFrom = datetimeFrom.toString();
+        } else if (datetimeTo) {
+            searchByDateTo = datetimeTo.toString();
+        }
+        await prepareData();
+    }
+
+    async function clearFilters() {
+        searchByPlug = undefined;
+        searchByDateFrom = undefined;
+        searchByDateTo = undefined;
+        datetimeFrom = undefined;
+        datetimeTo = undefined;
+        searchForChosenOffers = [];
+        reloadPlugAndChosenOffers();
+        await prepareData();
+    }
+
+    async function addToChosenFilterOffers() {
+        chosenOffers = chosenOffers.filter(chosenOffer => {
+            return chosenOffer !== chosenOfferName
+        });
+        searchForChosenOffers = [...searchForChosenOffers, chosenOfferName!];
+        searchForChosenOffers.sort((a, b) => (a > b) ? 1 : ((b > a) ? -1 : 0));
+        chosenOfferName = '';
+        await prepareData();
+    }
+
+    async function removeFromChosenFilterOffers(chosenFilterOffer: string) {
+        searchForChosenOffers = searchForChosenOffers.filter(searchForChosenOffer => {
+            return searchForChosenOffer !== chosenFilterOffer
+        });
+        chosenOffers = [...chosenOffers, chosenFilterOffer!];
+        chosenOffers.sort((a, b) => (a > b) ? 1 : ((b > a) ? -1 : 0));
+        await prepareData();
+    }
 </script>
 
 <main class="p-6 bg-darkAsparagus text-olivine min-h-screen flex flex-col space-y-6">
@@ -63,6 +132,44 @@
     {:then value}
         <h2 class="text-2xl font-bold mb-4 text-darkGreen">Sort Meetings</h2>
         <Select items={sortingItems} bind:value={sortingValue} class="text-darkGreen" on:change={prepareData}/>
+        <h2 class="text-2xl font-bold mb-4 text-darkGreen">Filter Meetings</h2>
+        <label for="plug" class="block text-xl font-semibold mb-2 mt-4 text-darkGreen">Select plug You want by typing and choosing from the list:</label>
+        <input list="plugs" id="plug" name="plug" bind:value={searchByPlug} on:input={prepareData}
+               class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
+        <datalist id="plugs">
+            {#each plugs as plug}
+                <option value={plug}/>
+            {/each}
+        </datalist>
+        <label for="datetime-from" class="block text-xl font-semibold mb-2 mt-4 text-darkGreen">From date:</label>
+        <input type="datetime-local" id="datetime-from" name="datetime-from" bind:value={datetimeFrom} on:input={prepareDate}
+               class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+        <label for="datetime-to" class="block text-xl font-semibold mb-2 mt-4 text-darkGreen">To date:</label>
+        <input type="datetime-local" id="datetime-to" name="datetime-to" bind:value={datetimeTo} on:input={prepareDate}
+               class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
+        <label for="drug" class="block text-xl font-semibold mb-2 text-darkGreen">Select chosen offers from the list:</label>
+        <input list="drugs" id="drug" name="drug" bind:value={chosenOfferName} on:input={addToChosenFilterOffers}
+               class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
+        <datalist id="drugs">
+            {#each chosenOffers as chosenOffer}
+                <option value={chosenOffer}/>
+            {/each}
+        </datalist>
+        <div class="flex flex-wrap gap-2 mt-4">
+            {#each searchForChosenOffers as chosenFilterOffer}
+                <div class="flex items-center p-2 bg-asparagus rounded-lg">
+                    <p class="mr-2 font-semibold text-darkGreen">{chosenFilterOffer}</p>
+                    <button class="flex items-center justify-center bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-all duration-300 shadow-md"
+                            on:click={() => { removeFromChosenFilterOffers(chosenFilterOffer) }}>
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            {/each}
+        </div>
+        <button on:click={clearFilters}
+                class="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+            Clear Filters
+        </button>
         <div class="flex flex-col md:flex-row gap-6">
             <!-- Meetings Section -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
@@ -99,7 +206,7 @@
                 {/if}
             </section>
         </div>
-        <Pagination totalNumberOfObjects={totalNumberOfObjects} pageSize={4} bind:currentPage={page} pageChange={changePage} buttonColor="darkMossGreen" buttonTextColor="olivine"/>
+        <Pagination bind:totalNumberOfObjects={totalNumberOfObjects} pageSize={4} bind:currentPage={page} pageChange={changePage} buttonColor="darkMossGreen" buttonTextColor="olivine"/>
     {:catch error}
         <div class="flex justify-center items-center h-screen">
             <p class="text-4xl font-bold text-red-700">Something went wrong!: {error.message}</p>
