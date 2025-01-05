@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type {DrugOffer, Meeting} from "../models";
+    import type {DrugOffer, Meeting, Plug} from "../models";
     import {getPlugDrugOffers} from "../service/drug-offer-service";
     import {getLocation} from "../service/location-service";
     import {createMeetingRequest, deleteMeetingRequest} from "../service/meeting-service";
@@ -9,6 +9,7 @@
     import {push} from "svelte-spa-router";
     import {getFuzzyLocalTimeFromPoint} from "@mapbox/timespace";
     import moment from 'moment-timezone';
+    import {getPlug} from "../service/plug-service";
 
     interface DrugOfferWithName extends DrugOffer {
         name: string;
@@ -27,6 +28,7 @@
     export let params: {};
     let chosenDrugName: string;
     let plugDrugOffers: DrugOfferWithName[] = [];
+    let plug: Plug;
     let chosenDrugOffers: DrugOfferWithName[] = [];
     let datetime: Date;
     let locationId: string;
@@ -44,6 +46,7 @@
         timezone = getFuzzyLocalTimeFromPoint(Date.now(), [location.longitude, location.latitude])._z.name;
         locationCurrentDatetime = moment().tz(timezone).format().slice(0, 16);
         plugDrugOffers = await getPlugDrugOffers(location.plug);
+        plug = await getPlug(location.plug);
     }
 
     async function createMeeting() {
@@ -112,6 +115,12 @@
     {:then value}
         <form on:submit|preventDefault={createMeeting} class="space-y-4">
             <div class="p-4 bg-darkMossGreen rounded-lg mb-4 text-olivine">
+                {#if plug.isPartner}
+                    <p class="p-1.5 text-2xl font-bold text-white bg-red-600 rounded text-center">Be careful! This Plug was marked as a partner!</p>
+                {/if}
+                {#if plug.isSlanderer}
+                    <p class="p-1.5 text-2xl font-bold text-white bg-red-600 rounded text-center">Be careful! This Plug was marked as a slanderer!</p>
+                {/if}
                 <label for="drug" class="block text-xl font-semibold mb-2">Select Drugs You need from the list:</label>
                 <input list="drugs" id="drug" name="drug" bind:value={chosenDrugName} on:input={addToChosenDrug}
                        class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>

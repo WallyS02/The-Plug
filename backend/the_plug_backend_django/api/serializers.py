@@ -81,7 +81,12 @@ class ChosenOfferWithDrugAndOfferInfoSerializer(serializers.ModelSerializer):
 
 class MeetingWithPlugInfoSerializer(serializers.ModelSerializer):
     plug_username = serializers.CharField(source='chosenoffer_set.first.drug_offer.plug.app_user.username')
+    plug_is_partner = serializers.BooleanField(source='chosenoffer_set.first.drug_offer.plug.isPartner')
+    plug_is_slanderer = serializers.BooleanField(source='chosenoffer_set.first.drug_offer.plug.isSlanderer')
     client_username = serializers.CharField(source='user.username')
+    client_rating = serializers.FloatField(source='user.rating')
+    client_is_partner = serializers.BooleanField(source='user.isPartner')
+    client_is_slanderer = serializers.BooleanField(source='user.isSlanderer')
     plug_id = serializers.IntegerField(source='chosenoffer_set.first.drug_offer.plug.id')
 
     class Meta:
@@ -92,6 +97,8 @@ class MeetingWithPlugInfoSerializer(serializers.ModelSerializer):
 class LocationPlusPlugUsernameAndRatingSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='plug.app_user.username')
     rating = serializers.FloatField(source='plug.rating')
+    isPartner = serializers.BooleanField(source='plug.isPartner')
+    isSlanderer = serializers.BooleanField(source='plug.isSlanderer')
     offered_drugs = serializers.SerializerMethodField()
 
     class Meta:

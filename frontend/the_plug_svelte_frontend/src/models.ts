@@ -1,6 +1,7 @@
 export interface AppUser {
     id: number;
     username: string;
+    rating: number | null;
     isPartner: boolean;
     isSlanderer: boolean;
     plug: number;
@@ -10,6 +11,8 @@ export interface AppUser {
 export interface Plug {
     id: number;
     rating: number | null;
+    isPartner: boolean;
+    isSlanderer: boolean;
     minimal_break_between_meetings_in_minutes: number;
     user: number;
     //location: Location[];

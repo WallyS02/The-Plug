@@ -33,6 +33,7 @@ class AppUser(AbstractUser):
     email = None
     first_name = None
     last_name = None
+    rating = models.FloatField(blank=True, null=True)
     plug = models.OneToOneField('Plug', on_delete=models.SET_NULL, related_name='app_user', null=True)
 
     USERNAME_FIELD = 'username'
@@ -46,6 +47,8 @@ class AppUser(AbstractUser):
 
 class Plug(models.Model):
     rating = models.FloatField(blank=True, null=True)
+    isPartner = models.BooleanField(default=False)
+    isSlanderer = models.BooleanField(default=False)
     minimal_break_between_meetings_in_minutes = models.IntegerField(default=30)
 
 

@@ -14,6 +14,8 @@
     interface LocationOnMap extends Location {
         username: string;
         rating: number | null;
+        isPartner: boolean;
+        isSlanderer: boolean;
         offered_drugs: string[];
     }
 
@@ -164,6 +166,12 @@
                 }
                 else {
                     ratingInfo = `Rating: ${location.rating * 100}% probability of high satisfaction`;
+                }
+                if (location.isPartner) {
+                    ratingInfo += '<br> <div class="font-bold text-red-600">Be careful! This Plug was marked as a partner!</div>'
+                }
+                else if (location.isSlanderer) {
+                    ratingInfo += '<br> <div class="font-bold text-red-600">Be careful! This Plug was marked as a slanderer!</div>'
                 }
                 if ($account_id !== '' && $username !== '' && $token !== '') {
                     requestMeetingButton = `<br> <a
