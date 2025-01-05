@@ -14,22 +14,7 @@ export async function getClientMeetings(clientId: string, page: number, ordering
             'Authorization': `Token ${tokenValue}`
         }
     }
-    let endpoint: string = 'meeting/user/' + clientId + '/?page=' + page + '&ordering=' + ordering;
-    if (plugName) {
-        endpoint += '&plug_name=' + plugName;
-    }
-    if (fromDate) {
-        endpoint += '&from_date=' + fromDate;
-    }
-    if (toDate) {
-        endpoint += '&to_date=' + toDate;
-    }
-    if (chosenOffers.length > 0) {
-        for (let chosenOffer of chosenOffers) {
-            endpoint += '&chosen_offers=' + chosenOffer;
-        }
-    }
-    let response = await sendRequest(endpoint, requestOptions);
+    let response = await sendRequest(prepareMeetingsQueryParameters('meeting/user/' + clientId + '/?page=' + page + '&ordering=' + ordering, 'plug_name', plugName, fromDate, toDate, chosenOffers), requestOptions);
     return response.body;
 }
 
@@ -133,9 +118,13 @@ export async function getPlugMeetings(plugId: string, page: number, ordering: st
             'Authorization': `Token ${tokenValue}`
         }
     }
-    let endpoint: string = 'meeting/plug/' + plugId + '/?page=' + page + '&ordering=' + ordering;
-    if (clientName) {
-        endpoint += '&client_name=' + clientName;
+    let response = await sendRequest(prepareMeetingsQueryParameters('meeting/plug/' + plugId + '/?page=' + page + '&ordering=' + ordering, 'client_name', clientName, fromDate, toDate, chosenOffers), requestOptions);
+    return response.body;
+}
+
+function prepareMeetingsQueryParameters(endpoint: string, nameType: string, name: string | undefined, fromDate: string | undefined, toDate: string | undefined, chosenOffers: string[]): string {
+    if (name) {
+        endpoint += '&' + nameType + '=' + name;
     }
     if (fromDate) {
         endpoint += '&from_date=' + fromDate;
@@ -148,6 +137,5 @@ export async function getPlugMeetings(plugId: string, page: number, ordering: st
             endpoint += '&chosen_offers=' + chosenOffer;
         }
     }
-    let response = await sendRequest(endpoint, requestOptions);
-    return response.body;
+    return endpoint;
 }
