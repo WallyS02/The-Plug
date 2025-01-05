@@ -1,6 +1,8 @@
-django
-djangorestframework
+django~=5.0.7
+djangorestframework~=3.15.2
 environs
 psycopg2-binary
-django-environ
+django-environ~=0.11.2
 django-cors-headers
+environ~=1.0
+scipy~=1.10.1

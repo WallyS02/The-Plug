@@ -15,6 +15,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.core.mail import send_mail
+from scipy.stats import beta
 
 from .currencies import currencies
 from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
@@ -727,8 +728,84 @@ class AddRatingMeeting(generics.UpdateAPIView):
             meeting.isHighOrLowClientSatisfaction = request.data['isHighOrLowClientSatisfaction']
         meeting.save()
 
+        if meeting.user.id == request.user.id:
+            self.update_ratings(chosen_offer.drug_offer.plug.app_user.id, True)
+        else:
+            self.update_ratings(meeting.user.id, False)
+
         return Response({}, status=status.HTTP_200_OK)
 
+    def update_ratings(self, user_or_plug_id, is_for_plug):
+        if is_for_plug:
+            meetings = Meeting.objects.filter(chosenoffer__drug_offer__plug__id=user_or_plug_id).distinct()
+            plug = Plug.objects.get(id=user_or_plug_id)
+            plug.rating = self.calculate_rating(meetings, True)
+            plug.save()
+        else:
+            meetings = Meeting.objects.filter(user__id=user_or_plug_id).distinct()
+            user = AppUser.objects.get(id=user_or_plug_id)
+            user.rating = self.calculate_rating(meetings, False)
+            user.save()
+
+        self.check_dishonest_users(meetings, is_for_plug)
+
+    def calculate_rating(self, meetings, is_for_plug):
+        if is_for_plug:
+            mapped_ratings = list(map(lambda meeting: meeting.isHighOrLowClientSatisfaction, meetings))
+        else:
+            mapped_ratings = list(map(lambda meeting: meeting.isHighOrLowPlugSatisfaction, meetings))
+
+        high_satisfaction_number = mapped_ratings.count('high')
+        return (high_satisfaction_number + 1) / (high_satisfaction_number + mapped_ratings.count('low') + 2)
+
+    def check_dishonest_users(self, meetings, is_for_plug):
+        users = self.prepare_users(meetings, is_for_plug)
+        while True:
+            dishonest_users = set()
+            global_rating = (sum(list(map(lambda user_high: user_high[1], users))) + 1) / (sum(list(map(lambda user_high: user_high[1], users))) + sum(list(map(lambda user_high: user_high[2], users))) + 2)
+            for user in users:
+                lower, upper = beta.ppf(0.05, user[1], user[2]), beta.ppf(0.95, user[1], user[2])
+
+                if global_rating < lower:
+                    dishonest_users.add((user[0], 'partner', user))
+                if global_rating > upper:
+                    dishonest_users.add((user[0], 'slander', user))
+
+            for dishonest_user in dishonest_users:
+                users.remove(dishonest_user[2])
+
+            if len(dishonest_users) == 0:
+                break
+
+            self.set_dishonest_users(dishonest_users, is_for_plug)
+
+    def prepare_users(self, meetings, is_for_plug):
+        if is_for_plug:
+            users = list(map(lambda meeting: [meeting.user.id], meetings))
+            for user in users:
+                user_meetings = meetings.filter(user__id=user[0])
+                user.append(list(map(lambda meeting_high: meeting_high.isHighOrLowClientSatisfaction, user_meetings)).count('high'))
+                user.append(list(map(lambda meeting_low: meeting_low.isHighOrLowClientSatisfaction, user_meetings)).count('low'))
+            return {tuple(x) for x in users}
+        else:
+            users = list(map(lambda meeting: [ChosenOffer.objects.filter(meeting=meeting).first().drug_offer.plug.id], meetings))
+            for user in users:
+                user_meetings = meetings.filter(chosenoffer__drug_offer__plug__id=user[0]).distinct()
+                user.append(list(map(lambda meeting_high: meeting_high.isHighOrLowPlugSatisfaction, user_meetings)).count('high'))
+                user.append(list(map(lambda meeting_low: meeting_low.isHighOrLowPlugSatisfaction, user_meetings)).count('low'))
+            return {tuple(x) for x in users}
+
+    def set_dishonest_users(self, dishonest_users, is_for_plug):
+        for dishonest_user in dishonest_users:
+            if is_for_plug:
+                get_dishonest_user = AppUser.objects.get(id=dishonest_user[0])
+            else:
+                get_dishonest_user = Plug.objects.get(id=dishonest_user[0])
+            if dishonest_user[1] == 'partner':
+                get_dishonest_user.isPartner = True
+            elif dishonest_user[1] == 'slander':
+                get_dishonest_user.isSlander = True
+            get_dishonest_user.save()
 
 @api_view(['POST'])
 def send_new_drug_request_mail(request):
