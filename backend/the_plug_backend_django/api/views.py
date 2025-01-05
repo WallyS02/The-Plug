@@ -769,7 +769,7 @@ class AddRatingMeeting(generics.UpdateAPIView):
                 if global_rating < lower:
                     dishonest_users.add((user[0], 'partner', user))
                 if global_rating > upper:
-                    dishonest_users.add((user[0], 'slander', user))
+                    dishonest_users.add((user[0], 'slanderer', user))
 
             for dishonest_user in dishonest_users:
                 users.remove(dishonest_user[2])
@@ -803,8 +803,8 @@ class AddRatingMeeting(generics.UpdateAPIView):
                 get_dishonest_user = Plug.objects.get(id=dishonest_user[0])
             if dishonest_user[1] == 'partner':
                 get_dishonest_user.isPartner = True
-            elif dishonest_user[1] == 'slander':
-                get_dishonest_user.isSlander = True
+            elif dishonest_user[1] == 'slanderer':
+                get_dishonest_user.isSlanderer = True
             get_dishonest_user.save()
 
 @api_view(['POST'])
