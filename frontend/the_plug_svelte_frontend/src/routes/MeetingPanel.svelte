@@ -28,7 +28,12 @@
 
     interface MeetingWithPlugInfo extends Meeting {
         plug_username: string;
+        plug_is_partner: boolean;
+        plug_is_slanderer: boolean;
         client_username: string;
+        client_rating: number;
+        client_is_partner: boolean
+        client_is_slanderer: boolean;
         plug_id: string;
     }
 
@@ -38,6 +43,7 @@
     let timezone: string;
     let showAcceptButton: boolean = false, showRatingButtons = false;
     let location: Location;
+    let ratingInfo: string = '';
 
     async function prepareData() {
         meeting = await getMeeting(params.id);
@@ -47,6 +53,12 @@
         meeting.date = moment(meeting.date).tz(timezone).toDate();
         if (!meeting.isCanceled && !meeting.isAcceptedByPlug && moment(meeting.date).isBefore(new Date())) {
             await cancelMeeting(true, false);
+        }
+        if (meeting.client_rating === null) {
+            ratingInfo = 'No ratings yet'
+        }
+        else {
+            ratingInfo = `Rating: ${meeting.client_rating * 100}% probability of high satisfaction`;
         }
         if ($plug_id === meeting.plug_id) {
             if (!meeting.isAcceptedByPlug) {
@@ -125,6 +137,31 @@
         }
         return paymentString.substring(0, paymentString.length - 2);
     }
+
+    function generateStars(rating: number | null) {
+        const totalStars = 5;
+        let stars = '';
+
+        if (rating === null) {
+            rating = 0;
+        }
+
+        for (let i = 1; i <= totalStars; i++) {
+            const fillPercent = Math.min(Math.max((rating * totalStars) - (i - 1), 0), 1) * 100;
+            stars += `
+              <div class="relative inline-block text-gray-300">
+                <span class="block w-5 h-5">&#9733;</span>
+                <span
+                  class="absolute top-0 left-0 block w-5 h-5 overflow-hidden"
+                  style="width: ${fillPercent / 2}%; color: #FFD700;"
+                >
+                  &#9733;
+                </span>
+              </div>`;
+        }
+
+        return stars;
+    }
 </script>
 
 <main class="p-4">
@@ -152,6 +189,21 @@
                     <p class="p-1.5 text-4xl font-bold text-white bg-red-600 rounded">This meeting is canceled by Client</p>
                 {/if}
             </div>
+        {/if}
+        {#if meeting.plug_id === $plug_id}
+            {#if meeting.client_is_partner}
+                <p class="p-1.5 text-2xl font-bold text-white bg-red-600 rounded text-center">Be careful! This Client was marked as a partner!</p>
+            {/if}
+            {#if meeting.client_is_slanderer}
+                <p class="p-1.5 text-2xl font-bold text-white bg-red-600 rounded text-center">Be careful! This Client was marked as a slanderer!</p>
+            {/if}
+        {:else}
+            {#if meeting.plug_is_partner}
+                <p class="p-1.5 text-2xl font-bold text-white bg-red-600 rounded text-center">Be careful! This Plug was marked as a partner!</p>
+            {/if}
+            {#if meeting.plug_is_slanderer}
+                <p class="p-1.5 text-2xl font-bold text-white bg-red-600 rounded text-center">Be careful! This Plug was marked as a slanderer!</p>
+            {/if}
         {/if}
         {#if !moment(meeting.date).isAfter(new Date()) && !meeting.isCanceled && showRatingButtons}
             <div class="p-6 flex flex-col gap-6 mt-6 bg-darkMossGreen rounded">
@@ -220,6 +272,12 @@
                     <p class="font-semibold"><strong>Time (in localization timezone):</strong> {moment(meeting.date).format('HH:mm')}</p>
                     {#if meeting.plug_id === $plug_id}
                         <p class="font-semibold"><strong>Client username:</strong> {meeting.client_username}</p>
+                        <p class="font-semibold"><strong>Client Rating</strong></p>
+                        <div class="flex items-center">
+                            {@html generateStars(meeting.client_rating)}
+                        </div>
+                        <p>{ratingInfo}</p>
+                        <a class="text-blue-400 underline" href="/#/rating-info">See more about out rating system</a>
                     {:else}
                         <p class="font-semibold"><strong>Plug username:</strong> {meeting.plug_username}</p>
                     {/if}
