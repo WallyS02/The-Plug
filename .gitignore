@@ -3,3 +3,7 @@ database
 
 TODO.txt
 .env
+
+backend/the_plug_backend_django/api/__pycache__/
+backend/the_plug_backend_django/api/migrations/__pycache__/
+backend/the_plug_backend_django/the_plug_backend_django/__pycache__/

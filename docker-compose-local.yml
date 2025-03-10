@@ -14,14 +14,15 @@ services:
      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
      - WEB_APP_URL=http://the-plug-frontend
+     - ALLOWED_HOSTS=*
+     - DEBUG=1
+     - SECRET_KEY=${SECRET_KEY}
 
   the-plug-frontend:
     image: wallys02/the-plug-frontend:latest
     restart: always
     ports:
-      - "80:80"
-    environment:
-     API_URL: http://the-plug-backend:8080
+      - "80:8080"
     depends_on:
       - the-plug-backend
 
