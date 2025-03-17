@@ -20,8 +20,11 @@ spec:
         image: postgres:15.5-bullseye
         ports:
         - containerPort: 5432
+        envFrom:
+          - secretRef:
+              name: db-secret
         volumeMounts:
-        - name: db-data
+        - name: db-storage
           mountPath: /var/lib/postgresql/data
   updateStrategy:
     type: RollingUpdate
@@ -29,7 +32,7 @@ spec:
       maxUnavailable: 1
   volumeClaimTemplates:
   - metadata:
-      name: db-pvc
+      name: db-storage
     spec:
       accessModes: [ ReadWriteMany ]
       resources:

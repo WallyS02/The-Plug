@@ -17,6 +17,7 @@ spec:
       containers:
       - name: backend-container
         image: wallys02/the-plug-backend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
         envFrom:

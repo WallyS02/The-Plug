@@ -4,7 +4,7 @@ metadata:
   name: db-service
 spec:
   selector:
-    plug: db
+    plug: db-pods
   ports:
   - protocol: TCP
     port: 5432

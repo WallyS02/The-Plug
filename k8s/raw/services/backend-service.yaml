@@ -4,7 +4,7 @@ metadata:
   name: backend-service
 spec:
   selector:
-    plug: backend
+    plug: backend-pods
   ports:
   - protocol: TCP
     port: 8080
