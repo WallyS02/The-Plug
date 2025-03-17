@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    plug: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      plug: frontend-pods
+  template:
+    metadata:
+      labels:
+        plug: frontend-pods
+    spec:
+      containers:
+      - name: frontend-container
+        image: wallys02/the-plug-frontend:latest
+        ports:
+        - containerPort: 8080
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1

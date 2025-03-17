@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    plug: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      plug: backend-pods
+  template:
+    metadata:
+      labels:
+        plug: backend-pods
+    spec:
+      containers:
+      - name: backend-container
+        image: wallys02/the-plug-backend:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+          - configMapRef:
+              name: backend-config-map
+          - secretRef:
+              name: backend-secret
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
