@@ -5,7 +5,7 @@ metadata:
   labels:
     plug: db
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       plug: db-pods
@@ -26,6 +26,13 @@ spec:
         volumeMounts:
         - name: db-storage
           mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:

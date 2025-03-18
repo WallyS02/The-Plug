@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: plug-namespace
   labels:
     plug: frontend
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       plug: frontend-pods
@@ -17,8 +18,28 @@ spec:
       containers:
       - name: frontend-container
         image: wallys02/the-plug-frontend:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
   strategy:
     type: RollingUpdate
     rollingUpdate:

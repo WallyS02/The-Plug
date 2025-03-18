@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+  namespace: plug-namespace
+  labels:
+    plug: pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      plug-admin: pgadmin-pods
+  template:
+    metadata:
+      labels:
+        plug-admin: pgadmin-pods
+    spec:
+      containers:
+      - name: pgadmin-container
+        image: dpage/pgadmin4:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        envFrom:
+          - secretRef:
+              name: pgadmin-secret
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
