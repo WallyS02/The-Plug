@@ -19,6 +19,8 @@ cd ../services
 k apply -f db-service.yaml
 cd ../secrets
 k apply -f pgadmin-secret.yaml
+cd ../hpas
+k apply -f db-hpa.yaml
 cd ../deployments
 k apply -f pgadmin-deployment.yaml
 cd ../services
@@ -31,15 +33,20 @@ cd ../deployments
 k apply -f backend-deployment.yaml
 cd ../services
 k apply -f backend-service.yaml
+cd ../hpas
+k apply -f backend-hpa.yaml
 cd ../network-policies
 k apply -f backend-db-network-policy.yaml
 cd ../deployments
 k apply -f frontend-deployment.yaml
 cd ../services
 k apply -f frontend-service.yaml
+cd ../hpas
+k apply -f frontend-hpa.yaml
 cd ../network-policies
 k apply -f frontend-backend-network-policy.yaml
 cd ../ingresses
 k apply -f ingress.yaml
 cd ..
-minikube tunnel
+k config set-context --current --namespace=plug-namespace
+# minikube tunnel # command asks for password for permissions
