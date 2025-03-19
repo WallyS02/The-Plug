@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    plug-admin: pgadmin-pods
+  ports:
+  - protocol: TCP
+    port: {{ .Values.pgadminService.port }}
+    targetPort: 80
+  type: {{ .Values.pgadminService.type }}

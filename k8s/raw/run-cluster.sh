@@ -1,52 +1,30 @@
 #!/bin/bash -i
 source ~/.bashrc
-if [ "$(minikube status | grep "host: Running")" != "host: Running" ];
+if ! minikube status | grep -q "host: Running";
 then
   chmod +x ./set-up-cluster.sh
   ./set-up-cluster.sh
 fi
-cd namespaces
-k apply -f plug-namespace.yaml
-cd ../storage-classes
-k apply -f db-storage-class.yaml
-cd ../pvces
-k apply -f db-pvc.yaml
-cd ../secrets
-k apply -f db-secret.yaml
-cd ../stateful-sets
-k apply -f db-stateful-set.yaml
-cd ../services
-k apply -f db-service.yaml
-cd ../secrets
-k apply -f pgadmin-secret.yaml
-cd ../hpas
-k apply -f db-hpa.yaml
-cd ../deployments
-k apply -f pgadmin-deployment.yaml
-cd ../services
-k apply -f pgadmin-service.yaml
-cd ../config-maps
-k apply -f backend-config-map.yaml
-cd ../secrets
-k apply -f backend-secret.yaml
-cd ../deployments
-k apply -f backend-deployment.yaml
-cd ../services
-k apply -f backend-service.yaml
-cd ../hpas
-k apply -f backend-hpa.yaml
-cd ../network-policies
-k apply -f backend-db-network-policy.yaml
-cd ../deployments
-k apply -f frontend-deployment.yaml
-cd ../services
-k apply -f frontend-service.yaml
-cd ../hpas
-k apply -f frontend-hpa.yaml
-cd ../network-policies
-k apply -f frontend-backend-network-policy.yaml
-cd ../ingresses
-k apply -f ingress.yaml
-cd ..
+k apply -f ./namespaces/plug-namespace.yaml
+k apply -f ./storage-classes/db-storage-class.yaml
+k apply -f ./pvces/db-pvc.yaml
+k apply -f ./secrets/db-secret-resolved.yaml
+k apply -f ./stateful-sets/db-stateful-set.yaml
+k apply -f ./services/db-service.yaml
+k apply -f ./secrets/pgadmin-secret-resolved.yaml
+k apply -f ./hpas/db-hpa.yaml
+k apply -f ./deployments/pgadmin-deployment.yaml
+k apply -f ./services/pgadmin-service.yaml
+k apply -f ./config-maps/backend-config-map.yaml
+k apply -f ./secrets/backend-secret-resolved.yaml
+k apply -f ./deploymentsbackend-deployment.yaml
+k apply -f ./servicesbackend-service.yaml
+k apply -f ./hpasbackend-hpa.yaml
+k apply -f ./network-policiesbackend-db-network-policy.yaml
+k apply -f ./deploymentsfrontend-deployment.yaml
+k apply -f ./servicesfrontend-service.yaml
+k apply -f ./hpasfrontend-hpa.yaml
+k apply -f ./network-policiesfrontend-backend-network-policy.yaml
+k apply -f ./ingressesingress.yaml
 k config set-context --current --namespace=plug-namespace
 # minikube tunnel # command asks for password for permissions

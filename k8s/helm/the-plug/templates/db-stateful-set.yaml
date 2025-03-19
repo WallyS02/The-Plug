@@ -2,11 +2,11 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: db
-  namespace: plug-namespace
+  namespace: {{ .Values.namespace }}
   labels:
     plug: db
 spec:
-  replicas: 1
+  replicas: {{ .Values.dbStatefulSet.replicas }}
   selector:
     matchLabels:
       plug: db-pods
@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
       - name: db-container
-        image: postgres:15.5-bullseye
-        imagePullPolicy: IfNotPresent
+        image: {{ .Values.dbStatefulSet.image }}
+        imagePullPolicy: {{ .Values.dbStatefulSet.imagePullPolicy }}
         ports:
         - containerPort: 5432
         envFrom:
@@ -30,15 +30,15 @@ spec:
           mountPath: /var/lib/postgresql/data
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
+            memory: {{ .Values.dbStatefulSet.requestsMemory | quote }}
+            cpu: {{ .Values.dbStatefulSet.requestsCpu | quote }}
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: {{ .Values.dbStatefulSet.limitsMemory | quote }}
+            cpu: {{ .Values.dbStatefulSet.limitsCpu | quote }}
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: {{ .Values.dbStatefulSet.rollingUpdateMaxUnavailable }}
   volumeClaimTemplates:
   - metadata:
       name: db-storage
@@ -46,4 +46,4 @@ spec:
       accessModes: [ ReadWriteMany ]
       resources:
         requests:
-          storage: 100Mi
+          storage: {{ .Values.dbStatefulSet.storageClaim }}

@@ -1,0 +1,127 @@
+namespace: plug-namespace
+
+backendConfigMap:
+  dbHost: db-service
+  webAppUrl: http://frontend-service
+  allowedHosts: "*"
+  debug: "1"
+
+backendDbNetworkPolicy:
+  dbPort: 5432
+
+backendDeployment:
+  replicas: 2
+  image: wallys02/the-plug-backend:latest
+  imagePullPolicy: Never
+  requestsMemory: "512Mi"
+  requestsCpu: "250m"
+  limitsMemory: "2048Mi"
+  limitsCpu: "500m"
+  livenessAndReadinessProbePath: /api/drug/list/
+  livenessProbeInitialDelaySeconds: 15
+  livenessProbePeriodSeconds: 10
+  readinessProbeInitialDelaySeconds: 5
+  readinessProbePeriodSeconds: 10
+  rollingUpdateMaxUnavailable: 1
+  rollingUpdateMaxSurge: 1
+
+backendHpa:
+  minReplicas: 2
+  maxReplicas: 4
+  cpuAverageUtilization: 50
+  memoryAverageUtilization: 50
+
+backendSecret:
+  dbName: ${POSTGRES_DB}
+  dbUser: ${POSTGRES_USER}
+  dbPassword: ${POSTGRES_PASSWORD}
+  emailHostUser: ${EMAIL_HOST_USER}
+  emailHostPassword: ${EMAIL_HOST_PASSWORD}
+  secretKey: ${SECRET_KEY}
+
+backendService:
+  port: 8080
+  type: ClusterIP
+
+dbHpa:
+  minReplicas: 1
+  maxReplicas: 2
+  cpuAverageUtilization: 50
+  memoryAverageUtilization: 50
+
+dbPvc:
+  storage: 100Mi
+
+dbSecret:
+  postgresDb: ${POSTGRES_DB}
+  postgresUser: ${POSTGRES_USER}
+  postgresPassword: ${POSTGRES_PASSWORD}
+
+dbService:
+  port: 5432
+  type: ClusterIP
+
+dbStatefulSet:
+  replicas: 1
+  image: postgres:15.5-bullseye
+  imagePullPolicy: IfNotPresent
+  requestsMemory: "256Mi"
+  requestsCpu: "250m"
+  limitsMemory: "512Mi"
+  limitsCpu: "500m"
+  rollingUpdateMaxUnavailable: 1
+  storageClaim: 100Mi
+
+dbStorageClass:
+  archiveOnDelete: "false"
+
+frontendBackendNetworkPolicy:
+  backendPort: 8080
+
+frontendDeployment:
+  replicas: 2
+  image: wallys02/the-plug-frontend:latest
+  imagePullPolicy: Never
+  requestsMemory: "128Mi"
+  requestsCpu: "250m"
+  limitsMemory: "512Mi"
+  limitsCpu: "500m"
+  livenessAndReadinessProbePath: /
+  livenessProbeInitialDelaySeconds: 10
+  livenessProbePeriodSeconds: 10
+  readinessProbeInitialDelaySeconds: 5
+  readinessProbePeriodSeconds: 10
+  rollingUpdateMaxUnavailable: 1
+  rollingUpdateMaxSurge: 1
+
+frontendHpa:
+  minReplicas: 2
+  maxReplicas: 4
+  cpuAverageUtilization: 50
+  memoryAverageUtilization: 50
+
+frontendService:
+  port: 80
+  type: NodePort
+
+ingress:
+  host: localhost
+  frontendPath: /
+  frontendPort: 80
+  backendPath: /api
+  backendPort: 8080
+
+pgadminDeployment:
+  replicas: 1
+  image: dpage/pgadmin4:latest
+  imagePullPolicy: IfNotPresent
+  rollingUpdateMaxUnavailable: 1
+  rollingUpdateMaxSurge: 1
+
+pgadminSecret:
+  pgadminDefaultEmail: ${PGADMIN_DEFAULT_EMAIL}
+  pgadminDefaultPassword: ${PGADMIN_DEFAULT_PASSWORD}
+
+pgadminService:
+  port: 5050
+  type: NodePort

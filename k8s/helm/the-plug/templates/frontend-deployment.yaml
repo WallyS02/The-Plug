@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Values.namespace }}
+  labels:
+    plug: frontend
+spec:
+  replicas: {{ .Values.frontendDeployment.replicas }}
+  selector:
+    matchLabels:
+      plug: frontend-pods
+  template:
+    metadata:
+      labels:
+        plug: frontend-pods
+    spec:
+      containers:
+      - name: frontend-container
+        image: {{ .Values.frontendDeployment.image }}
+        imagePullPolicy: {{ .Values.frontendDeployment.imagePullPolicy }}
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: {{ .Values.frontendDeployment.requestsMemory | quote }}
+            cpu: {{ .Values.frontendDeployment.requestsCpu | quote }}
+          limits:
+            memory: {{ .Values.frontendDeployment.limitsMemory | quote }}
+            cpu: {{ .Values.frontendDeployment.limitsCpu | quote }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.frontendDeployment.livenessAndReadinessProbePath }}
+            port: 8080
+          initialDelaySeconds: {{ .Values.frontendDeployment.livenessProbeInitialDelaySeconds }}
+          periodSeconds: {{ .Values.frontendDeployment.livenessProbePeriodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.frontendDeployment.livenessAndReadinessProbePath }}
+            port: 8080
+          initialDelaySeconds: {{ .Values.frontendDeployment.readinessProbeInitialDelaySeconds }}
+          periodSeconds: {{ .Values.frontendDeployment.readinessProbePeriodSeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.frontendDeployment.rollingUpdateMaxUnavailable }}
+      maxSurge: {{ .Values.frontendDeployment.rollingUpdateMaxSurge }}

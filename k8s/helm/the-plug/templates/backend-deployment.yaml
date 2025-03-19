@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: {{ .Values.namespace }}
+  labels:
+    plug: backend
+spec:
+  replicas: {{ .Values.backendDeployment.replicas }}
+  selector:
+    matchLabels:
+      plug: backend-pods
+  template:
+    metadata:
+      labels:
+        plug: backend-pods
+    spec:
+      containers:
+      - name: backend-container
+        image: {{ .Values.backendDeployment.image }}
+        imagePullPolicy: {{ .Values.backendDeployment.imagePullPolicy }}
+        ports:
+        - containerPort: 8080
+        envFrom:
+          - configMapRef:
+              name: backend-config-map
+          - secretRef:
+              name: backend-secret
+        resources:
+          requests:
+            memory: {{ .Values.backendDeployment.requestsMemory | quote }}
+            cpu: {{ .Values.backendDeployment.requestsCpu | quote }}
+          limits:
+            memory: {{ .Values.backendDeployment.limitsMemory | quote }}
+            cpu: {{ .Values.backendDeployment.limitsCpu | quote }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.backendDeployment.livenessAndReadinessProbePath }}
+            port: 8080
+          initialDelaySeconds: {{ .Values.backendDeployment.livenessProbeInitialDelaySeconds }}
+          periodSeconds: {{ .Values.backendDeployment.livenessProbePeriodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.backendDeployment.livenessAndReadinessProbePath }}
+            port: 8080
+          initialDelaySeconds: {{ .Values.backendDeployment.readinessProbeInitialDelaySeconds }}
+          periodSeconds: {{ .Values.backendDeployment.readinessProbePeriodSeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.backendDeployment.rollingUpdateMaxUnavailable }}
+      maxSurge: {{ .Values.backendDeployment.rollingUpdateMaxSurge }}
