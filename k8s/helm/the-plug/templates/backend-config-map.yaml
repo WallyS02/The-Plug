@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config-map
+  namespace: {{ .Values.namespace }}
+  labels:
+    plug: backend-config-map
+data:
+  DB_HOST: {{ .Values.backendConfigMap.dbHost }}
+  WEB_APP_URL: {{ .Values.backendConfigMap.webAppUrl }}
+  ALLOWED_HOSTS: {{ .Values.backendConfigMap.allowedHosts | quote }}
+  DEBUG: {{ .Values.backendConfigMap.debug | quote }}

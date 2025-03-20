@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config-map
+  namespace: plug-namespace
+  labels:
+    plug: backend-config-map
+data:
+  DB_HOST: db-service
+  WEB_APP_URL: http://frontend-service
+  ALLOWED_HOSTS: "*"
+  DEBUG: '1'

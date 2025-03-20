@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: plug-namespace
+  labels:
+    plug: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      plug: backend-pods
+  template:
+    metadata:
+      labels:
+        plug: backend-pods
+    spec:
+      containers:
+      - name: backend-container
+        image: wallys02/the-plug-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        envFrom:
+          - configMapRef:
+              name: backend-config-map
+          - secretRef:
+              name: backend-secret
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2048Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/drug/list/
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/drug/list/
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1

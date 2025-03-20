@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+  namespace: {{ .Values.namespace }}
+  labels:
+    plug: pgadmin
+spec:
+  replicas: {{ .Values.pgadminDeployment.replicas }}
+  selector:
+    matchLabels:
+      plug-admin: pgadmin-pods
+  template:
+    metadata:
+      labels:
+        plug-admin: pgadmin-pods
+    spec:
+      containers:
+      - name: pgadmin-container
+        image: {{ .Values.pgadminDeployment.image }}
+        imagePullPolicy: {{ .Values.pgadminDeployment.imagePullPolicy }}
+        ports:
+        - containerPort: 80
+        envFrom:
+          - secretRef:
+              name: pgadmin-secret
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.pgadminDeployment.rollingUpdateMaxUnavailable }}
+      maxSurge: {{ .Values.pgadminDeployment.rollingUpdateMaxSurge }}

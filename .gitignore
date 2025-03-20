@@ -2,7 +2,12 @@
 database
 
 TODO.txt
-.env
+k8s/raw/secrets/.env
+k8s/helm/the-plug/.env
+k8s/helm/the-plug/values.yaml
+k8s/raw/secrets/backend-secret-resolved.yaml
+k8s/raw/secrets/db-secret-resolved.yaml
+k8s/raw/secrets/pgadmin-secret-resolved.yaml
 
 backend/the_plug_backend_django/api/__pycache__/
 backend/the_plug_backend_django/api/migrations/__pycache__/

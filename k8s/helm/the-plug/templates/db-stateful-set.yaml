@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+  namespace: {{ .Values.namespace }}
+  labels:
+    plug: db
+spec:
+  replicas: {{ .Values.dbStatefulSet.replicas }}
+  selector:
+    matchLabels:
+      plug: db-pods
+  serviceName: db-service
+  template:
+    metadata:
+      labels:
+        plug: db-pods
+    spec:
+      containers:
+      - name: db-container
+        image: {{ .Values.dbStatefulSet.image }}
+        imagePullPolicy: {{ .Values.dbStatefulSet.imagePullPolicy }}
+        ports:
+        - containerPort: 5432
+        envFrom:
+          - secretRef:
+              name: db-secret
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: {{ .Values.dbStatefulSet.requestsMemory | quote }}
+            cpu: {{ .Values.dbStatefulSet.requestsCpu | quote }}
+          limits:
+            memory: {{ .Values.dbStatefulSet.limitsMemory | quote }}
+            cpu: {{ .Values.dbStatefulSet.limitsCpu | quote }}
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.dbStatefulSet.rollingUpdateMaxUnavailable }}
+  volumeClaimTemplates:
+  - metadata:
+      name: db-storage
+    spec:
+      accessModes: [ ReadWriteMany ]
+      resources:
+        requests:
+          storage: {{ .Values.dbStatefulSet.storageClaim }}

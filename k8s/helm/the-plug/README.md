@@ -1,0 +1,1 @@
+# Secrets are stored in .env file and resolved into values.yaml file

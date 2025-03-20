@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-db-network-policy
+  namespace: plug-namespace
+spec:
+  podSelector:
+    matchLabels:
+      plug: db-pods
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          plug: backend-pods
+          plug-admin: pgadmin-pods
+    ports:
+    - protocol: TCP
+      port: 5432

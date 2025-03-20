@@ -36,10 +36,14 @@ ENV ALLOWED_HOSTS="*"
 ENV DEBUG=1
 ENV SECRET_KEY=${SECRET_KEY}
 
+RUN apk add --no-cache bash
+
+RUN sed -i 's/\r$//' ./entrypoint.sh  && \
+        chmod +x ./entrypoint.sh
+
 RUN addgroup -S user && adduser -S user -G user
 USER user
 
 EXPOSE 8080
 
-ENTRYPOINT ["python3"]
-CMD ["manage.py", "runserver", "0.0.0.0:8080"]
+ENTRYPOINT ["./entrypoint.sh"]

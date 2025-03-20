@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+  namespace: plug-namespace
+  labels:
+    plug: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      plug: db-pods
+  serviceName: db-service
+  template:
+    metadata:
+      labels:
+        plug: db-pods
+    spec:
+      containers:
+      - name: db-container
+        image: postgres:15.5-bullseye
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+        envFrom:
+          - secretRef:
+              name: db-secret
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  volumeClaimTemplates:
+  - metadata:
+      name: db-storage
+    spec:
+      accessModes: [ ReadWriteMany ]
+      resources:
+        requests:
+          storage: 100Mi
