@@ -1,6 +1,6 @@
 # AWS cloud infrastructure architecture
 
-![Architecture](./architecture.png)
+![Architecture](AWS-Architecture.png)
 
 ## Explanations
 ### Security Groups
