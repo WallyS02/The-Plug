@@ -17,7 +17,7 @@ Main communication flow:
 * ElastiCache accesses RDS database to take actions on application's data.
 
 Other communication:
-* CloudFront communicates with ACM that provides it certificate issued in us-east-1 region.
+* CloudFront and ALB communicate with ACM that provides them certificate \(for CloudFront issued in us-east-1 region\).
 * CloudWatch uses metrics from all services.
 * Public subnets communicate with Internet Gateway to access internet.
 * Private subnets communicate with NAT Gateway to access internet \(optional\).
@@ -29,7 +29,7 @@ Each service type will have own role which, following Principle of Least Privile
 Secrets Manager will manage secrets for backend application and RDS database.\
 KMS will manage any needed keys for Secrets Manager and used services \(mainly AWS-managed keys\).
 ### ACM
-ACM will manage free, public certificate for CloudFront.
+ACM will manage free, public certificates for CloudFront and ALB.
 ### Route Tables
 Route Tables are divided on Public and Private where both handle local network traffic and also public table routes to Internet Gateway and private table routes to NAT Gateway.
 ### Internet Gateway
