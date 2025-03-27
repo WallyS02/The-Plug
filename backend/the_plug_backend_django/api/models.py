@@ -81,27 +81,27 @@ class Meeting(models.Model):
 
 class ChosenOffer(models.Model):
     number_of_grams = models.IntegerField()
-    drug_offer = models.ForeignKey('DrugOffer', on_delete=models.CASCADE)
+    herb_offer = models.ForeignKey('HerbOffer', on_delete=models.CASCADE)
     meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.id)
 
 
-class DrugOffer(models.Model):
+class HerbOffer(models.Model):
     id = models.AutoField(primary_key=True)
     grams_in_stock = models.IntegerField()
     price_per_gram = models.FloatField()
     currency = models.CharField()
     description = models.TextField(blank=True)
-    drug = models.ForeignKey('Drug', on_delete=models.CASCADE)
+    herb = models.ForeignKey('Herb', on_delete=models.CASCADE)
     plug = models.ForeignKey('Plug', on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.id) + ', ' + str(self.grams_in_stock) + ', ' + str(self.price_per_gram)
 
 
-class Drug(models.Model):
+class Herb(models.Model):
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     wikipedia_link = models.URLField(max_length=500, blank=False, null=False)
 

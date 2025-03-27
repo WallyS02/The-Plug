@@ -3,7 +3,7 @@
     import Map from "../lib/Map.svelte";
     import {plug_id} from "../stores";
     import {getNotificationsContext} from "svelte-notifications";
-    import {getMeetingChosenOffersWithDrugAndOfferInfo} from "../service/chosen-offer-service";
+    import {getMeetingChosenOffersWithHerbAndOfferInfo} from "../service/chosen-offer-service";
     import {acceptMeetingRequest, addRatingRequest, cancelMeetingRequest, getMeeting} from "../service/meeting-service";
     import {getFuzzyLocalTimeFromPoint} from "@mapbox/timespace";
     import moment from "moment-timezone";
@@ -19,7 +19,7 @@
         removeAfter: 3000
     });
 
-    interface ChosenOfferWithDrugAndOfferInfo extends ChosenOffer {
+    interface ChosenOfferWithHerbAndOfferInfo extends ChosenOffer {
         name: string;
         wikipedia_link: string;
         price_per_gram: number;
@@ -38,7 +38,7 @@
     }
 
     export let params: {};
-    let chosenOffers: ChosenOfferWithDrugAndOfferInfo[] = [];
+    let chosenOffers: ChosenOfferWithHerbAndOfferInfo[] = [];
     let meeting: MeetingWithPlugInfo = {} as MeetingWithPlugInfo;
     let timezone: string;
     let showAcceptButton: boolean = false, showRatingButtons = false;
@@ -47,7 +47,7 @@
 
     async function prepareData() {
         meeting = await getMeeting(params.id);
-        chosenOffers = await getMeetingChosenOffersWithDrugAndOfferInfo(meeting.id);
+        chosenOffers = await getMeetingChosenOffersWithHerbAndOfferInfo(meeting.id);
         location = await getLocation(meeting.location_id);
         timezone = getFuzzyLocalTimeFromPoint(Date.now(), [location.longitude, location.latitude])._z.name;
         meeting.date = moment(meeting.date).tz(timezone).toDate();
@@ -252,7 +252,7 @@
                 <ul class="space-y-4">
                     {#each chosenOffers as chosenOffer}
                         <li class="border border-olivine p-4 rounded-lg bg-lightMossGreen shadow-sm text-olivine">
-                            <p class="font-semibold"><strong>Drug:</strong> {chosenOffer.name}</p>
+                            <p class="font-semibold"><strong>Herb:</strong> {chosenOffer.name}</p>
                             <p class="font-semibold"><strong>Wikipedia link:</strong>
                                 <a href={chosenOffer.wikipedia_link} class="text-blue-400 underline" target="_blank">
                                     {chosenOffer.wikipedia_link}

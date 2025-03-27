@@ -1,6 +1,5 @@
 # The Plug
-## Disclaimer! System created for educational purposes only.
-Drug dealing service store based on Beta Reputation System.
+Herb trading service store based on Beta Reputation System.
 ## Run Locally
 Clone the project
 

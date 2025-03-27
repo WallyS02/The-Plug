@@ -16,7 +16,7 @@ export interface Plug {
     minimal_break_between_meetings_in_minutes: number;
     user: number;
     //location: Location[];
-    //drugOffer: DrugOffer[];
+    //herbOffer: HerbOffer[];
 }
 
 export interface Location {
@@ -46,25 +46,25 @@ export interface ChosenOffer {
     id: string;
     number_of_grams: number;
     meeting: number;
-    drug_offer: number;
+    herb_offer: number;
 }
 
-export interface DrugOffer {
+export interface HerbOffer {
     id: string;
     grams_in_stock: number;
     price_per_gram: number;
     currency: string;
     description: string;
     //chosen_offer: number[];
-    drug: number;
+    herb: number;
     plug: number;
 }
 
-export interface Drug {
+export interface Herb {
     id: number;
     name: string;
     wikipedia_link: string;
-    //drugOffer: DrugOffer[];
+    //herbOffer: HerbOffer[];
 }
 
 export enum MapMode {

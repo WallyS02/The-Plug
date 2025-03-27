@@ -18,10 +18,10 @@ from django.core.mail import send_mail
 from scipy.stats import beta
 
 from .currencies import currencies
-from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
+from .models import AppUser, Plug, Location, Meeting, ChosenOffer, HerbOffer, Herb
 from .serializers import AppUserSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, \
-    ChosenOfferSerializer, DrugOfferSerializer, DrugSerializer, PlugDrugOffersPlusNamesSerializer, \
-    ChosenOfferWithDrugAndOfferInfoSerializer, MeetingWithPlugInfoSerializer, \
+    ChosenOfferSerializer, HerbOfferSerializer, HerbSerializer, PlugHerbOffersPlusNamesSerializer, \
+    ChosenOfferWithHerbAndOfferInfoSerializer, MeetingWithPlugInfoSerializer, \
     LocationPlusPlugUsernameAndRatingSerializer, MeetingWithPlugInfoAndChosenOfferNamesSerializer
 
 import environ
@@ -39,7 +39,7 @@ class CustomMeetingsPagination(PageNumberPagination):
     page_query_param = 'page'
 
 
-class CustomDrugOffersPagination(PageNumberPagination):
+class CustomHerbOffersPagination(PageNumberPagination):
     page_size = 3
     page_size_query_param = 'page_size'
     max_page_size = 5
@@ -147,7 +147,7 @@ class LocationList(generics.ListAPIView):
         east = self.request.query_params.get('east')
         west = self.request.query_params.get('west')
         plug_id = self.request.query_params.get('plug')
-        drugs = self.request.query_params.getlist('drugs')
+        herbs = self.request.query_params.getlist('herbs')
         plugs = self.request.query_params.getlist('plugs')
 
         if not all([north, south, east, west]):
@@ -171,8 +171,8 @@ class LocationList(generics.ListAPIView):
             plug = get_object_or_404(Plug, pk=plug_id)
             q &= ~Q(plug=plug)
 
-        if drugs:
-            q &= Q(plug__drugoffer__drug__id__in=drugs)
+        if herbs:
+            q &= Q(plug__herboffer__herb__id__in=herbs)
 
         if plugs:
             q &= Q(plug__in=plugs)
@@ -252,7 +252,7 @@ class MeetingCreate(generics.CreateAPIView):
                 time_window_end = meeting_date + timedelta(minutes=plug.minimal_break_between_meetings_in_minutes)
 
                 overlapping_meetings = Meeting.objects.filter(
-                    chosenoffer__drug_offer__plug=plug,
+                    chosenoffer__herb_offer__plug=plug,
                     date__range=(time_window_start, time_window_end)
                 )
 
@@ -287,7 +287,7 @@ class MeetingRetrieve(generics.RetrieveAPIView):
 
         chosen_offer = chosen_offers.first()
 
-        if chosen_offer.drug_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
+        if chosen_offer.herb_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
             return Response({"error": "Only Users assigned to this Meeting can retrieve it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
@@ -303,22 +303,22 @@ class ChosenOfferCreate(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         number_of_grams = int(request.data['number_of_grams'])
-        drug_offer_id = request.data['drug_offer']
+        herb_offer_id = request.data['herb_offer']
 
         try:
-            drug_offer = DrugOffer.objects.get(id=drug_offer_id)
-        except DrugOffer.DoesNotExist:
-            return Response({"error": "DrugOffer not found."}, status=status.HTTP_404_NOT_FOUND)
+            herb_offer = HerbOffer.objects.get(id=herb_offer_id)
+        except HerbOffer.DoesNotExist:
+            return Response({"error": "HerbOffer not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        if number_of_grams > drug_offer.grams_in_stock:
+        if number_of_grams > herb_offer.grams_in_stock:
             return Response({"error": "Not enough grams in stock."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
 
-            drug_offer.grams_in_stock -= number_of_grams
-            drug_offer.save()
+            herb_offer.grams_in_stock -= number_of_grams
+            herb_offer.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -327,42 +327,42 @@ class ChosenOfferCreate(generics.CreateAPIView):
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class DrugOfferList(generics.ListAPIView):
-    queryset = DrugOffer.objects.all()
-    serializer_class = DrugOfferSerializer
+class HerbOfferList(generics.ListAPIView):
+    queryset = HerbOffer.objects.all()
+    serializer_class = HerbOfferSerializer
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class DrugOfferCreate(generics.CreateAPIView):
-    queryset = DrugOffer.objects.all()
-    serializer_class = DrugOfferSerializer
+class HerbOfferCreate(generics.CreateAPIView):
+    queryset = HerbOffer.objects.all()
+    serializer_class = HerbOfferSerializer
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class DrugOfferRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = DrugOffer.objects.all()
-    serializer_class = DrugOfferSerializer
+class HerbOfferRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = HerbOffer.objects.all()
+    serializer_class = HerbOfferSerializer
     lookup_field = 'pk'
 
     def get(self, request, *args, **kwargs):
-        drug_offer_id = kwargs.get('pk')
-        drug_offer = DrugOffer.objects.get(pk=drug_offer_id)
+        herb_offer_id = kwargs.get('pk')
+        herb_offer = HerbOffer.objects.get(pk=herb_offer_id)
 
-        if drug_offer.plug.app_user != request.user:
-            return Response({"error": "Only Users assigned to this Drug Offer can retrieve it."},
+        if herb_offer.plug.app_user != request.user:
+            return Response({"error": "Only Users assigned to this Herb Offer can retrieve it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = self.get_serializer(drug_offer)
+        serializer = self.get_serializer(herb_offer)
         return Response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
-        drug_offer_id = kwargs.get('pk')
-        drug_offer = DrugOffer.objects.get(pk=drug_offer_id)
+        herb_offer_id = kwargs.get('pk')
+        herb_offer = HerbOffer.objects.get(pk=herb_offer_id)
 
-        if drug_offer.plug.app_user != request.user:
-            return Response({"error": "Only Users assigned to this Drug Offer can update it."},
+        if herb_offer.plug.app_user != request.user:
+            return Response({"error": "Only Users assigned to this Herb Offer can update it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
         if not any(f'{currency["name"]} ({currency["symbol"]})' == request.data['currency'] for currency in currencies):
@@ -370,19 +370,19 @@ class DrugOfferRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         return super().patch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        drug_offer_id = kwargs.get('pk')
-        drug_offer = DrugOffer.objects.get(pk=drug_offer_id)
+        herb_offer_id = kwargs.get('pk')
+        herb_offer = HerbOffer.objects.get(pk=herb_offer_id)
 
-        if drug_offer.plug.app_user != request.user:
-            return Response({"error": "Only Users assigned to this Drug Offer can delete it."},
+        if herb_offer.plug.app_user != request.user:
+            return Response({"error": "Only Users assigned to this Herb Offer can delete it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
         return super().delete(request, *args, **kwargs)
 
 
-class DrugList(generics.ListAPIView):
-    queryset = Drug.objects.all()
-    serializer_class = DrugSerializer
+class HerbList(generics.ListAPIView):
+    queryset = Herb.objects.all()
+    serializer_class = HerbSerializer
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -404,18 +404,18 @@ class UserMeetings(generics.ListAPIView):
         ordering = self.request.query_params.get('ordering')
         if ordering:
             if 'plug_username' in ordering:
-                meetings = meetings.order_by(F('chosenoffer__drug_offer__plug__app_user__username').asc())
+                meetings = meetings.order_by(F('chosenoffer__herb_offer__plug__app_user__username').asc())
                 if ordering.startswith('-'):
-                    meetings = meetings.order_by(F('chosenoffer__drug_offer__plug__app_user__username').desc())
+                    meetings = meetings.order_by(F('chosenoffer__herb_offer__plug__app_user__username').desc())
             elif 'chosen_offers' in ordering:
                 ascending = not ordering.startswith('-')
                 order_direction = '' if ascending else '-'
 
                 meetings = meetings.annotate(
                     aggregated_offers=StringAgg(
-                        F('chosenoffer__drug_offer__drug__name'),
+                        F('chosenoffer__herb_offer__herb__name'),
                         delimiter=',',
-                        ordering='chosenoffer__drug_offer__drug__name'
+                        ordering='chosenoffer__herb_offer__herb__name'
                     )
                 ).order_by(f'{order_direction}aggregated_offers')
             else:
@@ -423,7 +423,7 @@ class UserMeetings(generics.ListAPIView):
 
         plug_name = self.request.query_params.get('plug_name')
         if plug_name:
-            meetings = meetings.filter(chosenoffer__drug_offer__plug__app_user__username__icontains=plug_name)
+            meetings = meetings.filter(chosenoffer__herb_offer__plug__app_user__username__icontains=plug_name)
 
         from_date = self.request.query_params.get('from_date')
         to_date = self.request.query_params.get('to_date')
@@ -437,7 +437,7 @@ class UserMeetings(generics.ListAPIView):
         chosen_offers = self.request.query_params.getlist('chosen_offers')
         if chosen_offers:
             meetings = meetings.filter(
-                chosenoffer__drug_offer__drug__name__in=chosen_offers
+                chosenoffer__herb_offer__herb__name__in=chosen_offers
             ).distinct()
 
         return meetings
@@ -454,11 +454,11 @@ class PlugMeetings(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         plug_id = self.kwargs.get('id')
-        meetings = Meeting.objects.filter(chosenoffer__drug_offer__plug__id=plug_id).distinct()
+        meetings = Meeting.objects.filter(chosenoffer__herb_offer__plug__id=plug_id).distinct()
 
         if meetings.exists():
             meeting = meetings.first()
-            plug = Plug.objects.filter(drugoffer__chosenoffer__meeting=meeting).first()
+            plug = Plug.objects.filter(herboffer__chosenoffer__meeting=meeting).first()
             if plug is None or plug.app_user != user:
                 return Meeting.objects.none()
 
@@ -474,9 +474,9 @@ class PlugMeetings(generics.ListAPIView):
 
                 meetings = meetings.annotate(
                     aggregated_offers=StringAgg(
-                        F('chosenoffer__drug_offer__drug__name'),
+                        F('chosenoffer__herb_offer__herb__name'),
                         delimiter=',',
-                        ordering='chosenoffer__drug_offer__drug__name'
+                        ordering='chosenoffer__herb_offer__herb__name'
                     )
                 ).order_by(f'{order_direction}aggregated_offers')
             else:
@@ -498,7 +498,7 @@ class PlugMeetings(generics.ListAPIView):
         chosen_offers = self.request.query_params.getlist('chosen_offers')
         if chosen_offers:
             meetings = meetings.filter(
-                chosenoffer__drug_offer__drug__name__in=chosen_offers
+                chosenoffer__herb_offer__herb__name__in=chosen_offers
             ).distinct()
 
         return meetings
@@ -523,20 +523,20 @@ class UserPlug(generics.RetrieveAPIView):
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class DrugDrugOffers(generics.ListAPIView):
-    serializer_class = DrugOfferSerializer
+class HerbHerbOffers(generics.ListAPIView):
+    serializer_class = HerbOfferSerializer
 
     def get_queryset(self):
-        drug_id = self.kwargs.get('id')
-        drug = get_object_or_404(Drug, pk=drug_id)
-        return DrugOffer.objects.filter(drug=drug)
+        herb_id = self.kwargs.get('id')
+        herb = get_object_or_404(Herb, pk=herb_id)
+        return HerbOffer.objects.filter(herb=herb)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class PlugDrugOffers(generics.ListAPIView):
-    serializer_class = PlugDrugOffersPlusNamesSerializer
-    pagination_class = CustomDrugOffersPagination
+class PlugHerbOffers(generics.ListAPIView):
+    serializer_class = PlugHerbOffersPlusNamesSerializer
+    pagination_class = CustomHerbOffersPagination
     filter_backends = [OrderingFilter]
     ordering_fields = '__all__'
 
@@ -549,37 +549,37 @@ class PlugDrugOffers(generics.ListAPIView):
         plug_id = self.kwargs.get('id')
         plug = get_object_or_404(Plug, pk=plug_id)
 
-        drug_offers = DrugOffer.objects.filter(plug=plug)
+        herb_offers = HerbOffer.objects.filter(plug=plug)
 
         ordering = self.request.query_params.get('ordering')
         if ordering:
             if 'name' in ordering:
                 if ordering.startswith('-'):
-                    drug_offers = drug_offers.order_by(F('drug__name').desc())
+                    herb_offers = herb_offers.order_by(F('herb__name').desc())
                 else:
-                    drug_offers = drug_offers.order_by(F('drug__name').asc())
+                    herb_offers = herb_offers.order_by(F('herb__name').asc())
             else:
-                drug_offers = drug_offers.order_by(ordering)
+                herb_offers = herb_offers.order_by(ordering)
 
-        drug_name = self.request.query_params.get('drug_name')
-        if drug_name:
-            drug_offers = drug_offers.filter(drug__name__icontains=drug_name)
+        herb_name = self.request.query_params.get('herb_name')
+        if herb_name:
+            herb_offers = herb_offers.filter(herb__name__icontains=herb_name)
 
         from_grams = self.request.query_params.get('from_grams')
         to_grams = self.request.query_params.get('to_grams')
         if from_grams:
-            drug_offers = drug_offers.filter(grams_in_stock__gte=from_grams)
+            herb_offers = herb_offers.filter(grams_in_stock__gte=from_grams)
         if to_grams:
-            drug_offers = drug_offers.filter(grams_in_stock__lte=to_grams)
+            herb_offers = herb_offers.filter(grams_in_stock__lte=to_grams)
 
         from_price = self.request.query_params.get('from_price')
         to_price = self.request.query_params.get('to_price')
         if from_price:
-            drug_offers = drug_offers.filter(price_per_gram__gte=from_price)
+            herb_offers = herb_offers.filter(price_per_gram__gte=from_price)
         if to_price:
-            drug_offers = drug_offers.filter(price_per_gram__lte=to_price)
+            herb_offers = herb_offers.filter(price_per_gram__lte=to_price)
 
-        return drug_offers
+        return herb_offers
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -618,8 +618,8 @@ class PlugLocations(generics.ListAPIView):
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
-class ChosenOfferWithDrugAndOfferInfoView(generics.ListAPIView):
-    serializer_class = ChosenOfferWithDrugAndOfferInfoSerializer
+class ChosenOfferWithHerbAndOfferInfoView(generics.ListAPIView):
+    serializer_class = ChosenOfferWithHerbAndOfferInfoSerializer
 
     def get_queryset(self):
         meeting_id = self.kwargs.get('id')
@@ -629,7 +629,7 @@ class ChosenOfferWithDrugAndOfferInfoView(generics.ListAPIView):
 
         chosen_offer = chosen_offers.first()
 
-        if chosen_offer.drug_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
+        if chosen_offer.herb_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
             return Response({"error": "Only Users assigned to this Meeting can cancel it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
@@ -646,7 +646,7 @@ class AcceptMeeting(generics.UpdateAPIView):
         meeting = get_object_or_404(Meeting, pk=meeting_id)
 
         chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
-        if chosen_offer.drug_offer.plug.app_user.id != request.user.id:
+        if chosen_offer.herb_offer.plug.app_user.id != request.user.id:
             return Response({"error": "Only Plug assigned to this Meeting can accept it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
@@ -675,7 +675,7 @@ class CancelMeeting(generics.UpdateAPIView):
         meeting = get_object_or_404(Meeting, pk=meeting_id)
 
         chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
-        if chosen_offer.drug_offer.plug.app_user.id != request.user.id and meeting.user.id != request.user.id:
+        if chosen_offer.herb_offer.plug.app_user.id != request.user.id and meeting.user.id != request.user.id:
             return Response({"error": "Only Users assigned to this Meeting can cancel it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
@@ -688,9 +688,9 @@ class CancelMeeting(generics.UpdateAPIView):
         chosen_offers = ChosenOffer.objects.filter(meeting=meeting)
 
         for chosen_offer in chosen_offers:
-            drug_offer = DrugOffer.objects.get(pk=chosen_offer.drug_offer.id)
-            drug_offer.grams_in_stock += chosen_offer.number_of_grams
-            drug_offer.save()
+            herb_offer = HerbOffer.objects.get(pk=chosen_offer.herb_offer.id)
+            herb_offer.grams_in_stock += chosen_offer.number_of_grams
+            herb_offer.save()
 
         meeting.isCanceled = request.data['isCanceled']
         meeting.isCanceledByPlug = request.data['isCanceledByPlug']
@@ -709,7 +709,7 @@ class AddRatingMeeting(generics.UpdateAPIView):
         meeting = get_object_or_404(Meeting, pk=meeting_id)
 
         chosen_offer = ChosenOffer.objects.filter(meeting=meeting).first()
-        if chosen_offer.drug_offer.plug.app_user.id != request.user.id and meeting.user.id != request.user.id:
+        if chosen_offer.herb_offer.plug.app_user.id != request.user.id and meeting.user.id != request.user.id:
             return Response({"error": "Only Users assigned to this Meeting can add rating to it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
@@ -722,14 +722,14 @@ class AddRatingMeeting(generics.UpdateAPIView):
         if meeting.date >= timezone.now():
             return Response({"error": "Meeting was not held yet."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if chosen_offer.drug_offer.plug.app_user.id == request.user.id:
+        if chosen_offer.herb_offer.plug.app_user.id == request.user.id:
             meeting.isHighOrLowPlugSatisfaction = request.data['isHighOrLowPlugSatisfaction']
         if meeting.user.id == request.user.id:
             meeting.isHighOrLowClientSatisfaction = request.data['isHighOrLowClientSatisfaction']
         meeting.save()
 
         if meeting.user.id == request.user.id:
-            self.update_ratings(chosen_offer.drug_offer.plug.app_user.id, True)
+            self.update_ratings(chosen_offer.herb_offer.plug.app_user.id, True)
         else:
             self.update_ratings(meeting.user.id, False)
 
@@ -737,7 +737,7 @@ class AddRatingMeeting(generics.UpdateAPIView):
 
     def update_ratings(self, user_or_plug_id, is_for_plug):
         if is_for_plug:
-            meetings = Meeting.objects.filter(chosenoffer__drug_offer__plug__id=user_or_plug_id).distinct()
+            meetings = Meeting.objects.filter(chosenoffer__herb_offer__plug__id=user_or_plug_id).distinct()
             plug = Plug.objects.get(id=user_or_plug_id)
             plug.rating = self.calculate_rating(meetings, True)
             plug.save()
@@ -788,9 +788,9 @@ class AddRatingMeeting(generics.UpdateAPIView):
                 user.append(list(map(lambda meeting_low: meeting_low.isHighOrLowClientSatisfaction, user_meetings)).count('low'))
             return {tuple(x) for x in users}
         else:
-            users = list(map(lambda meeting: [ChosenOffer.objects.filter(meeting=meeting).first().drug_offer.plug.id], meetings))
+            users = list(map(lambda meeting: [ChosenOffer.objects.filter(meeting=meeting).first().herb_offer.plug.id], meetings))
             for user in users:
-                user_meetings = meetings.filter(chosenoffer__drug_offer__plug__id=user[0]).distinct()
+                user_meetings = meetings.filter(chosenoffer__herb_offer__plug__id=user[0]).distinct()
                 user.append(list(map(lambda meeting_high: meeting_high.isHighOrLowPlugSatisfaction, user_meetings)).count('high'))
                 user.append(list(map(lambda meeting_low: meeting_low.isHighOrLowPlugSatisfaction, user_meetings)).count('low'))
             return {tuple(x) for x in users}
@@ -808,10 +808,10 @@ class AddRatingMeeting(generics.UpdateAPIView):
             get_dishonest_user.save()
 
 @api_view(['POST'])
-def send_new_drug_request_mail(request):
+def send_new_herb_request_mail(request):
     send_mail(
-        'New Drug to Add',
-        'Request to add drug by Name: ' + request.data['name'] + ' and Wikipedia Link: ' + request.data[
+        'New Herb to Add',
+        'Request to add herb by Name: ' + request.data['name'] + ' and Wikipedia Link: ' + request.data[
             'wikipedia_link'] + '. Check it out!',
         None,
         [env('EM_ACCOUNT')],

@@ -9,7 +9,7 @@ plug_id.subscribe((value) => {
     plugIdValue = value;
 });
 
-export async function getPlugDrugOffers(plugId: string, page?: number, ordering?: string, searchByDrug?: string, searchByGrams?: number[], searchByPrice?: number[]): Promise<any> {
+export async function getPlugHerbOffers(plugId: string, page?: number, ordering?: string, searchByHerb?: string, searchByGrams?: number[], searchByPrice?: number[]): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -18,7 +18,7 @@ export async function getPlugDrugOffers(plugId: string, page?: number, ordering?
         }
     }
 
-    let endpoint: string = 'drug-offer/plug/' + plugId + '/?';
+    let endpoint: string = 'herb-offer/plug/' + plugId + '/?';
     if (page) {
         endpoint += 'page=' + page;
     }
@@ -29,11 +29,11 @@ export async function getPlugDrugOffers(plugId: string, page?: number, ordering?
             endpoint += '&ordering=' + ordering;
         }
     }
-    if (searchByDrug) {
+    if (searchByHerb) {
         if (endpoint.endsWith('?')) {
-            endpoint += 'drug_name=' + searchByDrug;
+            endpoint += 'herb_name=' + searchByHerb;
         } else {
-            endpoint += '&drug_name=' + searchByDrug;
+            endpoint += '&herb_name=' + searchByHerb;
         }
     }
     if (searchByGrams && searchByGrams?.length !== 0) {
@@ -55,21 +55,21 @@ export async function getPlugDrugOffers(plugId: string, page?: number, ordering?
     return response.body;
 }
 
-export async function createDrugOffer(drugId: number, grams_in_stock: number, price_per_gram: number, currency: string, description: string): Promise<any> {
+export async function createHerbOffer(herbId: number, grams_in_stock: number, price_per_gram: number, currency: string, description: string): Promise<any> {
     const requestOptions: {} = {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Token ${tokenValue}`
         },
-        body: JSON.stringify({ plug: plugIdValue, drug: drugId, grams_in_stock: grams_in_stock, price_per_gram: price_per_gram,
+        body: JSON.stringify({ plug: plugIdValue, herb: herbId, grams_in_stock: grams_in_stock, price_per_gram: price_per_gram,
             currency: currency, description: description})
     }
 
-    return await sendRequest('drug-offer/', requestOptions);
+    return await sendRequest('herb-offer/', requestOptions);
 }
 
-export async function deleteDrugOfferRequest(drugOfferId: string): Promise<any> {
+export async function deleteHerbOfferRequest(herbOfferId: string): Promise<any> {
     const requestOptions: {} = {
         method: 'DELETE',
         headers: {
@@ -78,10 +78,10 @@ export async function deleteDrugOfferRequest(drugOfferId: string): Promise<any> 
         }
     }
 
-    return await sendRequest('drug-offer/' + drugOfferId + '/', requestOptions);
+    return await sendRequest('herb-offer/' + herbOfferId + '/', requestOptions);
 }
 
-export async function getDrugOffer(drugOfferId: string): Promise<any> {
+export async function getHerbOffer(herbOfferId: string): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -90,20 +90,20 @@ export async function getDrugOffer(drugOfferId: string): Promise<any> {
         }
     }
 
-    let response = await sendRequest('drug-offer/' + drugOfferId + '/', requestOptions);
+    let response = await sendRequest('herb-offer/' + herbOfferId + '/', requestOptions);
     return response.body;
 }
 
-export async function updateDrugOfferRequest(drugOfferId: string, drugId: number, grams_in_stock: number, price_per_gram: number, currency: string, description: string): Promise<any> {
+export async function updateHerbOfferRequest(herbOfferId: string, herbId: number, grams_in_stock: number, price_per_gram: number, currency: string, description: string): Promise<any> {
     const requestOptions: {} = {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Token ${tokenValue}`
         },
-        body: JSON.stringify({ drug: drugId, grams_in_stock: grams_in_stock, price_per_gram: price_per_gram,
+        body: JSON.stringify({ herb: herbId, grams_in_stock: grams_in_stock, price_per_gram: price_per_gram,
             currency: currency, description: description })
     }
 
-    return await sendRequest('drug-offer/' + drugOfferId + '/', requestOptions);
+    return await sendRequest('herb-offer/' + herbOfferId + '/', requestOptions);
 }

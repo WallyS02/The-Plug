@@ -10,12 +10,12 @@
   import Navbar from "./lib/Navbar.svelte";
   import Footer from "./lib/Footer.svelte";
   import MeetingPanel from "./routes/MeetingPanel.svelte";
-  import DrugEdit from "./routes/DrugOfferEdit.svelte";
+  import HerbEdit from "./routes/HerbOfferEdit.svelte";
   import LocationEdit from "./routes/LocationEdit.svelte";
-  import RequestNewDrug from "./routes/RequestNewDrug.svelte";
+  import RequestNewHerb from "./routes/RequestNewHerb.svelte";
   import RatingInfo from "./routes/RatingInfo.svelte";
   import Locations from "./routes/Locations.svelte";
-  import DrugOffers from "./routes/DrugOffers.svelte";
+  import HerbOffers from "./routes/HerbOffers.svelte";
   import Meetings from "./routes/Meetings.svelte";
   import PlugMeetings from "./routes/PlugMeetings.svelte";
 
@@ -23,14 +23,14 @@
     '/': Home,
     '/register': Register,
     '/login': Login,
-    '/new-drug': RequestNewDrug,
+    '/new-herb': RequestNewHerb,
     '/rating-info': RatingInfo,
     '/account/:id': AccountPanel,
     '/plug/:id': PlugPanel,
-    '/drug-offer/:id': DrugEdit,
+    '/herb-offer/:id': HerbEdit,
     '/location/:id': LocationEdit,
     '/locations/:id': Locations,
-    '/drug-offers/:id': DrugOffers,
+    '/herb-offers/:id': HerbOffers,
     '/plug-meetings/:id': PlugMeetings,
     '/meetings/:id': Meetings,
     '/meeting/:id': MeetingPanel,

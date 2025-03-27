@@ -1,25 +1,25 @@
 <script lang="ts">
-    import {currencies, type Drug, type DrugOffer} from "../models";
+    import {currencies, type Herb, type HerbOffer} from "../models";
     import {link} from 'svelte-spa-router';
     import {plug_id} from "../stores";
-    import {createDrugOffer, deleteDrugOfferRequest, getPlugDrugOffers} from "../service/drug-offer-service";
-    import {getDrugs} from "../service/drug-service";
+    import {createHerbOffer, deleteHerbOfferRequest, getPlugHerbOffers} from "../service/herb-offer-service";
+    import {getHerbs} from "../service/herb-service";
     import {getNotificationsContext} from "svelte-notifications";
     import Pagination from "../lib/Pagination.svelte";
     import Select from "svelte-select";
     import RangeSlider from 'svelte-range-slider-pips';
 
-    let drugOffers: DrugOffer[] = [];
-    let drugs: Drug[] = [];
+    let herbOffers: HerbOffer[] = [];
+    let herbs: Herb[] = [];
 
-    let drugName: string;
+    let herbName: string;
     let gramsInStock: number;
     let pricePerGram: number;
     let currency: string;
     let description: string;
 
-    let addDrugOfferErrors: any;
-    let deleteDrugOfferErrors: any;
+    let addHerbOfferErrors: any;
+    let deleteHerbOfferErrors: any;
 
     let page: number = 1;
     let totalNumberOfObjects: number;
@@ -36,7 +36,7 @@
 
     let needsReload: boolean = true;
 
-    let searchByDrug: string | undefined;
+    let searchByHerb: string | undefined;
     let searchByGrams: number[] = [];
     let searchByPrice: number[] = [];
 
@@ -55,56 +55,56 @@
     });
 
     async function prepareData() {
-        let response = await getPlugDrugOffers($plug_id, page, sortingValue.value, searchByDrug, searchByGrams, searchByPrice);
+        let response = await getPlugHerbOffers($plug_id, page, sortingValue.value, searchByHerb, searchByGrams, searchByPrice);
         totalNumberOfObjects = response.count;
-        drugOffers = response.results;
-        drugs = await getDrugs();
-        drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+        herbOffers = response.results;
+        herbs = await getHerbs();
+        herbs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
         if (needsReload) {
             await getLowestAndHighestGramsAndPrice();
         }
     }
 
     async function getLowestAndHighestGramsAndPrice() {
-        let allDrugOffers: DrugOffer[] = await getPlugDrugOffers($plug_id);
-        let drugOffersGrams = allDrugOffers.map(drugOffer => {
-            return drugOffer.grams_in_stock
+        let allHerbOffers: HerbOffer[] = await getPlugHerbOffers($plug_id);
+        let herbOffersGrams = allHerbOffers.map(herbOffer => {
+            return herbOffer.grams_in_stock
         });
-        searchByGrams = [...searchByGrams, Math.min.apply(null, drugOffersGrams)];
-        searchByGrams = [...searchByGrams, Math.max.apply(null, drugOffersGrams)];
+        searchByGrams = [...searchByGrams, Math.min.apply(null, herbOffersGrams)];
+        searchByGrams = [...searchByGrams, Math.max.apply(null, herbOffersGrams)];
         minGrams = searchByGrams[0];
         maxGrams = searchByGrams[1];
 
-        let drugOffersPrices = allDrugOffers.map(drugOffer => {
-            return drugOffer.price_per_gram
+        let herbOffersPrices = allHerbOffers.map(herbOffer => {
+            return herbOffer.price_per_gram
         });
-        searchByPrice = [...searchByPrice, Math.min.apply(null, drugOffersPrices)];
-        searchByPrice = [...searchByPrice, Math.max.apply(null, drugOffersPrices)];
+        searchByPrice = [...searchByPrice, Math.min.apply(null, herbOffersPrices)];
+        searchByPrice = [...searchByPrice, Math.max.apply(null, herbOffersPrices)];
         minPrice = searchByPrice[0];
         maxPrice = searchByPrice[1];
         needsReload = false;
     }
 
-    async function deleteDrugOffer(drugOfferId: string) {
-        let response = await deleteDrugOfferRequest(drugOfferId);
+    async function deleteHerbOffer(herbOfferId: string) {
+        let response = await deleteHerbOfferRequest(herbOfferId);
         if (response === undefined) {
-            drugOffers = drugOffers.filter(drugOffer => { return drugOffer.id !== drugOfferId });
-            notify('Successfully deleted Drug Offer!');
+            herbOffers = herbOffers.filter(herbOffer => { return herbOffer.id !== herbOfferId });
+            notify('Successfully deleted Herb Offer!');
         } else {
-            deleteDrugOfferErrors = response.body;
+            deleteHerbOfferErrors = response.body;
         }
     }
 
-    const createNewDrugOffer = async (event: any) => {
-        let drug = drugs.find(drug => drug.name === drugName)
-        if (drug) {
-            let response = await createDrugOffer(drug.id, gramsInStock, pricePerGram, currency, description);
+    const createNewHerbOffer = async (event: any) => {
+        let herb = herbs.find(herb => herb.name === herbName)
+        if (herb) {
+            let response = await createHerbOffer(herb.id, gramsInStock, pricePerGram, currency, description);
             if (response.status === 201) {
                 event.target.reset();
-                drugOffers = [...drugOffers, response.body];
-                notify('Successfully added Drug Offer!');
+                herbOffers = [...herbOffers, response.body];
+                notify('Successfully added Herb Offer!');
             } else {
-                addDrugOfferErrors = response.body;
+                addHerbOfferErrors = response.body;
             }
         }
     }
@@ -117,7 +117,7 @@
     }
 
     async function clearFilters() {
-        searchByDrug = undefined;
+        searchByHerb = undefined;
         await getLowestAndHighestGramsAndPrice();
         await prepareData();
     }
@@ -144,18 +144,18 @@
         </div>
     {:then value}
         <div class="flex flex-col md:flex-row gap-6">
-            <!-- Drug Offers Section -->
+            <!-- Herb Offers Section -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
-                <h2 class="text-2xl font-bold mb-4">Your Drug Offers</h2>
+                <h2 class="text-2xl font-bold mb-4">Your Herb Offers</h2>
                 <div class="mb-4">
-                    <h2 class="font-bold mb-4">Sort Drug Offers</h2>
+                    <h2 class="font-bold mb-4">Sort Herb Offers</h2>
                     <Select items={sortingItems} bind:value={sortingValue} class="text-darkGreen" on:change={prepareData}/>
-                    <label for="drug" class="block font-semibold mb-2 mt-4">Filter by drug name:</label>
-                    <input list="drugs" id="drug" name="drug" bind:value={searchByDrug} on:input={prepareData}
+                    <label for="herb" class="block font-semibold mb-2 mt-4">Filter by herb name:</label>
+                    <input list="herbs" id="herb" name="herb" bind:value={searchByHerb} on:input={prepareData}
                            class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
-                    <datalist id="drugs">
-                        {#each drugs as drug}
-                            <option value={drug.name}/>
+                    <datalist id="herbs">
+                        {#each herbs as herb}
+                            <option value={herb.name}/>
                         {/each}
                     </datalist>
                     <h2 class="font-bold mb-4 mt-2">Filter by grams in stock range:</h2>
@@ -167,43 +167,43 @@
                         Clear Filters
                     </button>
                 </div>
-                {#if drugOffers.length > 0}
+                {#if herbOffers.length > 0}
                     <ul class="space-y-4 mb-3">
-                        {#each drugOffers as drugOffer}
+                        {#each herbOffers as herbOffer}
                             <li class="border border-asparagus p-4 rounded">
-                                <p><strong>Drug:</strong> {drugs.find(drug => drug.id === drugOffer.drug)?.name}</p>
-                                <p><strong>Grams in Stock:</strong> {drugOffer.grams_in_stock}</p>
-                                <p><strong>Price per Gram in {drugOffer.currency}:</strong> {drugOffer.price_per_gram}</p>
-                                <a use:link={'/drug-offer/' + drugOffer.id}
+                                <p><strong>Herb:</strong> {herbs.find(herb => herb.id === herbOffer.herb)?.name}</p>
+                                <p><strong>Grams in Stock:</strong> {herbOffer.grams_in_stock}</p>
+                                <p><strong>Price per Gram in {herbOffer.currency}:</strong> {herbOffer.price_per_gram}</p>
+                                <a use:link={'/herb-offer/' + herbOffer.id}
                                    class="inline-block mt-2 px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
                                     Edit
                                 </a>
-                                <button on:click={() => deleteDrugOffer(drugOffer.id)}
+                                <button on:click={() => deleteHerbOffer(herbOffer.id)}
                                         class="inline-block mt-2 px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
                                     Delete
                                 </button>
-                                {#if deleteDrugOfferErrors}
-                                    <p class="text-red-500">Something went wrong, {deleteDrugOfferErrors}</p>
+                                {#if deleteHerbOfferErrors}
+                                    <p class="text-red-500">Something went wrong, {deleteHerbOfferErrors}</p>
                                 {/if}
                             </li>
                         {/each}
                     </ul>
                     <Pagination bind:totalNumberOfObjects={totalNumberOfObjects} pageSize={3} bind:currentPage={page} pageChange={changePage} buttonColor="asparagus" buttonTextColor="darkGreen"/>
                 {:else}
-                    <p>No Drug Offers from You yet!</p>
+                    <p>No Herb Offers from You yet!</p>
                 {/if}
             </section>
 
-            <!-- Add New Drug Offer Section -->
+            <!-- Add New Herb Offer Section -->
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
-                <h2 class="text-2xl font-bold mb-4">Add New Drug Offer</h2>
-                <form on:submit|preventDefault={createNewDrugOffer} class="space-y-4">
-                    <label for="drug" class="block text-xl font-semibold mb-2">Drug Type:</label>
-                    <input list="drugs" id="drug" name="drug" bind:value={drugName} required
+                <h2 class="text-2xl font-bold mb-4">Add New Herb Offer</h2>
+                <form on:submit|preventDefault={createNewHerbOffer} class="space-y-4">
+                    <label for="herb" class="block text-xl font-semibold mb-2">Herb Type:</label>
+                    <input list="herbs" id="herb" name="herb" bind:value={herbName} required
                            class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-                    <datalist id="drugs">
-                        {#each drugs as drug}
-                            <option value={drug.name}/>
+                    <datalist id="herbs">
+                        {#each herbs as herb}
+                            <option value={herb.name}/>
                         {/each}
                     </datalist>
                     <label for="grams_in_stock" class="block text-xl font-semibold mb-2">Grams in Stock:</label>
@@ -227,8 +227,8 @@
                             class="w-full px-4 py-2 bg-asparagus text-darkGreen font-semibold rounded hover:bg-olive focus:outline-none focus:ring-2 focus:ring-olivine">
                         Submit
                     </button>
-                    {#if addDrugOfferErrors}
-                        <p class="text-red-500">Something went wrong, {addDrugOfferErrors}</p>
+                    {#if addHerbOfferErrors}
+                        <p class="text-red-500">Something went wrong, {addHerbOfferErrors}</p>
                     {/if}
                 </form>
             </section>

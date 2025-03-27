@@ -26,7 +26,7 @@
     <div class="flex items-center space-x-4 mt-4 md:mt-0">
         {#if $plug_id !== ''}
             <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/locations/' + $plug_id}>Locations</a>
-            <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/drug-offers/' + $plug_id}>Drug Offers</a>
+            <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/herb-offers/' + $plug_id}>Herb Offers</a>
             <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/plug-meetings/' + $plug_id}>Plug Meetings</a>
             <a class="block p-2 bg-olivine hover:bg-asparagus transition-colors duration-300 rounded text-darkGreen" use:link={'/plug/' + $plug_id}>Plug Panel</a>
         {/if}

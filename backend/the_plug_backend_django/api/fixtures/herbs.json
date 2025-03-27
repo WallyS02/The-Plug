@@ -1,0 +1,242 @@
+[
+  {
+    "model": "api.herb",
+    "pk": 1,
+    "fields": {
+      "name": "Dandelion",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Taraxacum"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 2,
+    "fields": {
+      "name": "Comfrey",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Symphytum"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 3,
+    "fields": {
+      "name": "Belladonna",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Atropa_bella-donna"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 4,
+    "fields": {
+      "name": "Chamomile",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Chamomile"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 5,
+    "fields": {
+      "name": "Henbane",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Hyoscyamus_niger"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 6,
+    "fields": {
+      "name": "Herb Paris",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Paris_quadrifolia"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 7,
+    "fields": {
+      "name": "Eyebright",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Euphrasia"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 8,
+    "fields": {
+      "name": "Marigold",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Tagetes"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 9,
+    "fields": {
+      "name": "Nettle",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Urtica"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 10,
+    "fields": {
+      "name": "Mint",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Mentha"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 11,
+    "fields": {
+      "name": "Poppy",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Papaver_somniferum"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 12,
+    "fields": {
+      "name": "St. John's Wort",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Hypericum_perforatum"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 13,
+    "fields": {
+      "name": "Valerian",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Valerian_(herb)"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 14,
+    "fields": {
+      "name": "Wormwood",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Artemisia_absinthium"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 15,
+    "fields": {
+      "name": "Thistle",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Thistle"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 16,
+    "fields": {
+      "name": "Sage",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Salvia_officinalis"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 17,
+    "fields": {
+      "name": "Lemon balm",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Lemon_balm"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 18,
+    "fields": {
+      "name": "Rock rose",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Cistus"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 19,
+    "fields": {
+      "name": "Coneflower",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Echinacea"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 20,
+    "fields": {
+      "name": "Ginger",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Ginger"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 21,
+    "fields": {
+      "name": "Turmeric",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Turmeric"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 22,
+    "fields": {
+      "name": "Lavender",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Lavandula"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 23,
+    "fields": {
+      "name": "Feverfew",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Tanacetum_parthenium"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 24,
+    "fields": {
+      "name": "Aloe Vera",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Aloe_vera"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 25,
+    "fields": {
+      "name": "Liquorice",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Liquorice"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 26,
+    "fields": {
+      "name": "Hyssop",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Hyssopus_officinalis"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 27,
+    "fields": {
+      "name": "Eucalyptus",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Eucalyptus"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 28,
+    "fields": {
+      "name": "Passion Flower",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Passiflora"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 29,
+    "fields": {
+      "name": "Rosemary",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Rosemary"
+    }
+  },
+  {
+    "model": "api.herb",
+    "pk": 30,
+    "fields": {
+      "name": "Vervain",
+      "wikipedia_link": "https://en.wikipedia.org/wiki/Verbena"
+    }
+  }
+]
