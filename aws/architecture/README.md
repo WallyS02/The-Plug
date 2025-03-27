@@ -3,19 +3,33 @@
 ![Architecture](AWS-Architecture.png)
 
 ## Explanations
-### Security Groups
-### IAM users, roles, permissions
-### Route tables
-### Cache & Database Standbyes \(Free Tier problem\)
-### CloudWatch all services monitoring
-### Frontend - EC2 or S3?
-### Multi-AZ EC2 Auto Scaling
-### VPC Endpoints for regional services
-### NAT Gateway for private subnets
-### Bastion for private subnets?
-### 2 ALBs for Auto Scaling
-### CloudFront and Internet Gateway?
-### Secrets Manager and KMS for services
-### ACM certificates for CloudFront and ALB?
-### Route 53 DNS
-### ECR for frontend and backend images
+### Region and VPC
+eu-north-1 \(in Stockholm\) was chosen because it's the nearest, 2 Availability Zones were chosen for high availability of frontend and backend servers \(RDS and ElastiCache would be multiplicated too but Free Tier does not include it\).\
+VPC consists of 2 public subnets in 2 different availability zones, one is for master services, the other is for standby frontend servers, private networks are organised in the same way as public ones.
+### Security Groups TODO
+### IAM users, roles, permissions TODO
+### Secrets Manager and KMS for services TODO
+Secrets Manager will manage secrets for backend application and RDS database.\
+KMS will manage any needed keys for Secrets Manager and used services \(mainly AWS-managed keys\).
+### ACM
+ACM will manage free, public certificates for CloudFront and ALB in public network.
+### Route Tables
+Route Tables are divided on Public and Private where both handle local network traffic and also public table routes to Internet Gateway and private table routes to NAT Gateway.
+### Internet Gateway
+Internet Gateway will allow public subnets for communication with internet.
+### NAT Gateway
+NAT Gateway will be located in master public subnet and serve for private subnets to connected them internet. If NAT Gateway won't be needed it will be removed because of costs.
+### VPC Endpoints
+VPC Endpoints will be used for connecting services in private \(maybe in public too\) subnets \(EC2, RDS, ElastiCache\) to regional services \(ECR, KMS, Secrets Manager, S3\).
+### Bastion for private subnets? TODO
+### ALBs
+Application Load Balancers will be used to distribute traffic in EC2's Auto Scaling Groups.
+### CloudWatch
+CloudWatch monitors and observes all services with defined up to 10 alarms when something goes wrong.
+### Multi-AZ EC2 Auto Scaling TODO
+
+### Route 53 DNS TODO
+### CloudFront TODO
+### ECR for frontend and backend images TODO
+### ElastiCache TODO
+### RDS TODO
