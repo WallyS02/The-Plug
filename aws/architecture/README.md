@@ -6,6 +6,7 @@
 ### Region and VPC
 eu-north-1 \(in Stockholm\) was chosen because it's the nearest, 2 Availability Zones were chosen for high availability of backend servers \(RDS and ElastiCache would be multiplicated too but Free Tier does not include it\).\
 VPC consists of a public subnet in master availability zone, private networks are in 2 different availability zones, one is for master services, the other is for standby backend servers.
+### Security Groups
 Each service type will have own security group which, following Principle of Least Privilege, will allow for necessary network traffic between services or users requests \(protocols, ports and sources\).
 
 Main communication flow:
