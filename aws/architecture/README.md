@@ -20,7 +20,7 @@ Main communication flow:
 Other communication:
 * CloudFront and ALB communicate with ACM that provides them certificate \(for CloudFront issued in us-east-1 region\).
 * CloudWatch uses metrics from all services.
-* Public subnets communicate with Internet Gateway to access internet.
+* Public subnet communicates with Internet Gateway to access internet.
 * Private subnets communicate with NAT Gateway to access internet \(optional\).
 * Services from private subnets communicate with VPC Endpoints to access regional services.
 ### IAM
