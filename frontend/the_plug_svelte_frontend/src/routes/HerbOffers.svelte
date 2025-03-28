@@ -70,18 +70,30 @@
         let herbOffersGrams = allHerbOffers.map(herbOffer => {
             return herbOffer.grams_in_stock
         });
-        searchByGrams = [...searchByGrams, Math.min.apply(null, herbOffersGrams)];
-        searchByGrams = [...searchByGrams, Math.max.apply(null, herbOffersGrams)];
-        minGrams = searchByGrams[0];
-        maxGrams = searchByGrams[1];
+        if (herbOffersGrams.length > 0) {
+            searchByGrams = [...searchByGrams, Math.min.apply(null, herbOffersGrams)];
+            searchByGrams = [...searchByGrams, Math.max.apply(null, herbOffersGrams)];
+            minGrams = searchByGrams[0];
+            maxGrams = searchByGrams[1];
+        } else {
+            searchByGrams = [0, 0];
+            minGrams = 0;
+            maxGrams = 0;
+        }
 
         let herbOffersPrices = allHerbOffers.map(herbOffer => {
             return herbOffer.price_per_gram
         });
-        searchByPrice = [...searchByPrice, Math.min.apply(null, herbOffersPrices)];
-        searchByPrice = [...searchByPrice, Math.max.apply(null, herbOffersPrices)];
-        minPrice = searchByPrice[0];
-        maxPrice = searchByPrice[1];
+        if (herbOffersPrices.length > 0) {
+            searchByPrice = [...searchByPrice, Math.min.apply(null, herbOffersPrices)];
+            searchByPrice = [...searchByPrice, Math.max.apply(null, herbOffersPrices)];
+            minPrice = searchByPrice[0];
+            maxPrice = searchByPrice[1];
+        } else {
+            searchByPrice = [0, 0];
+            minPrice = 0;
+            maxPrice = 0;
+        }
         needsReload = false;
     }
 
@@ -90,6 +102,7 @@
         if (response === undefined) {
             herbOffers = herbOffers.filter(herbOffer => { return herbOffer.id !== herbOfferId });
             notify('Successfully deleted Herb Offer!');
+            await getLowestAndHighestGramsAndPrice();
         } else {
             deleteHerbOfferErrors = response.body;
         }
@@ -103,6 +116,7 @@
                 event.target.reset();
                 herbOffers = [...herbOffers, response.body];
                 notify('Successfully added Herb Offer!');
+                await getLowestAndHighestGramsAndPrice();
             } else {
                 addHerbOfferErrors = response.body;
             }

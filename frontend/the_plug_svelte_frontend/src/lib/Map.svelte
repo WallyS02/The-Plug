@@ -1,6 +1,7 @@
 <script lang="ts">
     import {type Herb, type Location, MapMode} from "../models";
     import L from 'leaflet';
+    import markerIconPng from "leaflet/dist/images/marker-icon.png";
     import {
         deleteLocationRequest,
         getLocation,
@@ -238,7 +239,7 @@
                     <br>
                 `;
             }
-            const marker = L.marker([location.latitude, location.longitude]).addTo(layerGroup)
+            const marker = L.marker([location.latitude, location.longitude], {icon: L.icon({iconUrl: markerIconPng})}).addTo(layerGroup)
                 .bindPopup(markerDescription!);
 
             if (mode === MapMode.AddLocation) {
