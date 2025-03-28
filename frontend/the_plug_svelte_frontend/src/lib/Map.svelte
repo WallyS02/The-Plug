@@ -1,6 +1,7 @@
 <script lang="ts">
-    import {type Drug, type Location, MapMode} from "../models";
+    import {type Herb, type Location, MapMode} from "../models";
     import L from 'leaflet';
+    import markerIconPng from "leaflet/dist/images/marker-icon.png";
     import {
         deleteLocationRequest,
         getLocation,
@@ -9,14 +10,14 @@
     } from "../service/location-service";
     import {getNotificationsContext} from "svelte-notifications";
     import {account_id, plug_id, token, username} from "../stores";
-    import {getDrugs} from "../service/drug-service";
+    import {getHerbs} from "../service/herb-service";
 
     interface LocationOnMap extends Location {
         username: string;
         rating: number | null;
         isPartner: boolean;
         isSlanderer: boolean;
-        offered_drugs: string[];
+        offered_herbs: string[];
     }
 
     const { addNotification } = getNotificationsContext();
@@ -37,9 +38,9 @@
     let newLocationPopup = L.popup();
     export let newLocationLatitude: string, newLocationLongitude: string;
     let locations: LocationOnMap[] = [];
-    let drugs: Drug[] = [];
-    let chosenDrugName: string;
-    let chosenDrugs: Drug[] = [];
+    let herbs: Herb[] = [];
+    let chosenHerbName: string;
+    let chosenHerbs: Herb[] = [];
     let plugs: { id: number, username: string }[] = [];
     let chosenPlugUsername: string;
     let chosenPlugs: { id: number, username: string }[] = [];
@@ -49,7 +50,7 @@
     export let mapClass: string;
 
     let deleteLocationErrors: any;
-    let drugSelectionErrors: string = '';
+    let herbSelectionErrors: string = '';
     let plugSelectionErrors: string = '';
 
     async function getLocations(reloadFilterChoices: boolean) {
@@ -58,7 +59,7 @@
 
             switch (mode) {
                 case MapMode.Browse: {
-                    let response = await getLocationsRequest(bounds._northEast.lat, bounds._southWest.lat, bounds._northEast.lng, bounds._southWest.lng, $plug_id, chosenDrugs, chosenPlugs);
+                    let response = await getLocationsRequest(bounds._northEast.lat, bounds._southWest.lat, bounds._northEast.lng, bounds._southWest.lng, $plug_id, chosenHerbs, chosenPlugs);
                     if (response.status === 200) {
                         locations = response.body;
                     }
@@ -88,9 +89,9 @@
             if (reloadFilterChoices) {
                 chosenPlugs = [];
 
-                drugs = await getDrugs();
-                drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
-                chosenDrugs = [];
+                herbs = await getHerbs();
+                herbs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+                chosenHerbs = [];
             }
         }
 
@@ -160,7 +161,7 @@
         for (let location of locations) {
             let markerDescription: string;
             if (mode === MapMode.Browse) {
-                let ratingInfo = '', requestMeetingButton = '', offeredDrugsInfo = '';
+                let ratingInfo = '', requestMeetingButton = '', offeredHerbsInfo = '';
                 if (location.rating === null) {
                     ratingInfo = 'No ratings yet'
                 }
@@ -181,15 +182,15 @@
                         Request Meeting
                     </a>`;
                 }
-                if (location.offered_drugs.length > 0) {
-                    offeredDrugsInfo = `
+                if (location.offered_herbs.length > 0) {
+                    offeredHerbsInfo = `
                         <br> <br>
-                        <h3 class="font-extrabold">Offered Drugs</h3>
+                        <h3 class="font-extrabold">Offered Herbs</h3>
                     `;
-                    for (let offeredDrug of location.offered_drugs) {
-                        offeredDrugsInfo += offeredDrug + ', '
+                    for (let offeredHerb of location.offered_herbs) {
+                        offeredHerbsInfo += offeredHerb + ', '
                     }
-                    offeredDrugsInfo = offeredDrugsInfo.substring(0, offeredDrugsInfo.length - 2);
+                    offeredHerbsInfo = offeredHerbsInfo.substring(0, offeredHerbsInfo.length - 2);
                 }
                 markerDescription = `
                     <h3 class="font-extrabold">Address</h3>
@@ -208,7 +209,7 @@
                     >
                         See more about out rating system
                     </a>
-                    ${offeredDrugsInfo}
+                    ${offeredHerbsInfo}
                     ${requestMeetingButton}
                 `;
             }
@@ -238,7 +239,7 @@
                     <br>
                 `;
             }
-            const marker = L.marker([location.latitude, location.longitude]).addTo(layerGroup)
+            const marker = L.marker([location.latitude, location.longitude], {icon: L.icon({iconUrl: markerIconPng})}).addTo(layerGroup)
                 .bindPopup(markerDescription!);
 
             if (mode === MapMode.AddLocation) {
@@ -282,32 +283,32 @@
         getLocations(true);
     }
 
-    function addToChosenDrug() {
-        drugSelectionErrors = '';
-        let chosenDrug = drugs.find(drug => { return drug.name === chosenDrugName });
-        if (chosenDrug) {
-            drugs = drugs.filter(drug => {
-                return drug.name !== chosenDrug?.name
+    function addToChosenHerb() {
+        herbSelectionErrors = '';
+        let chosenHerb = herbs.find(herb => { return herb.name === chosenHerbName });
+        if (chosenHerb) {
+            herbs = herbs.filter(herb => {
+                return herb.name !== chosenHerb?.name
             });
-            chosenDrugs = [...chosenDrugs, chosenDrug!];
-            chosenDrugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
-            chosenDrugName = '';
+            chosenHerbs = [...chosenHerbs, chosenHerb!];
+            chosenHerbs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+            chosenHerbName = '';
         } else {
-            if (chosenDrugName !== '') {
-                drugSelectionErrors = 'Select Drug from the list!';
+            if (chosenHerbName !== '') {
+                herbSelectionErrors = 'Select Herb from the list!';
             }
         }
         getLocations(false);
     }
 
-    function removeChosenDrug(drugName: string) {
-        let chosenDrug = chosenDrugs.find(drug => { return drug.name === drugName });
-        if (chosenDrug) {
-            chosenDrugs = chosenDrugs.filter(drug => {
-                return drug.name !== chosenDrug?.name
+    function removeChosenHerb(herbName: string) {
+        let chosenHerb = chosenHerbs.find(herb => { return herb.name === herbName });
+        if (chosenHerb) {
+            chosenHerbs = chosenHerbs.filter(herb => {
+                return herb.name !== chosenHerb?.name
             });
-            drugs = [...drugs, chosenDrug!];
-            drugs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+            herbs = [...herbs, chosenHerb!];
+            herbs.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
         }
         getLocations(false);
     }
@@ -350,16 +351,16 @@
 {:then value}
     {#if mode === MapMode.Browse}
         <div class="p-4 bg-darkMossGreen rounded-lg mb-4 text-olivine">
-            <label for="drug" class="block text-xl font-semibold mb-2">Select Drugs You need from the list:</label>
-            <input list="drugs" id="drug" name="drug" bind:value={chosenDrugName} on:input={addToChosenDrug}
+            <label for="herb" class="block text-xl font-semibold mb-2">Select Herbs You need from the list:</label>
+            <input list="herbs" id="herb" name="herb" bind:value={chosenHerbName} on:input={addToChosenHerb}
                    class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
-            <datalist id="drugs">
-                {#each drugs as drug}
-                    <option value={drug.name}/>
+            <datalist id="herbs">
+                {#each herbs as herb}
+                    <option value={herb.name}/>
                 {/each}
             </datalist>
-            {#if drugSelectionErrors !== ''}
-                <p class="text-red-600 mt-2">{drugSelectionErrors}</p>
+            {#if herbSelectionErrors !== ''}
+                <p class="text-red-600 mt-2">{herbSelectionErrors}</p>
             {/if}
 
             <label for="plug" class="block text-xl font-semibold mb-2 mt-4">Select Plugs You want by typing and choosing from the list:</label>
@@ -376,11 +377,11 @@
 
 
             <div class="flex flex-wrap gap-2 mt-4">
-                {#each chosenDrugs as chosenDrug}
+                {#each chosenHerbs as chosenHerb}
                     <div class="flex items-center p-2 bg-asparagus rounded-lg">
-                        <p class="mr-2 font-semibold text-darkGreen">{chosenDrug.name}</p>
+                        <p class="mr-2 font-semibold text-darkGreen">{chosenHerb.name}</p>
                         <button class="flex items-center justify-center bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-all duration-300 shadow-md"
-                                on:click={() => { removeChosenDrug(chosenDrug.name) }}>
+                                on:click={() => { removeChosenHerb(chosenHerb.name) }}>
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>

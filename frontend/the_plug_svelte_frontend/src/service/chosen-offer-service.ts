@@ -6,20 +6,20 @@ token.subscribe((value) => {
     tokenValue = value;
 });
 
-export async function createChosenOfferRequest(drugOfferId: string, meetingId: string, grams: number): Promise<any> {
+export async function createChosenOfferRequest(herbOfferId: string, meetingId: string, grams: number): Promise<any> {
     const requestOptions: {} = {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Token ${tokenValue}`
         },
-        body: JSON.stringify({ drug_offer: drugOfferId, meeting: meetingId, number_of_grams: grams })
+        body: JSON.stringify({ herb_offer: herbOfferId, meeting: meetingId, number_of_grams: grams })
     }
 
     return await sendRequest('chosen-offer/', requestOptions);
 }
 
-export async function getMeetingChosenOffersWithDrugAndOfferInfo(meetingId: string): Promise<any> {
+export async function getMeetingChosenOffersWithHerbAndOfferInfo(meetingId: string): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {

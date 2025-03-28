@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from .models import AppUser, Plug, Location, Meeting, ChosenOffer, DrugOffer, Drug
+from .models import AppUser, Plug, Location, Meeting, ChosenOffer, HerbOffer, Herb
 
 
 class PlugSerializer(serializers.ModelSerializer):
@@ -48,31 +48,31 @@ class ChosenOfferSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DrugOfferSerializer(serializers.ModelSerializer):
+class HerbOfferSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DrugOffer
+        model = HerbOffer
         fields = '__all__'
 
 
-class DrugSerializer(serializers.ModelSerializer):
+class HerbSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Drug
+        model = Herb
         fields = '__all__'
 
 
-class PlugDrugOffersPlusNamesSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='drug.name')
+class PlugHerbOffersPlusNamesSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='herb.name')
 
     class Meta:
-        model = DrugOffer
+        model = HerbOffer
         fields = '__all__'
 
 
-class ChosenOfferWithDrugAndOfferInfoSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='drug_offer.drug.name')
-    wikipedia_link = serializers.CharField(source='drug_offer.drug.wikipedia_link')
-    price_per_gram = serializers.FloatField(source='drug_offer.price_per_gram')
-    currency = serializers.CharField(source='drug_offer.currency')
+class ChosenOfferWithHerbAndOfferInfoSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='herb_offer.herb.name')
+    wikipedia_link = serializers.CharField(source='herb_offer.herb.wikipedia_link')
+    price_per_gram = serializers.FloatField(source='herb_offer.price_per_gram')
+    currency = serializers.CharField(source='herb_offer.currency')
 
     class Meta:
         model = ChosenOffer
@@ -80,14 +80,14 @@ class ChosenOfferWithDrugAndOfferInfoSerializer(serializers.ModelSerializer):
 
 
 class MeetingWithPlugInfoSerializer(serializers.ModelSerializer):
-    plug_username = serializers.CharField(source='chosenoffer_set.first.drug_offer.plug.app_user.username')
-    plug_is_partner = serializers.BooleanField(source='chosenoffer_set.first.drug_offer.plug.isPartner')
-    plug_is_slanderer = serializers.BooleanField(source='chosenoffer_set.first.drug_offer.plug.isSlanderer')
+    plug_username = serializers.CharField(source='chosenoffer_set.first.herb_offer.plug.app_user.username')
+    plug_is_partner = serializers.BooleanField(source='chosenoffer_set.first.herb_offer.plug.isPartner')
+    plug_is_slanderer = serializers.BooleanField(source='chosenoffer_set.first.herb_offer.plug.isSlanderer')
     client_username = serializers.CharField(source='user.username')
     client_rating = serializers.FloatField(source='user.rating')
     client_is_partner = serializers.BooleanField(source='user.isPartner')
     client_is_slanderer = serializers.BooleanField(source='user.isSlanderer')
-    plug_id = serializers.IntegerField(source='chosenoffer_set.first.drug_offer.plug.id')
+    plug_id = serializers.IntegerField(source='chosenoffer_set.first.herb_offer.plug.id')
 
     class Meta:
         model = Meeting
@@ -99,23 +99,23 @@ class LocationPlusPlugUsernameAndRatingSerializer(serializers.ModelSerializer):
     rating = serializers.FloatField(source='plug.rating')
     isPartner = serializers.BooleanField(source='plug.isPartner')
     isSlanderer = serializers.BooleanField(source='plug.isSlanderer')
-    offered_drugs = serializers.SerializerMethodField()
+    offered_herbs = serializers.SerializerMethodField()
 
     class Meta:
         model = Location
         fields = '__all__'
 
-    def get_offered_drugs(self, obj):
-        drug_offers = DrugOffer.objects.filter(plug=obj.plug)
-        drug_ids = drug_offers.values_list('drug_id', flat=True)
-        drugs = Drug.objects.filter(id__in=drug_ids)
-        return [drug.name for drug in drugs]
+    def get_offered_herbs(self, obj):
+        herb_offers = HerbOffer.objects.filter(plug=obj.plug)
+        herb_ids = herb_offers.values_list('herb_id', flat=True)
+        herbs = Herb.objects.filter(id__in=herb_ids)
+        return [herb.name for herb in herbs]
 
 
 class MeetingWithPlugInfoAndChosenOfferNamesSerializer(serializers.ModelSerializer):
-    plug_username = serializers.CharField(source='chosenoffer_set.first.drug_offer.plug.app_user.username')
+    plug_username = serializers.CharField(source='chosenoffer_set.first.herb_offer.plug.app_user.username')
     client_username = serializers.CharField(source='user.username')
-    plug_id = serializers.IntegerField(source='chosenoffer_set.first.drug_offer.plug.id')
+    plug_id = serializers.IntegerField(source='chosenoffer_set.first.herb_offer.plug.id')
     chosen_offers = serializers.SerializerMethodField()
 
     class Meta:
@@ -124,6 +124,6 @@ class MeetingWithPlugInfoAndChosenOfferNamesSerializer(serializers.ModelSerializ
 
     def get_chosen_offers(self, obj):
         chosen_offers = ChosenOffer.objects.filter(meeting=obj)
-        chosen_offers_array = [chosen_offer.drug_offer.drug.name for chosen_offer in chosen_offers]
+        chosen_offers_array = [chosen_offer.herb_offer.herb.name for chosen_offer in chosen_offers]
         chosen_offers_array.sort()
         return chosen_offers_array

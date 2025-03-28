@@ -144,10 +144,10 @@
         <label for="datetime-to" class="block text-xl font-semibold mb-2 mt-4 text-darkGreen">To date:</label>
         <input type="datetime-local" id="datetime-to" name="datetime-to" bind:value={datetimeTo} on:input={prepareDate}
                class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-        <label for="drug" class="block text-xl font-semibold mb-2 text-darkGreen">Select chosen offers from the list:</label>
-        <input list="drugs" id="drug" name="drug" bind:value={chosenOfferName} on:input={addToChosenFilterOffers}
+        <label for="herb" class="block text-xl font-semibold mb-2 text-darkGreen">Select chosen offers from the list:</label>
+        <input list="herbs" id="herb" name="herb" bind:value={chosenOfferName} on:input={addToChosenFilterOffers}
                class="w-full p-3 border-2 border-asparagus rounded-lg text-darkGreen focus:outline-none focus:ring-2 focus:ring-olivine focus:border-olivine"/>
-        <datalist id="drugs">
+        <datalist id="herbs">
             {#each chosenOffers as chosenOffer}
                 <option value={chosenOffer}/>
             {/each}

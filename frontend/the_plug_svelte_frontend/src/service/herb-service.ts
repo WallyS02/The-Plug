@@ -6,7 +6,7 @@ token.subscribe((value) => {
     tokenValue = value;
 });
 
-export async function getDrugs(): Promise<any> {
+export async function getHerbs(): Promise<any> {
     const requestOptions: {} = {
         method: 'GET',
         headers: {
@@ -15,11 +15,11 @@ export async function getDrugs(): Promise<any> {
         }
     }
 
-    let response = await sendRequest('drug/list/', requestOptions);
+    let response = await sendRequest('herb/list/', requestOptions);
     return response.body;
 }
 
-export async function requestNewDrugRequest(name: string, wikipediaLink: string): Promise<any> {
+export async function requestNewHerbRequest(name: string, wikipediaLink: string): Promise<any> {
     const requestOptions: {} = {
         method: 'POST',
         headers: {
@@ -29,5 +29,5 @@ export async function requestNewDrugRequest(name: string, wikipediaLink: string)
         body: JSON.stringify({ name: name, wikipedia_link: wikipediaLink })
     }
 
-    return await sendRequest('new-drug/', requestOptions);
+    return await sendRequest('new-herb/', requestOptions);
 }
