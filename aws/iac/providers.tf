@@ -1,6 +1,6 @@
 provider "aws" {
   region = var.region
-  alias = "main"
+  alias  = "main"
 
   default_tags {
     tags = {
@@ -11,5 +11,5 @@ provider "aws" {
 
 provider "aws" {
   region = "us-east-1"
-  alias = "cloudfront"
+  alias  = "cloudfront"
 }
