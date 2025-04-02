@@ -4,10 +4,10 @@ module "acm_cloudfront" {
   providers = {
     aws = aws.cloudfront
   }
-  domain_name = "" # TODO get domain name
+  domain_name               = "" # TODO get domain name
   subject_alternative_names = []
-  validation_method = "DNS"
-  hosted_zone_id = module.route53.hosted_zone_id
+  validation_method         = "DNS"
+  hosted_zone_id            = module.route53.hosted_zone_id
 
   depends_on = [module.route53]
 }
@@ -15,10 +15,10 @@ module "acm_cloudfront" {
 module "acm_alb" {
   source = "./modules/acm"
 
-  domain_name = "" # TODO get domain name
+  domain_name               = "" # TODO get domain name
   subject_alternative_names = []
-  validation_method = "DNS"
-  hosted_zone_id = module.route53.hosted_zone_id
+  validation_method         = "DNS"
+  hosted_zone_id            = module.route53.hosted_zone_id
 
   depends_on = [module.route53]
 }

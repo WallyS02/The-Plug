@@ -45,14 +45,14 @@ variable "records" {
 
 variable "enable_dnssec" {
   description = "Enable DNSSEC for the hosted zone?"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "key_management_service_arn" {
   description = "Key for DNSSEC ARN (if enable_dnssec = true)"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
 
 variable "tags" {

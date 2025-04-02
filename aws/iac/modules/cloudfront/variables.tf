@@ -25,13 +25,23 @@ variable "origins" {
 }
 
 variable "default_cache_behaviour" {
-  description = "Default cache behaviour configuration"
+  description = "Default cache behaviour configuration (S3 frontend)"
   type = object({
     target_origin_id         = string
     allowed_methods          = list(string)
     cached_methods           = list(string)
     cache_policy_id          = string
     origin_request_policy_id = string
+  })
+}
+
+variable "ordered_cache_behaviour" {
+  description = "Ordered cache behaviour configuration (ALB backend)"
+  type = object({
+    path_pattern     = string
+    target_origin_id = string
+    allowed_methods  = list(string)
+    cached_methods   = list(string)
   })
 }
 

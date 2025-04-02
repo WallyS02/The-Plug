@@ -25,7 +25,7 @@ resource "aws_secretsmanager_secret_rotation" "this" {
 
 # Secret policy
 resource "aws_secretsmanager_secret_policy" "this" {
-  count       = length(var.policy_statements) > 0 ? 1 : 0
+  count      = length(var.policy_statements) > 0 ? 1 : 0
   policy     = data.aws_iam_policy_document.combined[0].json
   secret_arn = aws_secretsmanager_secret.this.arn
 }
@@ -34,8 +34,8 @@ module "kms" {
   count  = var.kms_key_arn == null ? 1 : 0
   source = "../kms"
 
-  description = "KMS key for Secrets Manager ${var.name}"
-  alias_name  = "secrets/${var.name}"
+  description         = "KMS key for Secrets Manager ${var.name}"
+  alias_name          = "secrets/${var.name}"
   additional_policies = data.aws_iam_policy_document.kms_policy.json
 }
 

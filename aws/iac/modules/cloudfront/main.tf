@@ -61,6 +61,21 @@ resource "aws_cloudfront_distribution" "main" {
     }
   }
 
+  # Ordered cache behaviour
+  ordered_cache_behavior {
+    path_pattern     = var.ordered_cache_behaviour.path_pattern
+    target_origin_id = var.ordered_cache_behaviour.target_origin_id
+
+    allowed_methods = var.ordered_cache_behaviour.allowed_methods
+    cached_methods  = var.ordered_cache_behaviour.cached_methods
+    compress        = true
+
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3" # Managed-AllViewer
+
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
   # Geographical restrictions
   restrictions {
     geo_restriction {
@@ -94,8 +109,32 @@ resource "aws_cloudfront_distribution" "main" {
 }
 
 # S3 bucket policies for OAI
+data "aws_iam_policy_document" "s3_policy" {
+  count = var.create_origin_access_identity ? 1 : 0
+
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${var.s3_bucket_arn}/*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.s3_oai[0].iam_arn]
+    }
+  }
+
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = [var.s3_bucket_arn]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.s3_oai[0].iam_arn]
+    }
+  }
+}
+
 resource "aws_s3_bucket_policy" "cloudfront_access" {
   count  = var.create_origin_access_identity ? 1 : 0
   bucket = var.s3_bucket_id
-  policy = var.s3_bucket_policy
+  policy = data.aws_iam_policy_document.s3_policy
 }

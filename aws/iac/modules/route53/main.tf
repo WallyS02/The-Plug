@@ -48,5 +48,5 @@ resource "aws_route53_hosted_zone_dnssec" "main" {
   count = var.enable_dnssec && var.create_hosted_zone ? 1 : 0
 
   hosted_zone_id = local.hosted_zone_id
-  depends_on = [aws_route53_key_signing_key.main]
+  depends_on     = [aws_route53_key_signing_key.main]
 }
