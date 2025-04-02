@@ -27,7 +27,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-public-${substr(var.azs, -1, 1)}"
+    Name = "${var.environment}-public-${substr(var.azs[count.index], -1, 1)}"
     Tier = "Public"
   })
 }
@@ -40,7 +40,7 @@ resource "aws_subnet" "private" {
   availability_zone = var.azs[count.index]
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-private-${substr(var.azs, -1, 1)}"
+    Name = "${var.environment}-private-${substr(var.azs[count.index], -1, 1)}"
     Tier = "Private"
   })
 }
@@ -79,10 +79,14 @@ resource "aws_route_table" "public" {
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-  route = var.enable_nat_gateway ? {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.main[0].id
-  } : {}
+
+  dynamic "route" {
+    for_each = var.enable_nat_gateway ? [1] : []
+    content {
+      cidr_block     = "0.0.0.0/0"
+      nat_gateway_id = aws_nat_gateway.main[0].id
+    }
+  }
 
   tags = merge(var.tags, {
     Name = "${var.environment}-private-rt"
@@ -97,16 +101,17 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route_table_association" "private" {
-  count          = var.enable_nat_gateway ? length(aws_subnet.private) : 0
+  count          = length(aws_subnet.private)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }
 
 # VPC Endpoints
 resource "aws_vpc_endpoint" "s3" {
-  count        = var.enable_s3_endpoint ? 1 : 0
-  vpc_id       = aws_vpc.main.id
-  service_name = "com.amazonaws.${var.region}.s3"
+  count           = var.enable_s3_endpoint ? 1 : 0
+  vpc_id          = aws_vpc.main.id
+  service_name    = "com.amazonaws.${var.region}.s3"
+  route_table_ids = [aws_route_table.private.id]
 
   tags = merge(var.tags, {
     Name = "${var.environment}-s3-endpoint"
