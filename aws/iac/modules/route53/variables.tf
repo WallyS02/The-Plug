@@ -43,14 +43,16 @@ variable "records" {
   default = []
 }
 
-variable "acm_validation_records" {
-  description = "Validation records for ACM certificates"
-  type = map(object({
-    name    = string
-    type    = string
-    records = list(string)
-  }))
-  default = {}
+variable "enable_dnssec" {
+  description = "Enable DNSSEC for the hosted zone?"
+  type = bool
+  default = false
+}
+
+variable "key_management_service_arn" {
+  description = "Key for DNSSEC ARN (if enable_dnssec = true)"
+  type = string
+  default = ""
 }
 
 variable "tags" {

@@ -51,8 +51,8 @@ variable "recovery_window" {
   }
 }
 
-variable "policy" {
-  description = "Default and additional access policies in JSON format"
+variable "policy_statements" {
+  description = "Additional access policies in JSON format"
   type        = list(string)
   default     = []
 }

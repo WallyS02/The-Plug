@@ -81,18 +81,3 @@ resource "aws_lb_listener" "https" {
     target_group_arn = aws_lb_target_group.main.arn
   }
 }
-
-# DNS record (optional)
-resource "aws_route53_record" "alb" {
-  count = var.create_dns_record ? 1 : 0
-
-  name    = var.dns_name
-  type    = "A"
-  zone_id = var.hosted_zone_id
-
-  alias {
-    evaluate_target_health = true
-    name                   = aws_lb.main.dns_name
-    zone_id                = aws_lb.main.zone_id
-  }
-}

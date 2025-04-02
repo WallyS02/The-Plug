@@ -25,7 +25,8 @@ resource "aws_secretsmanager_secret_rotation" "this" {
 
 # Secret policy
 resource "aws_secretsmanager_secret_policy" "this" {
-  policy     = var.policy
+  count       = length(var.policy_statements) > 0 ? 1 : 0
+  policy     = data.aws_iam_policy_document.combined[0].json
   secret_arn = aws_secretsmanager_secret.this.arn
 }
 
@@ -35,4 +36,49 @@ module "kms" {
 
   description = "KMS key for Secrets Manager ${var.name}"
   alias_name  = "secrets/${var.name}"
+  additional_policies = data.aws_iam_policy_document.kms_policy.json
+}
+
+data "aws_iam_policy_document" "combined" {
+  count = length(var.policy_statements) > 0 ? 1 : 0
+
+  source_policy_documents = concat(
+    [data.aws_iam_policy_document.default_policy.json],
+    var.policy_statements
+  )
+}
+
+data "aws_iam_policy_document" "default_policy" {
+  statement {
+    effect    = "Deny"
+    actions   = ["secretsmanager:*"]
+    resources = ["*"]
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+    condition {
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["false"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "kms_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey"
+    ]
+    resources = ["*"]
+    principals {
+      type        = "Service"
+      identifiers = ["secretsmanager.amazonaws.com"]
+    }
+  }
 }

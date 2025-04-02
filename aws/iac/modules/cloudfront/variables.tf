@@ -52,8 +52,8 @@ variable "s3_bucket_id" {
   default     = ""
 }
 
-variable "s3_bucket_policy" {
-  description = "S3 bucket policy (if create_origin_access_identity = true)"
+variable "s3_bucket_arn" {
+  description = "S3 bucket ARN (if create_origin_access_identity = true)"
   type        = string
   default     = ""
 }

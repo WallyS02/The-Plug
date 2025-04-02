@@ -83,24 +83,6 @@ variable "logging_prefix" {
   default     = ""
 }
 
-variable "create_dns_record" {
-  description = "Create Route 53 DNS record?"
-  type        = bool
-  default     = false
-}
-
-variable "hosted_zone_id" {
-  description = "Route 53 hosted zone ID (if create_dns_record = true)"
-  type        = string
-  default     = ""
-}
-
-variable "dns_name" {
-  description = "DNS name for A record (if create_dns_record = true)"
-  type        = string
-  default     = ""
-}
-
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

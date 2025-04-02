@@ -21,9 +21,8 @@ resource "aws_route53_record" "records" {
   name    = each.value.name != "" ? "${each.value.name}.${var.domain_name}}" : var.domain_name
   type    = each.value.type
   zone_id = local.hosted_zone_id
-  ttl     = lookup(each.value, "ttl", 300)
+  ttl     = lookup(each.value, "ttl", null)
 
-  records = each.value.records
   dynamic "alias" {
     for_each = lookup(each.value, "alias", [])
     content {
@@ -32,26 +31,22 @@ resource "aws_route53_record" "records" {
       evaluate_target_health = lookup(alias.value, "evaluate_target_health", false)
     }
   }
-}
 
-# ACM validation records
-resource "aws_route53_record" "acm_validation" {
-  for_each = var.acm_validation_records
-
-  name    = each.value.name
-  type    = each.value.type
-  zone_id = local.hosted_zone_id
-  ttl     = 60
-  records = each.value.records
+  records = lookup(each.value, "records", null)
 }
 
 # DNSSEC
 resource "aws_route53_key_signing_key" "main" {
+  count = var.enable_dnssec && var.create_hosted_zone ? 1 : 0
+
   hosted_zone_id             = local.hosted_zone_id
-  key_management_service_arn = aws_kms_key.dnssec.arn
-  name                       = "dnssec-key"
+  key_management_service_arn = var.key_management_service_arn
+  name                       = "dnssec-key-${var.domain_name}"
 }
 
 resource "aws_route53_hosted_zone_dnssec" "main" {
+  count = var.enable_dnssec && var.create_hosted_zone ? 1 : 0
+
   hosted_zone_id = local.hosted_zone_id
+  depends_on = [aws_route53_key_signing_key.main]
 }

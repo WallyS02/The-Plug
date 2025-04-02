@@ -21,8 +21,8 @@ variable "deletion_window_in_days" {
   }
 }
 
-variable "kms_policy" {
-  description = "Key root permissions IAM policy and additional IAM policies list in JSON format"
+variable "additional_policies" {
+  description = "Additional IAM policies list in JSON format"
   type        = string
   default     = ""
 }

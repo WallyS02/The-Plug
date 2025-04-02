@@ -8,6 +8,11 @@ output "dns_name" {
   value       = aws_lb.main.dns_name
 }
 
+output "hosted_zone_id" {
+  description = "ALB hosted zone ID"
+  value       = aws_lb.main.zone_id
+}
+
 output "zone_id" {
   description = "ALB Zone ID"
   value       = aws_lb.main.zone_id
