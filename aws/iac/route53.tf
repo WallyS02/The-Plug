@@ -22,7 +22,7 @@ module "route53" {
       }
     }
   ]
-  enable_dnssec              = false
+  enable_dnssec              = true
   key_management_service_arn = module.kms_dnssec.key_arn
 }
 
@@ -31,28 +31,26 @@ module "kms_dnssec" {
 
   description         = "Key for Route 53 DNSSEC"
   alias_name          = "dnssec"
-  enable_key_rotation = false # TODO rotate key?
+  enable_key_rotation = false
 
   additional_policies = [
-    data.aws_iam_policy_document.TODO
+    data.aws_iam_policy_document.dnssec_kms_policy
   ]
 }
 
-# TODO DNSSEC key policies
-data "aws_iam_policy_document" "TODO" {
+data "aws_iam_policy_document" "dnssec_kms_policy" {
   statement {
-    sid    = ""
-    effect = ""
+    sid    = "AllowRoute53DNSSECService"
+    effect = "Allow"
+    actions = [
+      "kms:GetPublicKey",
+      "kms:Sign"
+    ]
+    resources = ["*"]
+
     principals {
-      type        = ""
-      identifiers = [""]
-    }
-    actions   = [""]
-    resources = [""]
-    condition {
-      test     = ""
-      variable = ""
-      values   = [""]
+      type        = "Service"
+      identifiers = ["dnssec-route53.amazonaws.com"]
     }
   }
 }

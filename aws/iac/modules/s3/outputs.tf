@@ -3,6 +3,11 @@ output "arn" {
   value       = aws_s3_bucket.this.arn
 }
 
+output "id" {
+  description = "S3 bucket ID"
+  value = aws_s3_bucket.this.id
+}
+
 output "name" {
   description = "Bucket name"
   value       = aws_s3_bucket.this.bucket
