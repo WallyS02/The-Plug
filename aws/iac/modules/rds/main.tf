@@ -59,7 +59,7 @@ resource "aws_db_instance" "main" {
   performance_insights_enabled          = var.performance_insights_enabled
   performance_insights_retention_period = var.performance_insights_retention_period
   monitoring_interval                   = var.monitoring_interval
-  monitoring_role_arn                   = var.monitoring_role_arn
+  monitoring_role_arn                   = aws_iam_role.rds_monitoring.arn
 
   enabled_cloudwatch_logs_exports = var.cloud_watch_log_exports
 

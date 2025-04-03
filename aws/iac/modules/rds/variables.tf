@@ -6,13 +6,13 @@ variable "identifier" {
 variable "engine" {
   description = "Database engine type"
   type        = string
-  default     = "postgresql"
+  default     = "postgres"
 }
 
 variable "engine_version" {
   description = "Engine version"
   type        = string
-  default     = "17.2-R2"
+  default     = "17.4"
 }
 
 variable "instance_class" {
@@ -141,12 +141,6 @@ variable "monitoring_interval" {
   description = "Monitoring interval (0|1|5|10|15|30|60)"
   type        = number
   default     = 0
-}
-
-variable "monitoring_role_arn" {
-  description = "Monitoring role ARN"
-  type        = string
-  default     = null
 }
 
 variable "cloud_watch_log_exports" {
