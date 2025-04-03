@@ -29,8 +29,8 @@ resource "aws_cloudwatch_dashboard" "main" {
 resource "aws_cloudwatch_log_group" "main" {
   for_each          = var.log_groups
   name              = each.key
-  retention_in_days = each.value.retention_in_days
-  kms_key_id        = each.value.kms_key_arn
+  retention_in_days = try(each.value.retention_in_days, null)
+  kms_key_id        = try(each.value.kms_key_arn, null)
   tags = merge(var.tags, {
     Name = each.key
   })

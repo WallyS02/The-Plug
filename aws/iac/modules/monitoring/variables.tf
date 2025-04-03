@@ -31,8 +31,8 @@ variable "dashboard_config" {
 variable "log_groups" {
   description = "Log groups configuration map"
   type = map(object({
-    retention_in_days = number
-    kms_key_arn       = string
+    retention_in_days = optional(number)
+    kms_key_arn       = optional(string)
   }))
   default = {}
 }
