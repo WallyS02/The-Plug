@@ -63,9 +63,9 @@ resource "aws_cloudfront_distribution" "main" {
 
   # Ordered cache behaviour
   ordered_cache_behavior {
-    path_pattern     = var.ordered_cache_behaviour.path_pattern
+    path_pattern           = var.ordered_cache_behaviour.path_pattern
     viewer_protocol_policy = "redirect-to-https"
-    target_origin_id = var.ordered_cache_behaviour.target_origin_id
+    target_origin_id       = var.ordered_cache_behaviour.target_origin_id
 
     allowed_methods = var.ordered_cache_behaviour.allowed_methods
     cached_methods  = var.ordered_cache_behaviour.cached_methods

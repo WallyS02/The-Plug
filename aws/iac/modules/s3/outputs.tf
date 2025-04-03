@@ -5,7 +5,7 @@ output "arn" {
 
 output "id" {
   description = "S3 bucket ID"
-  value = aws_s3_bucket.this.id
+  value       = aws_s3_bucket.this.id
 }
 
 output "name" {
