@@ -28,7 +28,7 @@ module "ecr" {
     Statement = [{
       Effect = "Allow",
       Principal = {
-        AWS = "arn:aws:iam::123456789012:role/ecr-ec2-task-role"
+        AWS = "arn:aws:iam::123456789012:role/${module.asg.name_prefix}-ec2-role"
       },
       Action = [
         "ecr:GetDownloadUrlForLayer",
@@ -70,7 +70,7 @@ data "aws_iam_policy_document" "ecr_kms_policy" {
     effect = "Allow"
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::123456789012:role/ecr-ec2-task-role"]
+      identifiers = ["arn:aws:iam::123456789012:role/${module.asg.name_prefix}-ec2-role"]
     }
     actions = [
       "kms:Decrypt",

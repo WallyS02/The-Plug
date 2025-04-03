@@ -20,7 +20,7 @@ variable "key_name" {
   default     = null
 }
 
-variable "security-group-ids" {
+variable "security_group_ids" {
   description = "Security groups ID list"
   type        = list(string)
 }
@@ -72,12 +72,6 @@ variable "user_data_base64" {
   default     = null
 }
 
-variable "iam_instance_profile_arn" {
-  description = "IAM instance profile ARN"
-  type        = string
-  default     = null
-}
-
 variable "enable_monitoring" {
   description = "Enable detailed monitoring?"
   type        = bool
@@ -117,18 +111,6 @@ variable "scaling_adjustment" {
   description = "Number of instances to add/delete during scaling"
   type        = number
   default     = 1
-}
-
-variable "cpu_utilization_high_threshold" {
-  description = "High CPU utilization threshold"
-  type        = number
-  default     = 70
-}
-
-variable "cpu_utilization_low_threshold" {
-  description = "Low CPU utilization threshold"
-  type        = number
-  default     = 30
 }
 
 variable "wait_for_capacity_timeout" {

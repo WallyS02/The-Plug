@@ -4,12 +4,12 @@ resource "aws_launch_template" "main" {
   image_id               = var.ami_id
   instance_type          = var.instance_type
   key_name               = var.key_name
-  vpc_security_group_ids = var.security-group-ids
+  vpc_security_group_ids = var.security_group_ids
   user_data              = var.user_data_base64
   update_default_version = true
 
   iam_instance_profile {
-    arn = var.iam_instance_profile_arn
+    arn = aws_iam_instance_profile.ec2_profile.arn
   }
 
   dynamic "block_device_mappings" {
@@ -39,6 +39,30 @@ resource "aws_launch_template" "main" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+# IAM Role and Profile for instances
+resource "aws_iam_role" "ec2_instance_role" {
+  name = "${var.name_prefix}-ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.ec2_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "${var.name_prefix}-ec2-profile"
+  role = aws_iam_role.ec2_instance_role.name
 }
 
 # Auto Scaling Group

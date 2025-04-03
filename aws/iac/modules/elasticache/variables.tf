@@ -5,6 +5,7 @@ variable "name" {
 
 variable "subnet_ids" {
   description = "Subnets ID list"
+  type        = list(string)
 }
 
 variable "node_type" {

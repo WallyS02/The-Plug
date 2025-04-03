@@ -22,3 +22,8 @@ output "target_group_arn" {
   description = "Target Group ARN"
   value       = aws_lb_target_group.main.arn
 }
+
+output "security_group_id" {
+  description = "ALB security group ID"
+  value       = aws_lb.main.security_groups
+}

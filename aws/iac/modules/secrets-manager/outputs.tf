@@ -17,3 +17,9 @@ output "rotation_enabled" {
   description = "Is rotation enabled?"
   value       = var.rotation_enabled
 }
+
+output "initial_value" {
+  description = "Secret initial value (sensitive!)"
+  value       = aws_secretsmanager_secret_version.initial[0].secret_string
+  sensitive   = true
+}
