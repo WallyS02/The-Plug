@@ -61,7 +61,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
       }
 
       dynamic "transition" {
-        for_each = rule.value.transistions
+        for_each = rule.value.transitions
         content {
           days          = transition.value.days
           storage_class = transition.value.storage_class
@@ -86,7 +86,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 resource "aws_s3_bucket_replication_configuration" "this" {
   count  = var.replication_config != null ? 1 : 0
   bucket = aws_s3_bucket.this.id
-  role   = var.replication_config.iam_role_arn
+  role   = aws_iam_role.replication[0].arn
 
   dynamic "rule" {
     for_each = var.replication_config.rules
@@ -100,13 +100,78 @@ resource "aws_s3_bucket_replication_configuration" "this" {
       }
 
       destination {
-        bucket        = rule.value.destintation_bucket_arn
+        bucket        = rule.value.destination_bucket_arn
         storage_class = rule.value.storage_class
       }
     }
   }
 
   depends_on = [aws_s3_bucket_versioning.this]
+}
+
+resource "aws_iam_role" "replication" {
+  count = var.replication_config != null ? 1 : 0
+  name  = "${var.bucket_name}-replication-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "s3.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_policy" "replication" {
+  count = var.replication_config != null ? 1 : 0
+  name  = "${var.bucket_name}-replication-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetReplicationConfiguration",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          aws_s3_bucket.this.arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObjectVersion",
+          "s3:GetObjectVersionAcl",
+          "s3:GetObjectVersionTagging"
+        ],
+        Resource = [
+          "${aws_s3_bucket.this.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:ReplicateObject",
+          "s3:ReplicateDelete",
+          "s3:ReplicateTags"
+        ],
+        Resource = [
+          for rule in var.replication_config.rules : "${rule.destination_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "replication" {
+  count      = var.replication_config != null ? 1 : 0
+  role       = aws_iam_role.replication[0].name
+  policy_arn = aws_iam_policy.replication[0].arn
 }
 
 # Static website configuration
