@@ -10,5 +10,5 @@ output "key_id" {
 
 output "alias_arn" {
   description = "KMS alias ARN"
-  value       = try(aws_kms_alias.this.arn, null)
+  value       = try(aws_kms_alias.this[0].arn, null)
 }

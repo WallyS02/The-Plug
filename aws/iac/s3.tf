@@ -1,25 +1,26 @@
 module "s3_frontend_bucket" {
   source = "./modules/s3"
 
-  bucket_name = "frontend-bucket"
-  versioning_enabled = true
-  mfa_delete_enabled = false
-  force_destroy = false
+  bucket_name         = "frontend-bucket"
+  versioning_enabled  = true
+  mfa_delete_enabled  = false
+  force_destroy       = false
   object_lock_enabled = true
 
-  bucket_policy = null
-  logging_enabled = false
-  lifecycle_rules = {}
+  bucket_policy      = null
+  logging_enabled    = false
+  lifecycle_rules    = {}
   replication_config = null
 
   encryption = {
-    kms_key_arn = module.kms_s3.key_arn
+    kms_key_arn        = module.kms_s3.key_arn
     bucket_key_enabled = true
   }
 
   website_config = {
     index_document = "index.html"
     error_document = "error.html"
+    routing_rules  = []
   }
 }
 
@@ -30,9 +31,7 @@ module "kms_s3" {
   alias_name          = "s3"
   enable_key_rotation = false
 
-  additional_policies = [
-    data.aws_iam_policy_document.s3_kms_policy
-  ]
+  additional_policies = data.aws_iam_policy_document.s3_kms_policy.json
 }
 
 data "aws_iam_policy_document" "s3_kms_policy" {

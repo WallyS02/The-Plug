@@ -21,14 +21,14 @@ resource "aws_cloudfront_distribution" "main" {
       origin_id   = origin.key
       origin_path = lookup(origin.value, "origin_path", "")
 
-      dynamic "s3_origin_configuration" {
+      dynamic "s3_origin_config" {
         for_each = origin.value.type == "s3" ? [1] : []
         content {
           origin_access_identity = var.create_origin_access_identity ? aws_cloudfront_origin_access_identity.s3_oai[0].cloudfront_access_identity_path : ""
         }
       }
 
-      dynamic "custom_origin_configuration" {
+      dynamic "custom_origin_config" {
         for_each = origin.value.type == "custom" ? [1] : []
         content {
           http_port              = 80
@@ -91,7 +91,7 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   # S3 logging
-  dynamic "logging_configuration" {
+  dynamic "logging_config" {
     for_each = var.logging_enabled ? [1] : []
     content {
       include_cookies = false

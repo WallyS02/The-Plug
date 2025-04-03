@@ -14,7 +14,7 @@ module "alb" {
   enable_deletion_protection = true
   enable_access_logs         = false
 
-  depends_on = [module.vpc, module.acm_alb, module.route53, module.alb_security_group]
+  depends_on = [module.acm_alb]
 }
 
 module "alb_security_group" {
@@ -27,16 +27,16 @@ module "alb_security_group" {
     {
       from_port   = 80
       to_port     = 80
+      description = "Allowing communication on port 80}"
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     },
     {
       from_port   = 443
       to_port     = 443
+      description = "Allowing communication on port 80}"
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
   ]
-
-  depends_on = [module.vpc]
 }

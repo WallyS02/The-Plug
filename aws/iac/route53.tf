@@ -33,9 +33,7 @@ module "kms_dnssec" {
   alias_name          = "dnssec"
   enable_key_rotation = false
 
-  additional_policies = [
-    data.aws_iam_policy_document.dnssec_kms_policy
-  ]
+  additional_policies = data.aws_iam_policy_document.dnssec_kms_policy.json
 }
 
 data "aws_iam_policy_document" "dnssec_kms_policy" {

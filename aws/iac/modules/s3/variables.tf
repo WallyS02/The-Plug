@@ -13,11 +13,6 @@ variable "mfa_delete_enabled" {
   description = "Require MFA to delete version?"
   type        = bool
   default     = false
-
-  validation {
-    condition     = !var.mfa_delete_enabled || var.versioning_enabled
-    error_message = "MFA delete requires versioning to be enabled"
-  }
 }
 
 variable "encryption" {
@@ -42,11 +37,6 @@ variable "logging_target_bucket" {
   description = "Log target bucket"
   type        = string
   default     = null
-
-  validation {
-    condition     = !var.logging_enabled || var.logging_target_bucket != null
-    error_message = "Target bucket must be specified when logging is enabled"
-  }
 }
 
 variable "logging_prefix" {
@@ -74,11 +64,11 @@ variable "replication_config" {
   description = "Replication configuration"
   type = object({
     rules = map(object({
-      status                  = string
-      priority                = number
-      prefix                  = string
+      status                 = string
+      priority               = number
+      prefix                 = string
       destination_bucket_arn = string
-      storage_class           = string
+      storage_class          = string
     }))
   })
   default = null

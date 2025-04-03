@@ -35,6 +35,6 @@ data "aws_iam_policy_document" "base" {
 data "aws_iam_policy_document" "kms_policy" {
   source_policy_documents = concat(
     [data.aws_iam_policy_document.base.json],
-    var.additional_policies
+    [var.additional_policies]
   )
 }
