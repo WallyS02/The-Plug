@@ -12,9 +12,9 @@ Each service type will have own security group which, following Principle of Lea
 Main communication flow:
 * Users connect to application by domain name that is resolved by Route 53.
 * Route 53 routes to CloudFront to serve website.
-* CloudFront serves cached website or requests it from S3 bucket. CloudFront proxies requests to backend to backend's ALB.
-* ALB distributes load to Auto Scaling Group of backend EC2 instances.
-* Backend EC2 instances communicate with ElastiCache to access RDS database.
+* CloudFront serves cached website or requests it from S3 bucket. CloudFront proxies requests to backend's ALB.
+* ALB distributes load to backend containers ran by ECS service that uses Auto Scaling Group of EC2 instances as infrastructure.
+* Backend containers communicate with ElastiCache to access RDS database.
 * ElastiCache accesses RDS database to take actions on application's data.
 
 Other communication:
@@ -28,7 +28,7 @@ All actions will be taken from IAM user account that has proper permissions to m
 Each service type will have own role which, following Principle of Least Privilege, will have permissions for only needed actions to perform their tasks.
 ### Secrets Manager and KMS
 Secrets Manager will manage secrets for backend application and RDS database.\
-KMS will manage any needed keys for Secrets Manager and used services \(mainly AWS-managed keys\).
+KMS will manage any needed keys for Secrets Manager and used services \(AWS-managed keys\).
 ### ACM
 ACM will manage free, public certificates for CloudFront and ALB.
 ### Route Tables
@@ -40,12 +40,14 @@ NAT Gateway will be located in master public subnet and serve for private subnet
 ### VPC Endpoints
 VPC Endpoints will be used for connecting services in private \(maybe in public too\) subnets \(EC2, RDS, ElastiCache\) to regional services \(ECR, KMS, Secrets Manager\).
 ### ALB
-Application Load Balancer will be used to distribute traffic in EC2's Auto Scaling Group.
+Application Load Balancer will be used to distribute traffic to ECS containers in Auto Scaling EC2 group.
 ### CloudWatch
 CloudWatch monitors and observes all services with defined up to 10 alarms when something goes wrong.
 ### Auto Scaling
-Backend Free-Tiered EC2 servers will use Docker to host application.\
-It will be auto-scaled from 1 to 2 instances based on CPU/memory usage or failure of a master instance. Auto scaling will be distributed between 2 AZs. Maybe some Spot Instances will be used.
+Backend Free-Tiered EC2 servers will be used for running application containers with ECS.\
+They will be auto-scaled from 1 to 2 instances based on CPU/memory usage or failure of a master instance. Auto scaling will be distributed between 2 AZs.
+### ECS
+ECS will be used to run backend application in containers using auto scaled EC2 infrastructure.
 ### Route 53
 DNS will route domain name \(if bought or obtained\) to CloudFront.
 ### CloudFront
