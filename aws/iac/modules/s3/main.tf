@@ -50,6 +50,15 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
   count  = length(var.lifecycle_rules) > 0 ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
+  rule {
+    id     = "log"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 2
+    }
+  }
+
   dynamic "rule" {
     for_each = var.lifecycle_rules
     content {

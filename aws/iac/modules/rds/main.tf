@@ -27,15 +27,15 @@ resource "aws_db_parameter_group" "main" {
 
 # RDS instance configuration
 resource "aws_db_instance" "main" {
-  identifier            = var.identifier
-  engine                = var.engine
-  engine_version        = var.engine_version
-  instance_class        = var.instance_class
-  allocated_storage     = var.allocated_storage
-  storage_type          = var.storage_type
-  storage_encrypted     = true
-  kms_key_id            = null
-  license_model         = var.license_model
+  identifier        = var.identifier
+  engine            = var.engine
+  engine_version    = var.engine_version
+  instance_class    = var.instance_class
+  allocated_storage = var.allocated_storage
+  storage_type      = var.storage_type
+  storage_encrypted = true
+  kms_key_id        = null
+  license_model     = var.license_model
 
   db_name  = var.db_name
   username = var.username
@@ -46,6 +46,7 @@ resource "aws_db_instance" "main" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = var.rds_security_group
   parameter_group_name   = aws_db_parameter_group.main.name
+  auto_minor_version_upgrade = true
 
   backup_retention_period   = var.backup_retention_period
   backup_window             = var.backup_window
