@@ -10,7 +10,7 @@ output "name" {
 
 output "kms_key_arn" {
   description = "Used KMS key ARN"
-  value       = coalesce(var.kms_key_arn, try(module.kms[0].key_arn, null))
+  value       = aws_secretsmanager_secret.this.kms_key_id
 }
 
 output "rotation_enabled" {

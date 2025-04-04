@@ -32,14 +32,13 @@ resource "aws_elasticache_replication_group" "main" {
   engine_version             = var.redis_version
   at_rest_encryption_enabled = var.encryption_at_rest
   transit_encryption_enabled = var.encryption_in_transit
-  kms_key_id                 = var.kms_key_arn
+  kms_key_id                 = null
   auth_token                 = var.auth_token
-  automatic_failover_enabled = var.multi_az
-  multi_az_enabled           = var.multi_az
-  num_cache_clusters         = var.multi_az ? 2 : 1
-  snapshot_retention_limit   = var.snapshot_retention_days
+  automatic_failover_enabled = false
+  multi_az_enabled           = false
+  num_cache_clusters         = 1
+  snapshot_retention_limit   = 0
   maintenance_window         = var.maintenance_window
-  snapshot_window            = var.snapshot_window
 
   tags = merge(var.tags, {
     Name = var.name

@@ -22,10 +22,7 @@ module "asg" {
     volume_type           = "gp3"
     delete_on_termination = true
     encrypted             = true
-    kms_key_id            = module.kms_asg.key_arn
   }]
-
-  mixed_instances_policy = null
 
   enable_scaling_policies = true
   scaling_adjustment      = 1
@@ -55,32 +52,4 @@ module "asg_security_group" {
       security_groups = [module.alb.security_group_id]
     }
   ]
-}
-
-module "kms_asg" {
-  source = "./modules/kms"
-
-  description         = "Key for ASG storage encryption"
-  alias_name          = "asg"
-  enable_key_rotation = false
-
-  additional_policies = data.aws_iam_policy_document.asg_kms_policy.json
-}
-
-data "aws_iam_policy_document" "asg_kms_policy" {
-  statement {
-    sid = "AllowEC2Use"
-    actions = [
-      "kms:Encrypt",
-      "kms:Decrypt",
-      "kms:ReEncrypt*",
-      "kms:GenerateDataKey*",
-      "kms:DescribeKey"
-    ]
-    resources = ["*"]
-    principals {
-      type        = "AWS"
-      identifiers = [module.asg.ec2_role_arn]
-    }
-  }
 }

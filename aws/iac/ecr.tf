@@ -4,8 +4,6 @@ module "ecr" {
   name                 = "the-plug-backend-repository"
   scan_on_push         = false
   image_tag_mutability = "MUTABLE"
-  encryption_type      = "KMS"
-  kms_key              = module.kms_ecr.key_arn
 
   lifecycle_policy = jsonencode({
     rules = [{
@@ -37,45 +35,4 @@ module "ecr" {
       ]
     }]
   })
-}
-
-module "kms_ecr" {
-  source = "./modules/kms"
-
-  description         = "Key for ECR encryption"
-  alias_name          = "ecr"
-  enable_key_rotation = false
-
-  additional_policies = data.aws_iam_policy_document.ecr_kms_policy.json
-}
-
-data "aws_iam_policy_document" "ecr_kms_policy" {
-  statement {
-    sid    = "AllowECRService"
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["ecr.amazonaws.com"]
-    }
-    actions = [
-      "kms:Encrypt",
-      "kms:Decrypt",
-      "kms:GenerateDataKey*"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid    = "AllowEC2TaskRole"
-    effect = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::123456789012:role/${module.asg.name_prefix}-ec2-role"]
-    }
-    actions = [
-      "kms:Decrypt",
-      "kms:DescribeKey"
-    ]
-    resources = ["*"]
-  }
 }

@@ -22,7 +22,7 @@ resource "aws_launch_template" "main" {
         volume_type           = block_device_mappings.value.volume_type
         delete_on_termination = block_device_mappings.value.delete_on_termination
         encrypted             = block_device_mappings.value.encrypted
-        kms_key_id            = block_device_mappings.value.kms_key_id
+        kms_key_id            = null
       }
     }
   }
@@ -96,31 +96,6 @@ resource "aws_autoscaling_group" "main" {
     strategy = "Rolling"
     preferences {
       min_healthy_percentage = 90
-    }
-  }
-
-  dynamic "mixed_instances_policy" {
-    for_each = var.mixed_instances_policy != null ? [1] : []
-    content {
-      launch_template {
-        launch_template_specification {
-          launch_template_id = aws_launch_template.main.id
-          version            = "$Latest"
-        }
-
-        dynamic "override" {
-          for_each = var.mixed_instances_policy.instance_types
-          content {
-            instance_type = override.value
-          }
-        }
-      }
-
-      instances_distribution {
-        on_demand_base_capacity                  = var.mixed_instances_policy.on_demand_base
-        on_demand_percentage_above_base_capacity = var.mixed_instances_policy.on_demand_percentage
-        spot_allocation_strategy                 = "capacity-optimized"
-      }
     }
   }
 

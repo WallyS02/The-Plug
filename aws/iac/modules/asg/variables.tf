@@ -86,19 +86,8 @@ variable "block_device_mappings" {
     volume_type           = string
     delete_on_termination = bool
     encrypted             = bool
-    kms_key_id            = string
   }))
   default = []
-}
-
-variable "mixed_instances_policy" {
-  description = "Mixed instances policy"
-  type = object({
-    instance_types       = list(string)
-    on_demand_base       = number
-    on_demand_percentage = number
-  })
-  default = null
 }
 
 variable "enable_scaling_policies" {

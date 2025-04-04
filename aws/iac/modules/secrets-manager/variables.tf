@@ -9,12 +9,6 @@ variable "description" {
   default     = "Secret managed by Terraform"
 }
 
-variable "kms_key_arn" {
-  description = "Existing KMS key ARN (optional)"
-  type        = string
-  default     = null
-}
-
 variable "initial_value" {
   description = "Initial secret value (sensitive!)"
   type        = string

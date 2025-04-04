@@ -86,16 +86,6 @@ variable "logging_prefix" {
   default     = ""
 }
 
-variable "lambda_function_associations" {
-  description = "Lambda@Edge configuration"
-  type = list(object({
-    event_type   = string
-    lambda_arn   = string
-    include_body = bool
-  }))
-  default = []
-}
-
 variable "geographical_restrictions" {
   description = "Geographical restrictions configuration"
   type = object({

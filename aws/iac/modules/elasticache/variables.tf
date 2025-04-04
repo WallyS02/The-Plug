@@ -32,12 +32,6 @@ variable "port" {
   default     = 6379
 }
 
-variable "multi_az" {
-  description = "Enable Multi-AZ?"
-  type        = bool
-  default     = false
-}
-
 variable "encryption_at_rest" {
   description = "Encrypting data at rest"
   type        = bool
@@ -50,12 +44,6 @@ variable "encryption_in_transit" {
   default     = true
 }
 
-variable "kms_key_arn" {
-  description = "KMS key ARN"
-  type        = string
-  default     = null
-}
-
 variable "auth_token" {
   description = "Authorization Redis token"
   type        = string
@@ -63,22 +51,10 @@ variable "auth_token" {
   default     = null
 }
 
-variable "snapshot_retention_days" {
-  description = "Snapshot retention days"
-  type        = number
-  default     = 7
-}
-
 variable "maintenance_window" {
   description = "Maintenance window (e.g. mon:03:00-mon:04:00)"
   type        = string
   default     = "sun:02:00-sun:03:00"
-}
-
-variable "snapshot_window" {
-  description = "Snapshot window"
-  type        = string
-  default     = "04:00-05:00"
 }
 
 variable "redis_security_group" {

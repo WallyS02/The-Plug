@@ -1,22 +1,21 @@
 module "elasticache" {
   source = "./modules/elasticache"
 
-  name                    = "the-plug-cache"
-  subnet_ids              = module.vpc.private_subnet_ids
-  node_type               = "cache.t3.micro"
-  redis_version           = "6.x"
-  port                    = 6379
-  multi_az                = false
-  encryption_at_rest      = true
-  encryption_in_transit   = true
-  kms_key_arn             = module.kms_elasticache.key_arn
-  auth_token              = module.secrets_elasticache.initial_value
-  snapshot_retention_days = 7
-  maintenance_window      = "sun:02:00-sun:03:00"
-  snapshot_window         = "04:00-05:00"
-  redis_security_group    = [module.elasticache_security_group.id]
+  name                  = "the-plug-cache"
+  subnet_ids            = module.vpc.private_subnet_ids
+  node_type             = "cache.t3.micro"
+  redis_version         = "6.x"
+  port                  = 6379
+  encryption_at_rest    = true
+  encryption_in_transit = true
+  auth_token            = module.secrets_elasticache.initial_value
+  maintenance_window    = "sun:02:00-sun:03:00"
+  redis_security_group  = [module.elasticache_security_group.id]
 
-  redis_parameters = []
+  redis_parameters = [
+    { name = "maxmemory-policy", value = "allkeys-lru" },
+    { name = "timeout", value = "300" }
+  ]
 }
 
 module "elasticache_security_group" {
@@ -27,40 +26,13 @@ module "elasticache_security_group" {
   vpc_id      = module.vpc.vpc_id
   ingress_rules = [
     {
-      from_port   = 6379
-      to_port     = 6379
-      description = "Allowing communication on port 6379"
-      protocol    = "tcp"
+      from_port       = 6379
+      to_port         = 6379
+      description     = "Allowing communication on port 6379"
+      protocol        = "tcp"
       security_groups = [module.asg.security_group_id]
     }
   ]
-}
-
-module "kms_elasticache" {
-  source = "./modules/kms"
-
-  description         = "Key for Elasticache encryption"
-  alias_name          = "elasticache"
-  enable_key_rotation = false
-
-  additional_policies = data.aws_iam_policy_document.elasticache_kms_policy.json
-}
-
-data "aws_iam_policy_document" "elasticache_kms_policy" {
-  statement {
-    sid    = "AllowElasticacheService"
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["elasticache.amazonaws.com"]
-    }
-    actions = [
-      "kms:Encrypt",
-      "kms:Decrypt",
-      "kms:GenerateDataKey*"
-    ]
-    resources = ["*"]
-  }
 }
 
 resource "random_password" "elasticache_password" {

@@ -17,3 +17,8 @@ output "arn" {
   description = "Redis ARN"
   value       = aws_elasticache_replication_group.main.arn
 }
+
+output "security_group_id" {
+  description = "Redis security group"
+  value       = aws_elasticache_replication_group.main.security_group_ids
+}

@@ -5,13 +5,6 @@ resource "aws_route53_zone" "main" {
   name          = var.domain_name
   comment       = "Hosted zone for ${var.domain_name}"
   force_destroy = false
-
-  dynamic "vpc" {
-    for_each = var.private_zone ? var.vpc_ids : []
-    content {
-      vpc_id = vpc.value
-    }
-  }
 }
 
 # DNS records (CloudFront and ALB)
@@ -33,20 +26,4 @@ resource "aws_route53_record" "records" {
   }
 
   records = lookup(each.value, "records", null)
-}
-
-# DNSSEC
-resource "aws_route53_key_signing_key" "main" {
-  count = var.enable_dnssec && var.create_hosted_zone ? 1 : 0
-
-  hosted_zone_id             = local.hosted_zone_id
-  key_management_service_arn = var.key_management_service_arn
-  name                       = "dnssec-key-${var.domain_name}"
-}
-
-resource "aws_route53_hosted_zone_dnssec" "main" {
-  count = var.enable_dnssec && var.create_hosted_zone ? 1 : 0
-
-  hosted_zone_id = local.hosted_zone_id
-  depends_on     = [aws_route53_key_signing_key.main]
 }

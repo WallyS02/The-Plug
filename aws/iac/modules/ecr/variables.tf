@@ -25,23 +25,6 @@ variable "image_tag_mutability" {
   }
 }
 
-variable "encryption_type" {
-  description = "Encryption type (AES256/KMS)"
-  type        = string
-  default     = "AES256"
-
-  validation {
-    condition     = contains(["AES256", "KMS"], var.encryption_type)
-    error_message = "Allowed values: AES256, KMS"
-  }
-}
-
-variable "kms_key" {
-  description = "KMS key ARN (if encryption_type = KMS)"
-  type        = string
-  default     = null
-}
-
 variable "lifecycle_policy" {
   description = "Lifecycle policy in JSON format"
   type        = string

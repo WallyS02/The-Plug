@@ -15,18 +15,6 @@ variable "mfa_delete_enabled" {
   default     = false
 }
 
-variable "encryption" {
-  description = "Encryption configuration"
-  type = object({
-    kms_key_arn        = optional(string)
-    bucket_key_enabled = optional(bool, true)
-  })
-  default = {
-    kms_key_arn        = null
-    bucket_key_enabled = true
-  }
-}
-
 variable "logging_enabled" {
   description = "Enable logging?"
   type        = bool
@@ -58,20 +46,6 @@ variable "lifecycle_rules" {
     noncurrent_version_expiration_days = number
   }))
   default = {}
-}
-
-variable "replication_config" {
-  description = "Replication configuration"
-  type = object({
-    rules = map(object({
-      status                 = string
-      priority               = number
-      prefix                 = string
-      destination_bucket_arn = string
-      storage_class          = string
-    }))
-  })
-  default = null
 }
 
 variable "website_config" {

@@ -15,18 +15,6 @@ variable "existing_zone_id" {
   default     = ""
 }
 
-variable "private_zone" {
-  description = "Create private zone?"
-  type        = bool
-  default     = false
-}
-
-variable "vpc_ids" {
-  description = "VPC ID list for private zone"
-  type        = list(string)
-  default     = []
-}
-
 variable "records" {
   description = "DNS record list"
   type = list(object({
@@ -41,18 +29,6 @@ variable "records" {
     }))
   }))
   default = []
-}
-
-variable "enable_dnssec" {
-  description = "Enable DNSSEC for the hosted zone?"
-  type        = bool
-  default     = false
-}
-
-variable "key_management_service_arn" {
-  description = "Key for DNSSEC ARN (if enable_dnssec = true)"
-  type        = string
-  default     = ""
 }
 
 variable "tags" {

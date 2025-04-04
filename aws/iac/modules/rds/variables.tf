@@ -27,12 +27,6 @@ variable "allocated_storage" {
   default     = 20
 }
 
-variable "max_allocated_storage" {
-  description = "Maximal allocated storage (GiB)"
-  type        = number
-  default     = 20
-}
-
 variable "storage_type" {
   description = "Storage disk type (gp2/gp3/io1)"
   type        = string
@@ -67,16 +61,10 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
-variable "multi_az" {
-  description = "Enable Multi-AZ mode?"
-  type        = bool
-  default     = false
-}
-
 variable "backup_retention_period" {
   description = "Backup retention period (in days)"
   type        = number
-  default     = 7
+  default     = 1
 }
 
 variable "backup_window" {
@@ -113,12 +101,6 @@ variable "rds_security_group" {
   default     = []
 }
 
-variable "kms_key_arn" {
-  description = "KMS key ARN"
-  type        = string
-  default     = null
-}
-
 variable "deletion_protection" {
   description = "Enable deletion protection?"
   type        = bool
@@ -135,12 +117,6 @@ variable "performance_insights_retention_period" {
   description = "Performance insights retention period (in days)"
   type        = number
   default     = 7
-}
-
-variable "monitoring_interval" {
-  description = "Monitoring interval (0|1|5|10|15|30|60)"
-  type        = number
-  default     = 0
 }
 
 variable "cloud_watch_log_exports" {
@@ -164,7 +140,7 @@ variable "final_snapshot_identifier" {
 variable "license_model" {
   description = "License model (e.g. license-included)"
   type        = string
-  default     = null
+  default     = "postgresql-license"
 }
 
 variable "tags" {

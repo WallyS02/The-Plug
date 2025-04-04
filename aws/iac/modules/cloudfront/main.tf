@@ -50,15 +50,6 @@ resource "aws_cloudfront_distribution" "main" {
     compress                 = true
     cache_policy_id          = var.default_cache_behaviour.cache_policy_id
     origin_request_policy_id = var.default_cache_behaviour.origin_request_policy_id
-
-    dynamic "lambda_function_association" {
-      for_each = var.lambda_function_associations
-      content {
-        event_type   = lambda_function_association.value.event_type
-        lambda_arn   = lambda_function_association.value.lambda_arn
-        include_body = lookup(lambda_function_association.value, "include_body", false)
-      }
-    }
   }
 
   # Ordered cache behaviour

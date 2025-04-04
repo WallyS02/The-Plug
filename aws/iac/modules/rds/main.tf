@@ -32,10 +32,9 @@ resource "aws_db_instance" "main" {
   engine_version        = var.engine_version
   instance_class        = var.instance_class
   allocated_storage     = var.allocated_storage
-  max_allocated_storage = var.max_allocated_storage
   storage_type          = var.storage_type
   storage_encrypted     = true
-  kms_key_id            = var.kms_key_arn
+  kms_key_id            = null
   license_model         = var.license_model
 
   db_name  = var.db_name
@@ -43,7 +42,6 @@ resource "aws_db_instance" "main" {
   password = var.password
   port     = var.port
 
-  multi_az               = var.multi_az
   publicly_accessible    = false
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = var.rds_security_group
@@ -58,33 +56,10 @@ resource "aws_db_instance" "main" {
 
   performance_insights_enabled          = var.performance_insights_enabled
   performance_insights_retention_period = var.performance_insights_retention_period
-  monitoring_interval                   = var.monitoring_interval
-  monitoring_role_arn                   = aws_iam_role.rds_monitoring.arn
 
   enabled_cloudwatch_logs_exports = var.cloud_watch_log_exports
 
   tags = merge(var.tags, {
     Name = var.identifier
   })
-}
-
-# IAM Role for Enhanced Monitoring
-resource "aws_iam_role" "rds_monitoring" {
-  name = "${var.identifier}-monitoring-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "monitoring.rds.amazonaws.com"
-      }
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "rds_monitoring" {
-  role       = aws_iam_role.rds_monitoring.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
