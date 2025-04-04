@@ -42,7 +42,9 @@ VPC Endpoints will be used for connecting services in private \(maybe in public 
 ### ALB
 Application Load Balancer will be used to distribute traffic to ECS containers in Auto Scaling EC2 group.
 ### CloudWatch
-CloudWatch monitors and observes all services with defined up to 10 alarms when something goes wrong.
+CloudWatch monitors and observes all necessary services with defined 10 alarms (for ASG, ECS, RDS, Elasticache, CloudFront and log storage size exceeding) when something goes wrong. Alarms evoke SNS send email action or ASG scaling actions. Logs from ECS, RDS and CloudFront are collected with Log Groups.
+### SNS
+SNS serves as an alarm topic for CloudWatch alarms and sends email notifications when CloudWatch alarm is raised up.
 ### Auto Scaling
 Backend Free-Tiered EC2 servers will be used for running application containers with ECS.\
 They will be auto-scaled from 1 to 2 instances based on CPU/memory usage or failure of a master instance. Auto scaling will be distributed between 2 AZs.
