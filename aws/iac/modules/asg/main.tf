@@ -122,3 +122,72 @@ resource "aws_autoscaling_policy" "scale_down" {
   cooldown               = 300
   autoscaling_group_name = aws_autoscaling_group.main.name
 }
+
+# CloudWatch alarms
+resource "aws_cloudwatch_metric_alarm" "high_cpu" {
+  count               = var.enable_scaling_policies ? 1 : 0
+  alarm_name          = "${var.name_prefix}-high-cpu"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 120
+  statistic           = "Average"
+  threshold           = var.cpu_utilization_high_threshold
+  alarm_actions       = [aws_autoscaling_policy.scale_up[0].arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.main.name
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_cpu" {
+  count               = var.enable_scaling_policies ? 1 : 0
+  alarm_name          = "${var.name_prefix}-low-cpu"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 120
+  statistic           = "Average"
+  threshold           = var.cpu_utilization_low_threshold
+  alarm_actions       = [aws_autoscaling_policy.scale_down[0].arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.main.name
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "high_memory" {
+  count               = var.enable_scaling_policies ? 1 : 0
+  alarm_name          = "${var.name_prefix}-high-memory"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/EC2"
+  period              = 120
+  statistic           = "Average"
+  threshold           = var.memory_utilization_high_threshold
+  alarm_actions       = [aws_autoscaling_policy.scale_up[0].arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.main.name
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_memory" {
+  count               = var.enable_scaling_policies ? 1 : 0
+  alarm_name          = "${var.name_prefix}-low-memory"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/EC2"
+  period              = 120
+  statistic           = "Average"
+  threshold           = var.memory_utilization_low_threshold
+  alarm_actions       = [aws_autoscaling_policy.scale_down[0].arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.main.name
+  }
+}

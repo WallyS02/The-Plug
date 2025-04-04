@@ -102,6 +102,30 @@ variable "scaling_adjustment" {
   default     = 1
 }
 
+variable "cpu_utilization_high_threshold" {
+  description = "High CPU utilization threshold"
+  type        = number
+  default     = 70
+}
+
+variable "cpu_utilization_low_threshold" {
+  description = "Low CPU utilization threshold"
+  type        = number
+  default     = 30
+}
+
+variable "memory_utilization_high_threshold" {
+  description = "High memory utilization threshold"
+  type        = number
+  default     = 90
+}
+
+variable "memory_utilization_low_threshold" {
+  description = "Low memory utilization threshold"
+  type        = number
+  default     = 10
+}
+
 variable "wait_for_capacity_timeout" {
   description = "Timeout for instance initialization"
   type        = string

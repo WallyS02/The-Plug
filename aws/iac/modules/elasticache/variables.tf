@@ -72,6 +72,17 @@ variable "redis_parameters" {
   default = []
 }
 
+variable "alarm_topic_arn" {
+  description = "Alarm topic ARN"
+  type        = string
+}
+
+variable "high_evictions_threshold" {
+  description = "High number of cache evictions threshold"
+  type        = number
+  default     = 100
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

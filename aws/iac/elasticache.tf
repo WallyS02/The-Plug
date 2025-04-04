@@ -16,6 +16,8 @@ module "elasticache" {
     { name = "maxmemory-policy", value = "allkeys-lru" },
     { name = "timeout", value = "300" }
   ]
+
+  alarm_topic_arn = module.alarm_topic.arn
 }
 
 module "elasticache_security_group" {

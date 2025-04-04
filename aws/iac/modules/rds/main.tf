@@ -42,10 +42,10 @@ resource "aws_db_instance" "main" {
   password = var.password
   port     = var.port
 
-  publicly_accessible    = false
-  db_subnet_group_name   = aws_db_subnet_group.main.name
-  vpc_security_group_ids = var.rds_security_group
-  parameter_group_name   = aws_db_parameter_group.main.name
+  publicly_accessible        = false
+  db_subnet_group_name       = aws_db_subnet_group.main.name
+  vpc_security_group_ids     = var.rds_security_group
+  parameter_group_name       = aws_db_parameter_group.main.name
   auto_minor_version_upgrade = true
 
   backup_retention_period   = var.backup_retention_period
@@ -63,4 +63,35 @@ resource "aws_db_instance" "main" {
   tags = merge(var.tags, {
     Name = var.identifier
   })
+}
+
+# CloudWatch alarms
+resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
+  alarm_name          = "RDS-Low-Storage"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "FreeStorageSpace"
+  namespace           = "AWS/RDS"
+  period              = 3600
+  statistic           = "Minimum"
+  threshold           = var.low_storage_threshold
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.main.identifier
+  }
+  alarm_actions = [var.alarm_topic_arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "rds_high_connections" {
+  alarm_name          = "RDS-High-Connections"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "DatabaseConnections"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = var.high_connections_amount
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.main.identifier
+  }
+  alarm_actions = [var.alarm_topic_arn]
 }

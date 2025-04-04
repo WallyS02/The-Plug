@@ -128,3 +128,20 @@ resource "aws_s3_bucket_policy" "cloudfront_access" {
   bucket = var.s3_bucket_id
   policy = data.aws_iam_policy_document.s3_policy
 }
+
+# CloudWatch alarms
+resource "aws_cloudwatch_metric_alarm" "cloudfront_errors" {
+  alarm_name          = "CloudFront-High-Errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "5xxErrorRate"
+  namespace           = "AWS/CloudFront"
+  period              = 300
+  statistic           = "Average"
+  threshold           = var.high_5xx_errors_threshold
+  dimensions = {
+    DistributionId = aws_cloudfront_distribution.main.id
+    Region         = "Global"
+  }
+  alarm_actions = [var.alarm_topic_arn]
+}

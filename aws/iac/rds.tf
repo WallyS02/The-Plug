@@ -21,6 +21,11 @@ module "rds" {
       name         = "character_set_server"
       value        = "utf8mb4"
       apply_method = "immediate"
+    },
+    {
+      name         = "max_connections"
+      value        = "100"
+      apply_method = "immediate"
     }
   ]
 
@@ -29,6 +34,7 @@ module "rds" {
   deletion_protection          = true
   performance_insights_enabled = false
   skip_final_snapshot          = true
+  alarm_topic_arn              = module.alarm_topic.arn
 }
 
 module "rds_security_group" {

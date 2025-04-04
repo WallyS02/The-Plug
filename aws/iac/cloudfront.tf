@@ -45,6 +45,7 @@ module "cloudfront" {
   price_class         = "PriceClass_100"
   comment             = "CloudFront distribution for The Plug application"
   default_root_object = "index.html"
+  alarm_topic_arn     = module.alarm_topic.arn
 
   depends_on = [module.acm_cloudfront]
 }

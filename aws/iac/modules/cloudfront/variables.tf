@@ -115,6 +115,17 @@ variable "default_root_object" {
   default     = "index.html"
 }
 
+variable "alarm_topic_arn" {
+  description = "Alarm topic ARN"
+  type        = string
+}
+
+variable "high_5xx_errors_threshold" {
+  description = "High number of 5xx errors threshold"
+  type        = number
+  default     = 5
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

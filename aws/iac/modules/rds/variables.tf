@@ -143,6 +143,23 @@ variable "license_model" {
   default     = "postgresql-license"
 }
 
+variable "alarm_topic_arn" {
+  description = "Alarm topic ARN"
+  type        = string
+}
+
+variable "low_storage_threshold" {
+  description = "Low storage space threshold in bytes"
+  type        = number
+  default     = 5368709120 # 5GB
+}
+
+variable "high_connections_amount" {
+  description = "High number of database connections threshold"
+  type        = number
+  default     = 75
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)
