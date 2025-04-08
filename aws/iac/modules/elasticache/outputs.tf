@@ -22,3 +22,13 @@ output "security_group_id" {
   description = "Redis security group"
   value       = aws_elasticache_replication_group.main.security_group_ids
 }
+
+output "id" {
+  description = "Redis ID"
+  value = aws_elasticache_replication_group.main.id
+}
+
+output "high_evictions_alarm_arn" {
+  description = "High Evictions Alarm ARN"
+  value = aws_cloudwatch_metric_alarm.redis_high_evictions.arn
+}
