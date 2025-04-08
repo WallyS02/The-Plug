@@ -9,14 +9,14 @@ resource "aws_ecs_task_definition" "main" {
   family                   = "${var.name}-task"
   network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
-  cpu                      = 256 # 0.25 vCPU
-  memory                   = 512 # 512 MB
+  cpu                      = 768 # 0.75 vCPU
+  memory                   = 768 # 768 MB
 
   container_definitions = jsonencode([{
     name      = var.container_name
     image     = "${var.ecr_repository_url}:${var.image_tag}"
-    cpu       = 256
-    memory    = 512
+    cpu       = 256 # 0.25 vCPU
+    memory    = 256 # 256 MB
     essential = true
     portMappings = [{
       containerPort = var.container_port
@@ -45,7 +45,7 @@ resource "aws_ecs_service" "main" {
   name            = "${var.name}-service"
   cluster         = aws_ecs_cluster.main.arn
   task_definition = aws_ecs_task_definition.main.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "EC2"
 
   load_balancer {
