@@ -17,8 +17,3 @@ output "nat_gateway_ips" {
   description = "Public IP of NAT Gateway"
   value       = aws_nat_gateway.main[*].public_ip
 }
-
-output "vpc_endpoint_s3_id" {
-  description = "VPC Endpoint for S3 ID"
-  value       = try(aws_vpc_endpoint.s3[0].id, "")
-}

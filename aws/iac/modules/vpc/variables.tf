@@ -33,12 +33,6 @@ variable "enable_nat_gateway" {
   default     = false
 }
 
-variable "enable_s3_endpoint" {
-  description = "Create S3 VPC Endpoint?"
-  type        = bool
-  default     = true
-}
-
 variable "region" {
   description = "AWS Region"
   type        = string
