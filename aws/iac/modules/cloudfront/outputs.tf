@@ -20,5 +20,5 @@ output "oai_iam_arn" {
 
 output "cloudfront_errors_alarm_arn" {
   description = "CloudFront Errors Alarm ARN"
-  value = aws_cloudwatch_metric_alarm.cloudfront_errors.arn
+  value       = aws_cloudwatch_metric_alarm.cloudfront_errors.arn
 }

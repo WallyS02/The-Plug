@@ -34,17 +34,6 @@ variable "rotation_interval" {
   default     = 30
 }
 
-variable "recovery_window" {
-  description = "Recovery window before deletion in days (7-30 days)"
-  type        = number
-  default     = 30
-
-  validation {
-    condition     = var.recovery_window >= 7 && var.recovery_window <= 30
-    error_message = "Recovery window must be between 7 and 30 days"
-  }
-}
-
 variable "policy_statements" {
   description = "Additional access policies in JSON format"
   type        = list(string)

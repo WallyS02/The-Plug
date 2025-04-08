@@ -66,7 +66,6 @@ module "secrets_rds" {
   description      = "Password for RDS database"
   initial_value    = random_password.rds_password.result
   rotation_enabled = false
-  recovery_window  = 7
   policy_statements = [
     data.aws_iam_policy_document.rds_access.json
   ]
@@ -79,7 +78,7 @@ data "aws_iam_policy_document" "rds_access" {
     resources = [module.secrets_rds.arn]
     principals {
       type        = "Service"
-      identifiers = ["rds.amazonaws.com"]
+      identifiers = ["rds.amazonaws.com", "ecs.amazonaws.com"]
     }
   }
 }

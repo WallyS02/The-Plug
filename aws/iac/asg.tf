@@ -28,6 +28,12 @@ module "asg" {
   scaling_adjustment      = 1
 
   wait_for_capacity_timeout = "10m"
+
+  user_data_base64 = base64encode(<<-EOF
+    #!/bin/bash
+    echo ECS_CLUSTER=${module.ecs.cluster_name} >> /etc/ecs/ecs.config
+    EOF
+  )
 }
 
 module "asg_security_group" {

@@ -49,7 +49,6 @@ module "secrets_elasticache" {
   description      = "Auth token for Elasticache"
   initial_value    = random_password.elasticache_password.result
   rotation_enabled = false
-  recovery_window  = 7
   policy_statements = [
     data.aws_iam_policy_document.elasticache_access.json
   ]
@@ -62,7 +61,7 @@ data "aws_iam_policy_document" "elasticache_access" {
     resources = [module.secrets_elasticache.arn]
     principals {
       type        = "Service"
-      identifiers = ["elasticache.amazonaws.com"]
+      identifiers = ["elasticache.amazonaws.com", "ecs.amazonaws.com"]
     }
   }
 }

@@ -10,20 +10,25 @@ output "port" {
 
 output "identifier" {
   description = "RDS instance identifier"
-  value = aws_db_instance.main.identifier
+  value       = aws_db_instance.main.identifier
 }
 
 output "db_name" {
   description = "Database name"
-  value = aws_db_instance.main.db_name
+  value       = aws_db_instance.main.db_name
 }
 
 output "low_storage_alarm_arn" {
   description = "Low Storage Alarm ARN"
-  value = aws_cloudwatch_metric_alarm.rds_low_storage.arn
+  value       = aws_cloudwatch_metric_alarm.rds_low_storage.arn
 }
 
 output "high_connections_alarm_arn" {
   description = "High Connections Alarm ARN"
-  value = aws_cloudwatch_metric_alarm.rds_high_connections.arn
+  value       = aws_cloudwatch_metric_alarm.rds_high_connections.arn
+}
+
+output "user" {
+  description = "Database username"
+  value       = aws_db_instance.main.username
 }
