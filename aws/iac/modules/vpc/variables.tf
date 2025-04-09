@@ -27,18 +27,6 @@ variable "azs" {
   default     = ["eu-north-1a", "eu-north-1b"]
 }
 
-variable "enable_nat_gateway" {
-  description = "Create NAT Gateway?"
-  type        = bool
-  default     = false
-}
-
-variable "region" {
-  description = "AWS Region"
-  type        = string
-  default     = "eu-north-1"
-}
-
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

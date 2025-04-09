@@ -2,7 +2,7 @@ module "asg" {
   source = "./modules/asg"
 
   name_prefix         = "the-plug"
-  ami_id              = "ami-0274f4b62b6ae3bd5"
+  ami_id              = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI
   instance_type       = "t3.micro"
   security_group_ids  = [module.asg_security_group.id]
   vpc_zone_identifier = module.vpc.private_subnet_ids

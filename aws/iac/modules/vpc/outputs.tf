@@ -13,7 +13,7 @@ output "private_subnet_ids" {
   value       = aws_subnet.private[*].id
 }
 
-output "nat_gateway_ips" {
-  description = "Public IP of NAT Gateway"
-  value       = aws_nat_gateway.main[*].public_ip
+output "nat_instance_ip" {
+  description = "Public IP of NAT Instance"
+  value       = aws_instance.nat.public_ip
 }

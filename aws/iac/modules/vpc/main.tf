@@ -45,23 +45,55 @@ resource "aws_subnet" "private" {
   })
 }
 
-# NAT Gateway (optional)
-resource "aws_eip" "nat_eip" {
-  count = var.enable_nat_gateway ? 1 : 0
+# NAT Instance
+resource "aws_instance" "nat" {
+  ami                         = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.public[0].id
+  associate_public_ip_address = true
+  source_dest_check           = false
 
-  tags = merge(var.tags, {
-    Name = "${var.environment}-nat-eip"
-  })
+  vpc_security_group_ids = [aws_security_group.nat_security_group.id]
+
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo yum install iptables-services -y
+              sudo systemctl enable iptables
+              sudo systemctl start iptables
+              sudo sysctl -w net.ipv4.ip_forward=1
+              sudo sysctl -p /etc/sysctl.d/custom-ip.conf
+              sudo /sbin/iptables -t nat -A POSTROUTING -o enX0 -j MASQUERADE
+              sudo /sbin/iptables -F FORWARD
+              sudo service iptables save
+              EOF
+
+  tags = {
+    Name = "${var.environment}-nat-instance"
+  }
 }
 
-resource "aws_nat_gateway" "main" {
-  count         = var.enable_nat_gateway ? 1 : 0
-  allocation_id = aws_eip.nat_eip[0].id
-  subnet_id     = aws_subnet.public[0].id
+resource "aws_security_group" "nat_security_group" {
+  name        = "nat-sg"
+  description = "Security group for NAT instance"
+  vpc_id      = aws_vpc.main.id
 
-  tags = merge(var.tags, {
-    Name = "${var.environment}-nat-gw"
-  })
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = aws_subnet.private.*.cidr_block
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.environment}-nat-sg"
+  }
 }
 
 # Route Tables
@@ -80,12 +112,9 @@ resource "aws_route_table" "public" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
-  dynamic "route" { # NAT Gateway routing
-    for_each = var.enable_nat_gateway ? [1] : []
-    content {
-      cidr_block     = "0.0.0.0/0"
-      nat_gateway_id = aws_nat_gateway.main[0].id
-    }
+  route { # NAT Instance routing
+    cidr_block     = "0.0.0.0/0"
+    instance_id = aws_instance.nat.id
   }
 
   tags = merge(var.tags, {
