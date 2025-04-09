@@ -1,5 +1,6 @@
 resource "aws_sns_topic" "alarm_topic" {
   name = "alarm-topic"
+  tags = var.tags
 }
 
 resource "aws_sns_topic_subscription" "alarm_topic_subscription" {
