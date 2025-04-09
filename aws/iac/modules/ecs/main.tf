@@ -24,7 +24,8 @@ resource "aws_ecs_task_definition" "main" {
     }]
     environment = [
       { name = "DB_HOST", value = var.db_endpoint },
-      { name = "CACHE_ENDPOINT", value = var.cache_endpoint }, # TODO make backend use cache
+      { name = "CACHE_ENDPOINT", value = var.cache_endpoint },
+      { name = "USE_CACHE", value = 1 },
       { name = "WEB_APP_URL", value = "http://localhost" },
       { name = "ALLOWED_HOSTS", value = "*" },
       { name = "DEBUG", value = 1 },

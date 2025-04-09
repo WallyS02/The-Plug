@@ -47,10 +47,9 @@ variable "db_user" {
   type        = string
 }
 
-variable "cache_endpoint" { # TODO make backend use cache
-  description = ""
+variable "cache_endpoint" {
+  description = "Redis cache endpoint"
   type        = string
-  default     = ""
 }
 
 variable "db_password_secret_arn" {

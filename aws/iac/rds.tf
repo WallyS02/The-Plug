@@ -49,7 +49,7 @@ module "rds_security_group" {
       to_port         = 5432
       description     = "Allowing communication on port 5432"
       protocol        = "tcp"
-      security_groups = [module.elasticache.security_group_id]
+      security_groups = [module.elasticache.security_group_id, module.asg.security_group_id]
     }
   ]
 }

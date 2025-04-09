@@ -10,6 +10,7 @@ module "ecs" {
   target_group_arn               = module.alb.target_group_arn
   alarm_topic_arn                = module.alarm_topic.arn
   db_endpoint                    = module.rds.endpoint
+  cache_endpoint                 = module.elasticache.primary_endpoint
   db_name                        = module.rds.db_name
   db_user                        = module.rds.user
   db_password_secret_arn         = module.secrets_rds.arn

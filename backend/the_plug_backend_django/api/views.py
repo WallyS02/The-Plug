@@ -6,6 +6,9 @@ from django.db.models import Q, F
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import make_naive
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -18,6 +21,7 @@ from django.core.mail import send_mail
 from scipy.stats import beta
 
 from .currencies import currencies
+from .dynamic_cache_page import dynamic_cache_page
 from .models import AppUser, Plug, Location, Meeting, ChosenOffer, HerbOffer, Herb
 from .serializers import AppUserSerializer, PlugSerializer, LocationSerializer, MeetingSerializer, \
     ChosenOfferSerializer, HerbOfferSerializer, HerbSerializer, PlugHerbOffersPlusNamesSerializer, \
@@ -51,6 +55,10 @@ class AppUserList(generics.ListAPIView):
     queryset = AppUser.objects.all()
     serializer_class = AppUserSerializer
 
+    @method_decorator(cache_page(60 * 15, key_prefix='user_list'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -59,6 +67,7 @@ class AppUserRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AppUserSerializer
     lookup_field = 'pk'
 
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"user_get_{kwargs.get('pk')}"))
     def get(self, request, *args, **kwargs):
         user_id = kwargs.get('pk')
         user = AppUser.objects.get(pk=user_id)
@@ -95,6 +104,10 @@ class PlugList(generics.ListAPIView):
     queryset = Plug.objects.all()
     serializer_class = PlugSerializer
 
+    @method_decorator(cache_page(60 * 15, key_prefix='plug_list'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -110,6 +123,7 @@ class PlugRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PlugSerializer
     lookup_field = 'pk'
 
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"plug_get_{kwargs.get('pk')}"))
     def get(self, request, *args, **kwargs):
         plug_id = kwargs.get('pk')
         plug = Plug.objects.get(pk=plug_id)
@@ -128,10 +142,10 @@ class PlugRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         return super().patch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        location_id = kwargs.get('pk')
-        location = Location.objects.get(pk=location_id)
+        plug_id = kwargs.get('pk')
+        plug = Plug.objects.get(pk=plug_id)
 
-        if location.plug.app_user != request.user:
+        if plug.app_user != request.user:
             return Response({"error": "Only User assigned to this Plug can delete it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
@@ -179,6 +193,10 @@ class LocationList(generics.ListAPIView):
 
         return Location.objects.filter(q).distinct()
 
+    @method_decorator(cache_page(60 * 15, key_prefix='location_list'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -194,6 +212,7 @@ class LocationRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
     lookup_field = 'pk'
 
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"location_get_{kwargs.get('pk')}"))
     def get(self, request, *args, **kwargs):
         location_id = kwargs.get('pk')
         location = Location.objects.get(pk=location_id)
@@ -279,6 +298,8 @@ class MeetingRetrieve(generics.RetrieveAPIView):
     serializer_class = MeetingWithPlugInfoSerializer
     lookup_field = 'pk'
 
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"meeting_get_{kwargs.get('pk')}"))
+    @method_decorator(vary_on_headers('Authorization'))
     def get(self, request, *args, **kwargs):
         meeting_id = kwargs.get('pk')
         meeting = get_object_or_404(Meeting, pk=meeting_id)
@@ -331,6 +352,10 @@ class HerbOfferList(generics.ListAPIView):
     queryset = HerbOffer.objects.all()
     serializer_class = HerbOfferSerializer
 
+    @method_decorator(cache_page(60 * 15, key_prefix='herb_offer_list'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -346,6 +371,8 @@ class HerbOfferRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = HerbOfferSerializer
     lookup_field = 'pk'
 
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"herb_offer_get_{kwargs.get('pk')}"))
+    @method_decorator(vary_on_headers('Authorization'))
     def get(self, request, *args, **kwargs):
         herb_offer_id = kwargs.get('pk')
         herb_offer = HerbOffer.objects.get(pk=herb_offer_id)
@@ -383,6 +410,10 @@ class HerbOfferRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class HerbList(generics.ListAPIView):
     queryset = Herb.objects.all()
     serializer_class = HerbSerializer
+
+    @method_decorator(cache_page(60 * 15, key_prefix='herb_list'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -441,6 +472,11 @@ class UserMeetings(generics.ListAPIView):
             ).distinct()
 
         return meetings
+
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"user_meeting_list_{request.user.id}"))
+    @method_decorator(vary_on_headers('Authorization'))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -503,6 +539,10 @@ class PlugMeetings(generics.ListAPIView):
 
         return meetings
 
+    @method_decorator(cache_page(60 * 15, key_prefix="plug_meeting_list"))
+    @method_decorator(vary_on_headers('Authorization'))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -510,6 +550,8 @@ class PlugMeetings(generics.ListAPIView):
 class UserPlug(generics.RetrieveAPIView):
     serializer_class = PlugSerializer
 
+    @method_decorator(cache_page(60 * 15, key_prefix="user_plug_get"))
+    @method_decorator(vary_on_headers('Authorization'))
     def get(self, request, *args, **kwargs):
         user = request.user
         plug = user.plug
@@ -520,16 +562,18 @@ class UserPlug(generics.RetrieveAPIView):
         serializer = self.get_serializer(plug)
         return Response(serializer.data)
 
-
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class HerbHerbOffers(generics.ListAPIView):
     serializer_class = HerbOfferSerializer
-
     def get_queryset(self):
         herb_id = self.kwargs.get('id')
         herb = get_object_or_404(Herb, pk=herb_id)
         return HerbOffer.objects.filter(herb=herb)
+
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"herb_herb_offer_list_{kwargs.get('id')}"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -581,6 +625,10 @@ class PlugHerbOffers(generics.ListAPIView):
 
         return herb_offers
 
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"plug_herb_offer_list_{kwargs.get('id')}"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -615,6 +663,10 @@ class PlugLocations(generics.ListAPIView):
             longitude__gte=east
         )
 
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"plug_location_list_{kwargs.get('id')}"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -630,10 +682,15 @@ class ChosenOfferWithHerbAndOfferInfoView(generics.ListAPIView):
         chosen_offer = chosen_offers.first()
 
         if chosen_offer.herb_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
-            return Response({"error": "Only Users assigned to this Meeting can cancel it."},
+            return Response({"error": "Only Users assigned to this Meeting can retrieve it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
         return chosen_offers
+
+    @method_decorator(dynamic_cache_page(60 * 15, key_prefix_func=lambda request, *args, **kwargs: f"chosen_offer_with_herb_and_offer_info_list_{kwargs.get('id')}"))
+    @method_decorator(vary_on_headers('Authorization'))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
 
 @authentication_classes([SessionAuthentication, TokenAuthentication])
