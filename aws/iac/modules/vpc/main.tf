@@ -112,14 +112,16 @@ resource "aws_route_table" "public" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
-  route { # NAT Instance routing
-    cidr_block     = "0.0.0.0/0"
-    instance_id = aws_instance.nat.id
-  }
-
   tags = merge(var.tags, {
     Name = "${var.environment}-private-rt"
   })
+}
+
+# NAT Instance routing
+resource "aws_route" "nat_route" {
+  route_table_id = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  network_interface_id = aws_instance.nat.primary_network_interface_id
 }
 
 # Route Tables Associations
