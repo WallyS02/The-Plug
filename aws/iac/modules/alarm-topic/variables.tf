@@ -1,3 +1,9 @@
+variable "name_suffix" {
+  description = "Suffix alarm topic name"
+  type        = string
+  default     = "default"
+}
+
 variable "email" {
   description = "Email to send to alarm messages"
   type        = string

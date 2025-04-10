@@ -5,7 +5,7 @@ module "alb" {
   environment                = "dev"
   vpc_id                     = module.vpc.vpc_id
   security_groups            = [module.alb_security_group.id]
-  subnet_ids                 = [module.vpc.public_subnet_ids[0]]
+  subnet_ids                 = module.vpc.public_subnet_ids
   internal                   = false
   target_port                = 8080
   enable_http                = true

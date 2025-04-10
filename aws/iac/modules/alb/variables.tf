@@ -4,12 +4,12 @@ variable "name" {
 }
 
 variable "environment" {
-  description = "Deployment environment"
+  description = "Deployment environment (e.g., dev, staging, prod)"
   type        = string
 }
 
 variable "vpc_id" {
-  description = "ID VPC"
+  description = "VPC ID"
   type        = string
 }
 
@@ -33,6 +33,11 @@ variable "target_port" {
   description = "EC2 instances target port"
   type        = number
   default     = 80
+
+  validation {
+    condition     = var.target_port > 0 && var.target_port <= 65535
+    error_message = "Target port must be between 1 and 65535"
+  }
 }
 
 variable "health_check_path" {
