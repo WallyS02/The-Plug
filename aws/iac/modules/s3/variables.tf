@@ -61,12 +61,6 @@ variable "website_config" {
   default = null
 }
 
-variable "bucket_policy" {
-  description = "Bucket policy JSON"
-  type        = string
-  default     = null
-}
-
 variable "force_destroy" {
   description = "Forcefully destroy bucket with its contents?"
   type        = bool
