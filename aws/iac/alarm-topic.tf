@@ -3,4 +3,8 @@ module "alarm_topic" {
 
   name_suffix = "dev"
   email       = var.email # use .tfvars file
+
+  tags = {
+    Environment = "dev"
+  }
 }

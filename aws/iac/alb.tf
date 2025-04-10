@@ -2,7 +2,6 @@ module "alb" {
   source = "./modules/alb"
 
   name                       = "core"
-  environment                = "dev"
   vpc_id                     = module.vpc.vpc_id
   security_groups            = [module.alb_security_group.id]
   subnet_ids                 = module.vpc.public_subnet_ids
@@ -13,6 +12,10 @@ module "alb" {
   acm_certificate_arn        = module.acm_alb.certificate_arn
   enable_deletion_protection = true
   enable_access_logs         = false
+
+  tags = {
+    Environment = "dev"
+  }
 
   depends_on = [module.acm_alb]
 }
@@ -39,4 +42,8 @@ module "alb_security_group" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }

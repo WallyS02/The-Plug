@@ -13,6 +13,7 @@ module "asg" {
 
   target_group_arns = [module.alb.target_group_arn]
   health_check_type = "ELB"
+  health_check_grace_period = 300
 
   enable_monitoring = false
 
@@ -34,6 +35,10 @@ module "asg" {
     echo ECS_CLUSTER=${module.ecs.cluster_name} >> /etc/ecs/ecs.config
     EOF
   )
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 module "asg_security_group" {
@@ -58,4 +63,8 @@ module "asg_security_group" {
       security_groups = [module.alb.security_group_id]
     }
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }

@@ -3,11 +3,6 @@ variable "name" {
   type        = string
 }
 
-variable "environment" {
-  description = "Deployment environment (e.g., dev, staging, prod)"
-  type        = string
-}
-
 variable "vpc_id" {
   description = "VPC ID"
   type        = string

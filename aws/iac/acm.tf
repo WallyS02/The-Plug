@@ -9,6 +9,10 @@ module "acm_cloudfront" {
   subject_alternative_names = []
   validation_method         = "DNS"
   hosted_zone_id            = module.route53.hosted_zone_id
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 module "acm_alb" {
@@ -18,4 +22,8 @@ module "acm_alb" {
   subject_alternative_names = []
   validation_method         = "DNS"
   hosted_zone_id            = module.route53.hosted_zone_id
+
+  tags = {
+    Environment = "dev"
+  }
 }

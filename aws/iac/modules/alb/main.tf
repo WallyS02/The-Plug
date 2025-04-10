@@ -1,6 +1,6 @@
 # ALB configuration
 resource "aws_lb" "main" {
-  name               = "${var.environment}-${var.name}-alb"
+  name               = "${var.name}-alb"
   internal           = var.internal
   load_balancer_type = "application"
   security_groups    = var.security_groups
@@ -15,13 +15,13 @@ resource "aws_lb" "main" {
   }
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-${var.name}-alb"
+    Name = "${var.name}-alb"
   })
 }
 
 # Target Group
 resource "aws_lb_target_group" "main" {
-  name        = "${var.environment}-${var.name}-tg"
+  name        = "${var.name}-tg"
   port        = var.target_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -44,7 +44,7 @@ resource "aws_lb_target_group" "main" {
   }
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-${var.name}-tg"
+    Name = "${var.name}-tg"
   })
 }
 

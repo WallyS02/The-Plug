@@ -87,7 +87,13 @@ variable "block_device_mappings" {
     delete_on_termination = bool
     encrypted             = bool
   }))
-  default = []
+  default = [{
+    device_name           = "/dev/xvda"
+    volume_size           = 8
+    volume_type           = "gp3"
+    delete_on_termination = true
+    encrypted             = true
+  }]
 }
 
 variable "enable_scaling_policies" {
