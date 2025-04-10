@@ -1,33 +1,87 @@
+# Monitoring Agent
+module "monitoring_agent" {
+  source = "./modules/monitoring"
+
+  create_iam_role = true
+  tags = {
+    Environment = "dev"
+  }
+}
+
 # Log groups
+locals {
+  log_retention = 1
+}
+
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${module.ecs.name}"
-  retention_in_days = 1
+  retention_in_days = local.log_retention
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 resource "aws_cloudwatch_log_group" "rds" {
   name              = "/aws/rds/${module.rds.identifier}/${module.rds.db_name}"
-  retention_in_days = 1
+  retention_in_days = local.log_retention
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 resource "aws_cloudwatch_log_group" "cloudfront" {
   name              = "/aws/cloudfront/${module.cloudfront.distribution_id}"
-  retention_in_days = 1
+  retention_in_days = local.log_retention
+
+  tags = {
+    Environment = "dev"
+  }
+}
+
+# Log policies
+resource "aws_cloudwatch_log_resource_policy" "global" {
+  policy_name = "Global-Log-Policy"
+  policy_document = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = [
+          "ecs.amazonaws.com",
+          "rds.amazonaws.com"
+        ]
+      },
+      Action = [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      Resource = "arn:aws:logs:*:*:log-group:*"
+    }]
+  })
 }
 
 # CloudFront log storage size exceeded alarm
 resource "aws_cloudwatch_metric_alarm" "cloudfront_log_size" {
   alarm_name          = "${aws_cloudwatch_log_group.cloudfront.name}-Size-Alarm"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  treat_missing_data  = "notBreaching"
   metric_name         = "StoredBytes"
   namespace           = "AWS/Logs"
   period              = 86400 # 24h
   statistic           = "Maximum"
-  threshold           = 4.5e9 # 4.5 GB
+  threshold           = 3e9 # 3 GB
   alarm_description   = "Log group approaching 5GB limit"
   alarm_actions       = [module.alarm_topic.arn]
   dimensions = {
     LogGroupName = aws_cloudwatch_log_group.cloudfront.name
+  }
+
+  tags = {
+    Environment = "dev"
   }
 }
 
@@ -43,10 +97,11 @@ resource "aws_cloudwatch_dashboard" "global" {
         properties = {
           metrics = [
             ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", module.asg.asg_name],
-            ["CWAgent", "mem_used_percent", "AutoScalingGroupName", module.asg.asg_name]
+            ["CWAgent", "mem_used_percent", { label : "Memory" }]
           ],
-          view  = "timeSeries",
-          title = "EC2 Resources"
+          view   = "timeSeries",
+          title  = "EC2 Resources",
+          period = 300 # 5-min aggregation
         }
       },
 

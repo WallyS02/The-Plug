@@ -139,6 +139,10 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.main.name
   }
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "low_cpu" {
@@ -155,6 +159,10 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu" {
 
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.main.name
+  }
+
+  tags = {
+    Environment = "dev"
   }
 }
 
@@ -173,6 +181,10 @@ resource "aws_cloudwatch_metric_alarm" "high_memory" {
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.main.name
   }
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "low_memory" {
@@ -189,5 +201,9 @@ resource "aws_cloudwatch_metric_alarm" "low_memory" {
 
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.main.name
+  }
+
+  tags = {
+    Environment = "dev"
   }
 }

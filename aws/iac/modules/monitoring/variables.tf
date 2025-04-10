@@ -3,3 +3,9 @@ variable "create_iam_role" {
   type        = bool
   default     = false
 }
+
+variable "tags" {
+  description = "Resource tag map"
+  type        = map(string)
+  default     = {}
+}

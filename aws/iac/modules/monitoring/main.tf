@@ -13,6 +13,8 @@ resource "aws_iam_role" "cw_agent" {
       Action = "sts:AssumeRole"
     }]
   })
+
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "cw_agent" {

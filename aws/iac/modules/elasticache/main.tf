@@ -60,4 +60,8 @@ resource "aws_cloudwatch_metric_alarm" "redis_high_evictions" {
     CacheClusterId = aws_elasticache_replication_group.main.id
   }
   alarm_actions = [var.alarm_topic_arn]
+
+  tags = {
+    Environment = "dev"
+  }
 }

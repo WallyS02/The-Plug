@@ -102,4 +102,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_no_tasks" {
     ServiceName = aws_ecs_service.main.name
   }
   alarm_actions = [var.alarm_topic_arn]
+
+  tags = {
+    Environment = "dev"
+  }
 }

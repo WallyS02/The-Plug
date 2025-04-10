@@ -144,4 +144,8 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_errors" {
     Region         = "Global"
   }
   alarm_actions = [var.alarm_topic_arn]
+
+  tags = {
+    Environment = "dev"
+  }
 }
