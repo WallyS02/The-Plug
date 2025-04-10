@@ -73,7 +73,7 @@ data "aws_iam_policy_document" "ecs_access" {
     ]
     principals {
       type        = "Service"
-      identifiers = ["ecs.amazonaws.com"]
+      identifiers = ["ecs-tasks.amazonaws.com"]
     }
   }
 }

@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "elasticache_access" {
     resources = [module.secrets_elasticache.arn]
     principals {
       type        = "Service"
-      identifiers = ["elasticache.amazonaws.com", "ecs.amazonaws.com"]
+      identifiers = ["elasticache.amazonaws.com", "ecs-tasks.amazonaws.com"]
     }
   }
 }

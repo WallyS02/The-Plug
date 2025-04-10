@@ -32,6 +32,11 @@ variable "rotation_interval" {
   description = "Rotation interval in days"
   type        = number
   default     = 30
+
+  validation {
+    condition     = var.rotation_interval >= 7 && var.rotation_interval <= 365
+    error_message = "Rotation period must be between 7 and 365 days"
+  }
 }
 
 variable "policy_statements" {

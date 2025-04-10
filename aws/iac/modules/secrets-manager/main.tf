@@ -27,12 +27,11 @@ resource "aws_secretsmanager_secret_rotation" "this" {
 
 # Secret policy
 resource "aws_secretsmanager_secret_policy" "this" {
-  count      = length(var.policy_statements) > 0 ? 1 : 0
-  policy     = data.aws_iam_policy_document.default_policy.json
+  policy     = data.aws_iam_policy_document.policies.json
   secret_arn = aws_secretsmanager_secret.this.arn
 }
 
-data "aws_iam_policy_document" "default_policy" {
+data "aws_iam_policy_document" "policies" {
   statement {
     effect    = "Deny"
     actions   = ["secretsmanager:*"]
@@ -45,6 +44,20 @@ data "aws_iam_policy_document" "default_policy" {
       test     = "Bool"
       variable = "aws:MultiFactorAuthPresent"
       values   = ["false"]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = [for s in var.policy_statements : jsondecode(s)]
+    content {
+      sid       = lookup(statement.value, "Sid", null)
+      effect    = statement.value["Effect"]
+      actions   = statement.value["Action"]
+      resources = [aws_secretsmanager_secret.this.arn]
+      principals {
+        type        = keys(statement.value["Principal"])[0]
+        identifiers = values(statement.value["Principal"])[0]
+      }
     }
   }
 }

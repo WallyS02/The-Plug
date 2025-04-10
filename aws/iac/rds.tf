@@ -98,7 +98,7 @@ data "aws_iam_policy_document" "rds_access" {
     resources = [module.secrets_rds.arn]
     principals {
       type        = "Service"
-      identifiers = ["rds.amazonaws.com", "ecs.amazonaws.com"]
+      identifiers = ["rds.amazonaws.com", "ecs-tasks.amazonaws.com"]
     }
   }
 }
