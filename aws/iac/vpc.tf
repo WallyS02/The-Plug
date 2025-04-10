@@ -7,6 +7,7 @@ module "vpc" {
   azs                                  = ["${var.region}a", "${var.region}b"]
   enable_vpc_flow_logs                 = false
   nat_instance_ingress_security_groups = [module.asg.security_group_id, module.elasticache.security_group_id, module.rds.security_group_id]
+  region                               = var.region
 
   tags = {
     Environment = "dev"

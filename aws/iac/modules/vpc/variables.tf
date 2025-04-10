@@ -40,6 +40,11 @@ variable "nat_instance_ingress_security_groups" {
   default     = []
 }
 
+variable "region" {
+  description = "Used region"
+  type        = string
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)
