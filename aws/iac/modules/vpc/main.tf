@@ -61,6 +61,15 @@ resource "aws_instance" "nat" {
   subnet_id                   = aws_subnet.public[0].id
   associate_public_ip_address = true
   source_dest_check           = false
+  ebs_optimized               = true
+
+  ebs_block_device {
+    device_name           = "/dev/xvda"
+    volume_size           = 2
+    volume_type           = "gp3"
+    delete_on_termination = true
+    encrypted             = true
+  }
 
   vpc_security_group_ids = [aws_security_group.nat_security_group.id]
 
@@ -87,6 +96,7 @@ resource "aws_security_group" "nat_security_group" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
+    description     = "NAT ingress from private subnets services"
     from_port       = 0
     to_port         = 0
     protocol        = "-1"
@@ -95,6 +105,7 @@ resource "aws_security_group" "nat_security_group" {
   }
 
   egress {
+    description = "NAT egress"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
