@@ -5,7 +5,7 @@ module "route53" {
   create_hosted_zone = true
   records = [
     {
-      name = "cdn"
+      name = ""
       type = "A"
       alias = {
         name    = module.cloudfront.domain_name
@@ -21,4 +21,8 @@ module "route53" {
       }
     }
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }

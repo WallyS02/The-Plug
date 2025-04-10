@@ -5,13 +5,14 @@ resource "aws_route53_zone" "main" {
   name          = var.domain_name
   comment       = "Hosted zone for ${var.domain_name}"
   force_destroy = false
+  tags          = var.tags
 }
 
 # DNS records (CloudFront and ALB)
 resource "aws_route53_record" "records" {
   for_each = { for record in var.records : record.name => record }
 
-  name    = each.value.name != "" ? "${each.value.name}.${var.domain_name}}" : var.domain_name
+  name    = each.value.name != "" ? "${each.value.name}.${var.domain_name}" : var.domain_name
   type    = each.value.type
   zone_id = local.hosted_zone_id
   ttl     = lookup(each.value, "ttl", null)
