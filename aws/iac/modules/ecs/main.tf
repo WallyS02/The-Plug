@@ -9,15 +9,15 @@ resource "aws_ecs_task_definition" "main" {
   family                   = "${var.name}-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
-  cpu                      = 768 # 0.75 vCPU
-  memory                   = 768 # 768 MB
+  cpu                      = var.task_cpu
+  memory                   = var.task_memory
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
 
   container_definitions = jsonencode([{
     name      = var.container_name
     image     = "${var.ecr_repository_url}:${var.image_tag}"
-    cpu       = 256 # 0.25 vCPU
-    memory    = 256 # 256 MB
+    cpu       = var.container_cpu
+    memory    = var.container_memory
     essential = true
     portMappings = [{
       containerPort = var.container_port
@@ -25,7 +25,7 @@ resource "aws_ecs_task_definition" "main" {
     }]
     environment = [
       { name = "DB_HOST", value = var.db_endpoint },
-      { name = "CACHE_ENDPOINT", value = "redis://${var.cache_auth_token}@${split("//", var.cache_endpoint)}" },
+      { name = "CACHE_ENDPOINT", value = "redis://${var.cache_auth_token}@${split("//", var.cache_endpoint)[1]}" },
       { name = "USE_CACHE", value = 1 },
       { name = "WEB_APP_URL", value = "http://localhost" },
       { name = "ALLOWED_HOSTS", value = "*" },
@@ -73,7 +73,7 @@ resource "aws_ecs_service" "main" {
   name            = "${var.name}-service"
   cluster         = aws_ecs_cluster.main.arn
   task_definition = aws_ecs_task_definition.main.arn
-  desired_count   = 2
+  desired_count   = var.desired_count
   launch_type     = "EC2"
 
   load_balancer {

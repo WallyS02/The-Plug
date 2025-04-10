@@ -97,6 +97,36 @@ variable "log_region" {
   type        = string
 }
 
+variable "task_cpu" {
+  description = "Number of cpu units used by the task"
+  type        = number
+  default     = 768 # 0.75 vCPU
+}
+
+variable "task_memory" {
+  description = "Amount (in MiB) of memory used by the task"
+  type        = number
+  default     = 768 # 768 MB
+}
+
+variable "container_cpu" {
+  description = "Number of cpu units used by the single task container"
+  type        = number
+  default     = 256 # 0.25 vCPU
+}
+
+variable "container_memory" {
+  description = "Amount (in MiB) of memory used by the single task container"
+  type        = number
+  default     = 256 # 256 MB
+}
+
+variable "desired_count" {
+  description = "Number of instances of the task definition to place and keep running"
+  type        = number
+  default     = 2
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

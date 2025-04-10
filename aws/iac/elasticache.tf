@@ -30,15 +30,38 @@ module "elasticache_security_group" {
   name        = "elasticache-security-group"
   description = "Security group for Elasticache in private subnet"
   vpc_id      = module.vpc.vpc_id
+
   ingress_rules = [
     {
       from_port       = 6379
       to_port         = 6379
-      description     = "Allowing communication on port 6379"
+      description     = "Redis cache access on port 6379"
       protocol        = "tcp"
       security_groups = [module.asg.security_group_id]
     }
   ]
+
+  egress_rules = []
+}
+
+resource "aws_security_group_rule" "elasticache_database_access" {
+  type                     = "egress"
+  description              = "Database access"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = module.rds.security_group_id
+  security_group_id        = module.elasticache_security_group.id
+}
+
+resource "aws_security_group_rule" "elasticache_outbound_HTTPS" {
+  type              = "egress"
+  description       = "Outbound HTTPS"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = module.elasticache_security_group.id
 }
 
 resource "random_password" "elasticache_password" {
@@ -59,6 +82,10 @@ module "secrets_elasticache" {
   policy_statements = [
     data.aws_iam_policy_document.elasticache_access.json
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 data "aws_iam_policy_document" "elasticache_access" {

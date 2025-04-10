@@ -36,6 +36,10 @@ module "email_host_password_secret" {
   policy_statements = [
     data.aws_iam_policy_document.ecs_access.json
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 module "email_host_user_secret" {
@@ -48,6 +52,10 @@ module "email_host_user_secret" {
   policy_statements = [
     data.aws_iam_policy_document.ecs_access.json
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 module "secret_key_secret" {
@@ -60,6 +68,10 @@ module "secret_key_secret" {
   policy_statements = [
     data.aws_iam_policy_document.ecs_access.json
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 data "aws_iam_policy_document" "ecs_access" {

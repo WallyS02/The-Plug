@@ -1,13 +1,3 @@
-# Monitoring Agent
-module "monitoring_agent" {
-  source = "./modules/monitoring"
-
-  create_iam_role = true
-  tags = {
-    Environment = "dev"
-  }
-}
-
 # Log groups
 locals {
   log_retention = 1

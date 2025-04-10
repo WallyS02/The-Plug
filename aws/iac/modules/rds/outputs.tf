@@ -32,3 +32,8 @@ output "user" {
   description = "Database username"
   value       = aws_db_instance.main.username
 }
+
+output "security_group_id" {
+  description = "Database security group id"
+  value       = aws_db_instance.main.vpc_security_group_ids
+}

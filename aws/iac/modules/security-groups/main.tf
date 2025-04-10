@@ -32,4 +32,8 @@ resource "aws_security_group" "main" {
       security_groups  = lookup(egress.value, "security_groups", [])
     }
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }

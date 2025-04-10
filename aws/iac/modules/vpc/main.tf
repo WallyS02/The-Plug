@@ -87,10 +87,11 @@ resource "aws_security_group" "nat_security_group" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = aws_subnet.private.*.cidr_block
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = aws_subnet.private.*.cidr_block
+    security_groups = var.nat_instance_ingress_security_groups
   }
 
   egress {

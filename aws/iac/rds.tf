@@ -52,13 +52,24 @@ module "rds_security_group" {
   name        = "rds-security-group"
   description = "Security group for RDS database in private subnet"
   vpc_id      = module.vpc.vpc_id
+
   ingress_rules = [
     {
       from_port       = 5432
       to_port         = 5432
-      description     = "Allowing communication on port 5432"
+      description     = "Database access on port 5432"
       protocol        = "tcp"
       security_groups = [module.elasticache.security_group_id, module.asg.security_group_id]
+    }
+  ]
+
+  egress_rules = [
+    {
+      description = "Outbound HTTPS"
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   ]
 
