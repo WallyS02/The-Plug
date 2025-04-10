@@ -3,7 +3,7 @@ module "cloudfront" {
 
   distribution_name = "the-plug-cdn"
   enabled           = true
-  aliases           = [] # TODO get domain name
+  aliases           = [module.route53.domain_name]
 
   origins = {
     s3_origin = {
@@ -28,7 +28,7 @@ module "cloudfront" {
     path_pattern     = "/api*"
     target_origin_id = "alb_origin"
     allowed_methods  = ["GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
   }
 
   acm_certificate_arn           = module.acm_cloudfront.certificate_arn
@@ -46,6 +46,10 @@ module "cloudfront" {
   comment             = "CloudFront distribution for The Plug application"
   default_root_object = "index.html"
   alarm_topic_arn     = module.alarm_topic.arn
+
+  tags = {
+    Environment = "dev"
+  }
 
   depends_on = [module.acm_cloudfront]
 }

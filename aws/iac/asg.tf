@@ -28,7 +28,7 @@ module "asg" {
   enable_scaling_policies = true
   scaling_adjustment      = 1
 
-  wait_for_capacity_timeout = "10m"
+  wait_for_capacity_timeout = "5m"
 
   user_data_base64 = base64encode(<<-EOF
     #!/bin/bash

@@ -40,7 +40,7 @@ resource "aws_cloudfront_distribution" "main" {
     }
   }
 
-  # Default cache behaviour
+  # Default cache behaviour (S3 bucket)
   default_cache_behavior {
     target_origin_id       = var.default_cache_behaviour.target_origin_id
     viewer_protocol_policy = "redirect-to-https"
@@ -52,7 +52,7 @@ resource "aws_cloudfront_distribution" "main" {
     origin_request_policy_id = var.default_cache_behaviour.origin_request_policy_id
   }
 
-  # Ordered cache behaviour
+  # Ordered cache behaviour (ALB)
   ordered_cache_behavior {
     path_pattern           = var.ordered_cache_behaviour.path_pattern
     viewer_protocol_policy = "redirect-to-https"
