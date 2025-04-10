@@ -1,12 +1,21 @@
-# Main configuration
+# VPC configuration
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true # Enables DNS name resolution within a VPC
   enable_dns_hostnames = true # Automatic hostname assignment for EC2 instances
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-vpc"
+    Name = "vpc"
   })
+}
+
+# VPC Flow Logs
+resource "aws_flow_log" "vpc" {
+  count = var.enable_vpc_flow_logs ? 1 : 0
+
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.main.id
+  log_destination = var.log_bucket
 }
 
 # Internet Gateway
@@ -14,7 +23,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-igw"
+    Name = "igw"
   })
 }
 
@@ -27,7 +36,7 @@ resource "aws_subnet" "public" {
   # map_public_ip_on_launch = true                 # Automatically assigns a public IP to instances running in this subnet
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-public-${substr(var.azs[count.index], -1, 1)}"
+    Name = "public-${substr(var.azs[count.index], -1, 1)}"
     Tier = "Public"
   })
 }
@@ -40,7 +49,7 @@ resource "aws_subnet" "private" {
   availability_zone = var.azs[count.index] # Physical location of the subnet
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-private-${substr(var.azs[count.index], -1, 1)}"
+    Name = "private-${substr(var.azs[count.index], -1, 1)}"
     Tier = "Private"
   })
 }
@@ -48,7 +57,7 @@ resource "aws_subnet" "private" {
 # NAT Instance
 resource "aws_instance" "nat" {
   ami                         = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI
-  instance_type               = "t2.micro"
+  instance_type               = "t3.micro"
   subnet_id                   = aws_subnet.public[0].id
   associate_public_ip_address = true
   source_dest_check           = false
@@ -68,7 +77,7 @@ resource "aws_instance" "nat" {
               EOF
 
   tags = {
-    Name = "${var.environment}-nat-instance"
+    Name = "nat-instance"
   }
 }
 
@@ -92,7 +101,7 @@ resource "aws_security_group" "nat_security_group" {
   }
 
   tags = {
-    Name = "${var.environment}-nat-sg"
+    Name = "nat-sg"
   }
 }
 
@@ -105,7 +114,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-public-rt"
+    Name = "public-rt"
   })
 }
 
@@ -113,15 +122,15 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = merge(var.tags, {
-    Name = "${var.environment}-private-rt"
+    Name = "private-rt"
   })
 }
 
 # NAT Instance routing
 resource "aws_route" "nat_route" {
-  route_table_id = aws_route_table.private.id
+  route_table_id         = aws_route_table.private.id
   destination_cidr_block = "0.0.0.0/0"
-  network_interface_id = aws_instance.nat.primary_network_interface_id
+  network_interface_id   = aws_instance.nat.primary_network_interface_id
 }
 
 # Route Tables Associations

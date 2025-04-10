@@ -1,8 +1,3 @@
-variable "environment" {
-  description = "Deployment environment"
-  type        = string
-}
-
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
@@ -25,6 +20,18 @@ variable "azs" {
   description = "Availability Zones list"
   type        = list(string)
   default     = ["eu-north-1a", "eu-north-1b"]
+}
+
+variable "enable_vpc_flow_logs" {
+  description = "Enable VPC Flow Logs?"
+  type        = bool
+  default     = false
+}
+
+variable "log_bucket" {
+  description = "S3 bucket for VPC Flow Logs (if enable_vpc_flow_logs = true)"
+  type        = string
+  default     = ""
 }
 
 variable "tags" {
