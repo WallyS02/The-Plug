@@ -18,23 +18,32 @@ module "rds" {
 
   parameters = [
     {
-      name         = "character_set_server"
-      value        = "utf8mb4"
+      name         = "shared_buffers"
+      value        = "256MB"
       apply_method = "immediate"
     },
     {
       name         = "max_connections"
       value        = "100"
       apply_method = "immediate"
+    },
+    {
+      name         = "work_mem"
+      value        = "8MB"
+      apply_method = "immediate"
     }
   ]
 
   parameters_group_family      = "postgres17"
   rds_security_group           = [module.rds_security_group.id]
-  deletion_protection          = true
+  deletion_protection          = false
   performance_insights_enabled = false
   skip_final_snapshot          = true
   alarm_topic_arn              = module.alarm_topic.arn
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 module "rds_security_group" {
@@ -52,11 +61,18 @@ module "rds_security_group" {
       security_groups = [module.elasticache.security_group_id, module.asg.security_group_id]
     }
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 resource "random_password" "rds_password" {
-  length  = 16
-  special = true
+  length           = 16
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+  override_special = "!@#%^&*"
 }
 
 module "secrets_rds" {
@@ -69,6 +85,10 @@ module "secrets_rds" {
   policy_statements = [
     data.aws_iam_policy_document.rds_access.json
   ]
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 data "aws_iam_policy_document" "rds_access" {

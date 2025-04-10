@@ -79,6 +79,10 @@ resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
     DBInstanceIdentifier = aws_db_instance.main.identifier
   }
   alarm_actions = [var.alarm_topic_arn]
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_high_connections" {
@@ -94,4 +98,8 @@ resource "aws_cloudwatch_metric_alarm" "rds_high_connections" {
     DBInstanceIdentifier = aws_db_instance.main.identifier
   }
   alarm_actions = [var.alarm_topic_arn]
+
+  tags = {
+    Environment = "dev"
+  }
 }

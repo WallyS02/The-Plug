@@ -151,13 +151,13 @@ variable "alarm_topic_arn" {
 variable "low_storage_threshold" {
   description = "Low storage space threshold in bytes"
   type        = number
-  default     = 5368709120 # 5GB
+  default     = 4294967296 # 4GB
 }
 
 variable "high_connections_amount" {
   description = "High number of database connections threshold"
   type        = number
-  default     = 75
+  default     = 80
 }
 
 variable "tags" {

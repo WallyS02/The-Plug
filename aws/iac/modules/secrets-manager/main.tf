@@ -3,6 +3,8 @@ resource "aws_secretsmanager_secret" "this" {
   name        = var.name
   description = var.description
   kms_key_id  = null
+
+  tags = var.tags
 }
 
 # Secret init
