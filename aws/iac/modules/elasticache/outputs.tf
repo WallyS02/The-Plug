@@ -8,6 +8,12 @@ output "configuration_endpoint" {
   value       = try(aws_elasticache_replication_group.main.configuration_endpoint_address, null)
 }
 
+output "auth_token" {
+  description = "Redis auth token"
+  value       = aws_elasticache_replication_group.main.auth_token
+  sensitive   = true
+}
+
 output "port" {
   description = "Redis port"
   value       = aws_elasticache_replication_group.main.port

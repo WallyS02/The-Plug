@@ -52,6 +52,11 @@ variable "cache_endpoint" {
   type        = string
 }
 
+variable "cache_auth_token" {
+  description = "Redis auth token"
+  type        = string
+}
+
 variable "db_password_secret_arn" {
   description = "Database password secret ARN"
   type        = string

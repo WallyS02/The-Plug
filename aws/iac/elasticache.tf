@@ -42,7 +42,7 @@ module "elasticache_security_group" {
 }
 
 resource "random_password" "elasticache_password" {
-  length  = 16
+  length           = 16
   min_upper        = 1
   min_lower        = 1
   min_numeric      = 1
