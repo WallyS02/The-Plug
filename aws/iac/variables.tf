@@ -23,3 +23,9 @@ variable "email" {
   description = "Email for alarm SNS topic"
   type        = string
 }
+
+variable "cw_agent_ssm_parameter_name" {
+  description = "Name for CW Agent SSM parameter"
+  type        = string
+  default     = "/cloudwatch-agent/config"
+}

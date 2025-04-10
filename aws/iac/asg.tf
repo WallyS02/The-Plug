@@ -28,11 +28,22 @@ module "asg" {
   enable_scaling_policies = true
   scaling_adjustment      = 1
 
-  wait_for_capacity_timeout = "5m"
+  wait_for_capacity_timeout   = "5m"
+  cw_agent_ssm_parameter_name = var.cw_agent_ssm_parameter_name
 
   user_data_base64 = base64encode(<<-EOF
     #!/bin/bash
     echo ECS_CLUSTER=${module.ecs.cluster_name} >> /etc/ecs/ecs.config
+    set -e
+    exec > >(tee /var/log/user-data.log|logger -t user-data-extra -s 2>/dev/console) 2>&1
+    yum update -y
+    yum upgrade -y
+    wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+    rpm -U ./amazon-cloudwatch-agent.rpm
+    /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+    -a fetch-config \
+    -m ec2 \
+    -c ssm:${var.cw_agent_ssm_parameter_name} -s
     EOF
   )
 

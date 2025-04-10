@@ -51,6 +51,11 @@ resource "aws_iam_role" "ec2_instance_role" {
       Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }
       Action    = "sts:AssumeRole"
+    }],
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "ssm:GetParameter"
+      Resource = "*"
     }]
   })
 }
@@ -63,6 +68,18 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
 resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
   role       = aws_iam_role.ec2_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "amazon_wc2_role_for_ssm" {
+  role       = aws_iam_role.ec2_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+}
+
+resource "aws_ssm_parameter" "cw_agent" {
+  description = "Cloudwatch agent config to configure custom log"
+  name        = var.cw_agent_ssm_parameter_name
+  type        = "String"
+  value       = file("${path.module}/cw_agent_config.json")
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {

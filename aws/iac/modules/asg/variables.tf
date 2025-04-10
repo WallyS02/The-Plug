@@ -138,6 +138,12 @@ variable "wait_for_capacity_timeout" {
   default     = "10m"
 }
 
+variable "cw_agent_ssm_parameter_name" {
+  description = "Name for CW Agent SSM parameter"
+  type        = string
+  default     = "/cloudwatch-agent/config"
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)
