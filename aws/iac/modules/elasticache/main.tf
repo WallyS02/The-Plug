@@ -39,6 +39,7 @@ resource "aws_elasticache_replication_group" "main" {
   num_cache_clusters         = 1
   snapshot_retention_limit   = 0
   maintenance_window         = var.maintenance_window
+  auto_minor_version_upgrade = true
 
   tags = merge(var.tags, {
     Name = var.name

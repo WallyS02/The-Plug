@@ -13,11 +13,15 @@ module "elasticache" {
   redis_security_group  = [module.elasticache_security_group.id]
 
   redis_parameters = [
-    { name = "maxmemory-policy", value = "allkeys-lru" },
-    { name = "timeout", value = "300" }
+    { name = "maxmemory-policy", value = "volatile-lru" },
+    { name = "maxmemory", value = "419430400" } # 400 MB for cache.t3.micro
   ]
 
   alarm_topic_arn = module.alarm_topic.arn
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 module "elasticache_security_group" {
@@ -39,7 +43,10 @@ module "elasticache_security_group" {
 
 resource "random_password" "elasticache_password" {
   length  = 16
-  special = true
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+  override_special = "!@#%^&*"
 }
 
 module "secrets_elasticache" {
