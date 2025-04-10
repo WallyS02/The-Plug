@@ -6,19 +6,33 @@ module "ecr" {
   image_tag_mutability = "MUTABLE"
 
   lifecycle_policy = jsonencode({
-    rules = [{
-      rulePriority = 1
-      description  = "Remove untagged images older than 7 days"
-      selection = {
-        tagStatus   = "untagged"
-        countType   = "sinceImagePushed"
-        countUnit   = "days"
-        countNumber = 7
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Remove untagged images older than 3 days"
+        selection = {
+          tagStatus   = "untagged"
+          countType   = "sinceImagePushed"
+          countUnit   = "days"
+          countNumber = 3
+        }
+        action = {
+          type = "expire"
+        }
+      },
+      {
+        rulePriority = 2
+        description  = "Keep last 3 versions of images"
+        selection = {
+          tagStatus  = "tagged"
+          countType  = "imageCountMoreThan"
+          countValue = 3
+        }
+        action = {
+          type = "expire"
+        }
       }
-      action = {
-        type = "expire"
-      }
-    }]
+    ]
   })
 
   repository_policy = jsonencode({
@@ -26,7 +40,7 @@ module "ecr" {
     Statement = [{
       Effect = "Allow",
       Principal = {
-        AWS = "arn:aws:iam::123456789012:role/${module.asg.name_prefix}-ec2-role"
+        AWS = module.asg.ec2_role_arn
       },
       Action = [
         "ecr:GetDownloadUrlForLayer",
@@ -35,4 +49,8 @@ module "ecr" {
       ]
     }]
   })
+
+  tags = {
+    Environment = "dev"
+  }
 }

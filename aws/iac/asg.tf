@@ -11,8 +11,8 @@ module "asg" {
   min_size         = 1
   max_size         = 2
 
-  target_group_arns = [module.alb.target_group_arn]
-  health_check_type = "ELB"
+  target_group_arns         = [module.alb.target_group_arn]
+  health_check_type         = "ELB"
   health_check_grace_period = 300
 
   enable_monitoring = false
