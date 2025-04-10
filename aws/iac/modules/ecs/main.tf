@@ -7,10 +7,11 @@ resource "aws_ecs_cluster" "main" {
 # ECS task definition
 resource "aws_ecs_task_definition" "main" {
   family                   = "${var.name}-task"
-  network_mode             = "bridge"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
   cpu                      = 768 # 0.75 vCPU
   memory                   = 768 # 768 MB
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
 
   container_definitions = jsonencode([{
     name      = var.container_name
@@ -38,7 +39,33 @@ resource "aws_ecs_task_definition" "main" {
       { name = "EMAIL_HOST_PASSWORD", valueFrom = var.email_host_password_secret_arn },
       { name = "SECRET_KEY", valueFrom = var.secret_key_secret_arn },
     ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = var.log_group
+        "awslogs-region"        = var.log_region
+        "awslogs-stream-prefix" = "ecs"
+      }
+    }
   }])
+}
+
+resource "aws_iam_role" "ecs_execution_role" {
+  name = "${var.name}-execution-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution" {
+  role       = aws_iam_role.ecs_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 # ECS service

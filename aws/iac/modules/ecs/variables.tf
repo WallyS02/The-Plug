@@ -23,13 +23,13 @@ variable "image_tag" {
 variable "container_port" {
   description = "Port exposed in container"
   type        = number
-  default     = 0
+  default     = 8080
 }
 
 variable "host_port" {
   description = "Host port bound to container"
   type        = number
-  default     = 0
+  default     = 8080
 }
 
 variable "db_endpoint" {
@@ -79,6 +79,16 @@ variable "target_group_arn" {
 
 variable "alarm_topic_arn" {
   description = "Alarm topic ARN"
+  type        = string
+}
+
+variable "log_group" {
+  description = "Log group for ECS"
+  type        = string
+}
+
+variable "log_region" {
+  description = "Region for log group for ECS"
   type        = string
 }
 

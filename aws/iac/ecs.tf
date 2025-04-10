@@ -17,6 +17,12 @@ module "ecs" {
   email_host_password_secret_arn = module.email_host_password_secret.arn
   email_host_user_secret_arn     = module.email_host_user_secret.arn
   secret_key_secret_arn          = module.secret_key_secret.arn
+  log_group                      = aws_cloudwatch_log_group.ecs.name
+  log_region                     = var.region
+
+  tags = {
+    Evironment = "dev"
+  }
 }
 
 module "email_host_password_secret" {
