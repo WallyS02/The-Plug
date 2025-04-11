@@ -4,7 +4,7 @@ module "elasticache" {
   name                  = "the-plug-cache"
   subnet_ids            = module.vpc.private_subnet_ids
   node_type             = "cache.t3.micro"
-  redis_version         = "6.x"
+  redis_version         = "7.1"
   port                  = 6379
   encryption_at_rest    = true
   encryption_in_transit = true
@@ -69,7 +69,7 @@ resource "random_password" "elasticache_password" {
   min_upper        = 1
   min_lower        = 1
   min_numeric      = 1
-  override_special = "!@#%^&*"
+  override_special = "!#%^&*"
 }
 
 module "secrets_elasticache" {

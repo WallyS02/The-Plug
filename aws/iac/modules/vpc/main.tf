@@ -162,9 +162,11 @@ resource "aws_route_table_association" "private" {
 resource "aws_vpc_endpoint" "s3" {
   vpc_id          = aws_vpc.main.id
   service_name    = "com.amazonaws.${var.region}.s3"
-  route_table_ids = aws_subnet.private.*.id
+  route_table_ids = [aws_route_table.private.id]
 
   tags = merge(var.tags, {
     Name = "s3-endpoint"
   })
+
+  depends_on = [aws_route_table.private]
 }

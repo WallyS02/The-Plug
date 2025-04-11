@@ -17,13 +17,13 @@ variable "node_type" {
 variable "redis_version" {
   description = "Redis version"
   type        = string
-  default     = "6.x"
+  default     = "7.1"
 }
 
 variable "redis_family" {
   description = "Redis parameter family"
   type        = string
-  default     = "redis6.x"
+  default     = "redis7.x"
 }
 
 variable "port" {

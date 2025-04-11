@@ -24,9 +24,9 @@ module "ecr" {
         rulePriority = 2
         description  = "Keep last 3 versions of images"
         selection = {
-          tagStatus  = "tagged"
-          countType  = "imageCountMoreThan"
-          countValue = 3
+          tagStatus   = "tagged"
+          countType   = "imageCountMoreThan"
+          countNumber = 3
         }
         action = {
           type = "expire"
