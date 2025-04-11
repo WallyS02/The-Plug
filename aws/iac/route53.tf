@@ -1,7 +1,7 @@
 module "route53" {
   source = "./modules/route53"
 
-  domain_name        = "" # TODO get domain name
+  domain_name        = "theplug.software"
   create_hosted_zone = true
   records = [
     {
