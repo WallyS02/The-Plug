@@ -18,7 +18,7 @@ resource "aws_route53_record" "records" {
   ttl     = lookup(each.value, "ttl", null)
 
   dynamic "alias" {
-    for_each = lookup(each.value, "alias", [])
+    for_each = each.value.alias != null ? [each.value.alias] : []
     content {
       name                   = alias.value.name
       zone_id                = alias.value.zone_id

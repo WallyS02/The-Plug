@@ -59,7 +59,7 @@ module "rds_security_group" {
       to_port         = 5432
       description     = "Database access on port 5432"
       protocol        = "tcp"
-      security_groups = [module.elasticache.security_group_id, module.asg.security_group_id]
+      security_groups = [module.elasticache.security_group_id, module.asg.security_group_id, module.ecs_security_group.id]
     }
   ]
 
@@ -89,10 +89,11 @@ resource "random_password" "rds_password" {
 module "secrets_rds" {
   source = "./modules/secrets-manager"
 
-  name             = "rds-password"
-  description      = "Password for RDS database"
-  initial_value    = random_password.rds_password.result
-  rotation_enabled = false
+  name              = "rds-password"
+  description       = "Password for RDS database"
+  enable_init_value = true
+  initial_value     = random_password.rds_password.result
+  rotation_enabled  = false
   policy_statements = [
     data.aws_iam_policy_document.rds_access.json
   ]
@@ -100,6 +101,8 @@ module "secrets_rds" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [random_password.rds_password]
 }
 
 data "aws_iam_policy_document" "rds_access" {

@@ -35,5 +35,5 @@ output "user" {
 
 output "security_group_id" {
   description = "Database security group id"
-  value       = aws_db_instance.main.vpc_security_group_ids
+  value       = var.rds_security_group[0]
 }

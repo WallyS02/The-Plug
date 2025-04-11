@@ -30,5 +30,5 @@ output "ec2_role_arn" {
 
 output "security_group_id" {
   description = "ASG Security Group ID"
-  value       = aws_launch_template.main.vpc_security_group_ids
+  value       = var.security_group_ids[0]
 }

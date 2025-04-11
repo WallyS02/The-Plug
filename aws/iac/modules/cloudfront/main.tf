@@ -103,18 +103,8 @@ data "aws_iam_policy_document" "s3_policy" {
   count = var.create_origin_access_identity ? 1 : 0
 
   statement {
-    actions   = ["s3:GetObject"]
-    resources = ["${var.s3_bucket_arn}/*"]
-
-    principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.s3_oai[0].iam_arn]
-    }
-  }
-
-  statement {
-    actions   = ["s3:ListBucket"]
-    resources = [var.s3_bucket_arn]
+    actions   = ["s3:GetObject", "s3:ListBucket"]
+    resources = ["${var.s3_bucket_arn}/*", var.s3_bucket_arn]
 
     principals {
       type        = "AWS"
@@ -126,7 +116,7 @@ data "aws_iam_policy_document" "s3_policy" {
 resource "aws_s3_bucket_policy" "cloudfront_access" {
   count  = var.create_origin_access_identity ? 1 : 0
   bucket = var.s3_bucket_id
-  policy = data.aws_iam_policy_document.s3_policy
+  policy = data.aws_iam_policy_document.s3_policy[count.index].json
 }
 
 # CloudWatch alarms

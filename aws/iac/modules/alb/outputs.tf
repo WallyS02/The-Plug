@@ -25,5 +25,5 @@ output "target_group_arn" {
 
 output "security_group_id" {
   description = "ALB security group ID"
-  value       = aws_lb.main.security_groups
+  value       = var.security_groups[0]
 }

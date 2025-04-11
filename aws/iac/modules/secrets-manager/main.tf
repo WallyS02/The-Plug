@@ -9,7 +9,7 @@ resource "aws_secretsmanager_secret" "this" {
 
 # Secret init
 resource "aws_secretsmanager_secret_version" "initial" {
-  count         = var.initial_value != null ? 1 : 0
+  count         = var.enable_init_value ? 1 : 0
   secret_id     = aws_secretsmanager_secret.this.id
   secret_string = var.initial_value
 }

@@ -9,6 +9,12 @@ variable "description" {
   default     = "Secret managed by Terraform"
 }
 
+variable "enable_init_value" {
+  description = "Enable secret's initial value?"
+  type        = bool
+  default     = true
+}
+
 variable "initial_value" {
   description = "Initial secret value (sensitive!)"
   type        = string

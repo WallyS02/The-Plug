@@ -37,7 +37,7 @@ module "elasticache_security_group" {
       to_port         = 6379
       description     = "Redis cache access on port 6379"
       protocol        = "tcp"
-      security_groups = [module.asg.security_group_id]
+      security_groups = [module.asg.security_group_id, module.ecs_security_group.id]
     }
   ]
 
@@ -75,10 +75,11 @@ resource "random_password" "elasticache_password" {
 module "secrets_elasticache" {
   source = "./modules/secrets-manager"
 
-  name             = "elasticache-auth-token"
-  description      = "Auth token for Elasticache"
-  initial_value    = random_password.elasticache_password.result
-  rotation_enabled = false
+  name              = "elasticache-auth-token"
+  description       = "Auth token for Elasticache"
+  enable_init_value = true
+  initial_value     = random_password.elasticache_password.result
+  rotation_enabled  = false
   policy_statements = [
     data.aws_iam_policy_document.elasticache_access.json
   ]
@@ -86,6 +87,8 @@ module "secrets_elasticache" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [random_password.elasticache_password]
 }
 
 data "aws_iam_policy_document" "elasticache_access" {
