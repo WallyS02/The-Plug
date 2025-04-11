@@ -32,6 +32,13 @@ resource "aws_secretsmanager_secret_policy" "this" {
 }
 
 data "aws_iam_policy_document" "policies" {
+  source_policy_documents = concat(
+    [data.aws_iam_policy_document.default_policy.json],
+    var.policy_statements
+  )
+}
+
+data "aws_iam_policy_document" "default_policy" {
   statement {
     effect    = "Deny"
     actions   = ["secretsmanager:*"]
@@ -44,20 +51,6 @@ data "aws_iam_policy_document" "policies" {
       test     = "Bool"
       variable = "aws:MultiFactorAuthPresent"
       values   = ["false"]
-    }
-  }
-
-  dynamic "statement" {
-    for_each = [for s in var.policy_statements : jsondecode(s)]
-    content {
-      sid       = lookup(statement.value, "Sid", null)
-      effect    = statement.value["Effect"]
-      actions   = statement.value["Action"]
-      resources = [aws_secretsmanager_secret.this.arn]
-      principals {
-        type        = keys(statement.value["Principal"])[0]
-        identifiers = values(statement.value["Principal"])[0]
-      }
     }
   }
 }

@@ -47,16 +47,18 @@ resource "aws_iam_role" "ec2_instance_role" {
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }],
-    Statement = [{
-      Effect   = "Allow"
-      Action   = "ssm:GetParameter"
-      Resource = "*"
-    }]
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ssm:GetParameter"
+        Resource = "*"
+      }
+    ]
   })
 }
 
@@ -70,9 +72,19 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "amazon_wc2_role_for_ssm" {
+resource "aws_iam_role_policy_attachment" "ec2_role_for_ssm" {
   role       = aws_iam_role.ec2_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_container_service_for_ec2_role" {
+  role       = aws_iam_role.ec2_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "${var.name_prefix}-ec2-profile"
+  role = aws_iam_role.ec2_instance_role.name
 }
 
 resource "aws_ssm_parameter" "cw_agent" {
@@ -80,11 +92,6 @@ resource "aws_ssm_parameter" "cw_agent" {
   name        = var.cw_agent_ssm_parameter_name
   type        = "String"
   value       = file("${path.module}/cw_agent_config.json")
-}
-
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "${var.name_prefix}-ec2-profile"
-  role = aws_iam_role.ec2_instance_role.name
 }
 
 # Auto Scaling Group

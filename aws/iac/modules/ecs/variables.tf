@@ -127,6 +127,39 @@ variable "desired_count" {
   default     = 2
 }
 
+variable "enable_container_insights" {
+  description = "Enable container insights?"
+  type        = bool
+  default     = false
+}
+
+variable "asg_arn" {
+  description = "ASG ARN"
+  type        = string
+}
+
+variable "task_subnets" {
+  description = "Subnets associated with the task"
+  type        = list(string)
+}
+
+variable "task_security_groups" {
+  description = "Security groups associated with the task"
+  type        = list(string)
+}
+
+variable "cpu_utilization_threshold" {
+  description = "CPU utilization threshold"
+  type        = number
+  default     = 70
+}
+
+variable "memory_utilization_threshold" {
+  description = "memory utilization threshold"
+  type        = number
+  default     = 90
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

@@ -8,6 +8,9 @@ module "ecs" {
   container_port                 = 8080
   host_port                      = 8080
   target_group_arn               = module.alb.target_group_arn
+  asg_arn                        = module.asg.asg_arn
+  task_subnets                   = module.vpc.private_subnet_ids
+  task_security_groups           = [module.ecs_security_group.id]
   alarm_topic_arn                = module.alarm_topic.arn
   db_endpoint                    = module.rds.endpoint
   cache_endpoint                 = module.elasticache.primary_endpoint
@@ -24,6 +27,60 @@ module "ecs" {
   tags = {
     Evironment = "dev"
   }
+}
+
+module "ecs_security_group" {
+  source = "./modules/security-groups"
+
+  name        = "ecs-security-group"
+  description = "Security group for ECS"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      from_port       = 8080
+      to_port         = 8080
+      description     = "ALB access on port 8080"
+      protocol        = "tcp"
+      security_groups = [module.alb.security_group_id]
+    }
+  ]
+
+  egress_rules = []
+
+  tags = {
+    Environment = "dev"
+  }
+}
+
+resource "aws_security_group_rule" "ecs_database_access" {
+  type                     = "egress"
+  description              = "Database access"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = module.rds.security_group_id
+  security_group_id        = module.ecs_security_group.id
+}
+
+resource "aws_security_group_rule" "ecs_cache_access" {
+  type                     = "egress"
+  description              = "Cache access"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  source_security_group_id = module.elasticache.security_group_id
+  security_group_id        = module.ecs_security_group.id
+}
+
+resource "aws_security_group_rule" "ecs_outbound_HTTPS" {
+  type              = "egress"
+  description       = "Outbound HTTPS"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = module.ecs_security_group.id
 }
 
 module "email_host_password_secret" {

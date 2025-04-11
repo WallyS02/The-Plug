@@ -33,7 +33,13 @@ module "asg" {
 
   user_data_base64 = base64encode(<<-EOF
     #!/bin/bash
+    # ECS configuration
     echo ECS_CLUSTER=${module.ecs.cluster_name} >> /etc/ecs/ecs.config
+    # echo "ECS_ENABLE_CONTAINER_METRICS=true" >> /etc/ecs/ecs.config
+    # SSM Agent
+    yum install -y amazon-ssm-agent
+    systemctl enable amazon-ssm-agent && systemctl start amazon-ssm-agent
+    # CW Agent
     set -e
     exec > >(tee /var/log/user-data.log|logger -t user-data-extra -s 2>/dev/console) 2>&1
     yum update -y

@@ -2,16 +2,47 @@
 resource "aws_ecs_cluster" "main" {
   name = "${var.name}-cluster"
   tags = var.tags
+
+  setting {
+    name  = "containerInsights"
+    value = var.enable_container_insights ? "enabled" : "disabled"
+  }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_providers" {
+  cluster_name = aws_ecs_cluster.main.name
+
+  capacity_providers = [aws_ecs_capacity_provider.asg.name]
+
+  default_capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.asg.name
+  }
+}
+
+# ECS capacity provider
+resource "aws_ecs_capacity_provider" "asg" {
+  name = "${var.name}-capacity-provider"
+
+  auto_scaling_group_provider {
+    auto_scaling_group_arn = var.asg_arn
+
+    managed_scaling {
+      status = "DISABLED"
+    }
+  }
 }
 
 # ECS task definition
 resource "aws_ecs_task_definition" "main" {
-  family                   = "${var.name}-task"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["EC2"]
-  cpu                      = var.task_cpu
-  memory                   = var.task_memory
-  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  family             = "${var.name}-task"
+  network_mode       = "awsvpc"
+  cpu                = var.task_cpu
+  memory             = var.task_memory
+  execution_role_arn = aws_iam_role.ecs_execution_role.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
 
   container_definitions = jsonencode([{
     name      = var.container_name
@@ -25,7 +56,7 @@ resource "aws_ecs_task_definition" "main" {
     }]
     environment = [
       { name = "DB_HOST", value = var.db_endpoint },
-      { name = "CACHE_ENDPOINT", value = "redis://${var.cache_auth_token}@${split("//", var.cache_endpoint)[1]}" },
+      { name = "CACHE_ENDPOINT", value = "redis://${var.cache_auth_token}@${element(split("://", var.cache_endpoint), 1)}" },
       { name = "USE_CACHE", value = 1 },
       { name = "WEB_APP_URL", value = "http://localhost" },
       { name = "ALLOWED_HOSTS", value = "*" },
@@ -74,7 +105,16 @@ resource "aws_ecs_service" "main" {
   cluster         = aws_ecs_cluster.main.arn
   task_definition = aws_ecs_task_definition.main.arn
   desired_count   = var.desired_count
-  launch_type     = "EC2"
+
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.asg.name
+  }
+
+  network_configuration {
+    subnets          = var.task_subnets
+    security_groups  = var.task_security_groups
+    assign_public_ip = false
+  }
 
   load_balancer {
     target_group_arn = var.target_group_arn
@@ -84,6 +124,47 @@ resource "aws_ecs_service" "main" {
 
   lifecycle {
     ignore_changes = [desired_count]
+  }
+}
+
+# ECS task scaling
+resource "aws_appautoscaling_target" "ecs_target" {
+  max_capacity       = 3
+  min_capacity       = 1
+  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "ecs_cpu" {
+  name               = "cpu-autoscaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value = var.cpu_utilization_threshold
+
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+  }
+}
+
+resource "aws_appautoscaling_policy" "ecs_memory" {
+  name               = "memory-autoscaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value = var.memory_utilization_threshold
+
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
   }
 }
 
