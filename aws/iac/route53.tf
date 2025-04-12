@@ -8,16 +8,18 @@ module "route53" {
       name = "",
       type = "A",
       alias = {
-        name    = module.cloudfront.domain_name
-        zone_id = module.cloudfront.hosted_zone_id
+        name                   = module.cloudfront.domain_name
+        zone_id                = module.cloudfront.hosted_zone_id
+        evaluate_target_health = false
       }
     },
     {
       name = "alb",
       type = "A",
       alias = {
-        name    = module.alb.dns_name
-        zone_id = module.alb.hosted_zone_id
+        name                   = module.alb.dns_name
+        zone_id                = module.alb.hosted_zone_id
+        evaluate_target_health = false
       }
     }
   ]

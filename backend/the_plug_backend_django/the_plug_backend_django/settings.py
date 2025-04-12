@@ -106,8 +106,8 @@ DATABASES = {
         "NAME": env('DB_NAME'),
         "USER": env('DB_USER'),
         "PASSWORD": env('DB_PASSWORD'),
-        "HOST": env('DB_HOST'),
-        "PORT": "5432",
+        "HOST": str(env('DB_HOST')).split(':')[0],
+        "PORT": str(env('DB_HOST')).split(':')[1],
     }
 }
 
@@ -155,7 +155,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-if env('USE_CACHE') is True:
+if bool(env('USE_CACHE')) is True:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',

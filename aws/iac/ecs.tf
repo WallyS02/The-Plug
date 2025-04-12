@@ -13,8 +13,7 @@ module "ecs" {
   task_security_groups           = [module.ecs_security_group.id]
   alarm_topic_arn                = module.alarm_topic.arn
   db_endpoint                    = module.rds.endpoint
-  cache_endpoint                 = module.elasticache.primary_endpoint
-  cache_auth_token               = module.elasticache.auth_token
+  cache_endpoint                 = "redis://:${module.elasticache.auth_token}@${module.elasticache.primary_endpoint}:${module.elasticache.port}/1"
   db_name                        = module.rds.db_name
   db_user                        = module.rds.user
   db_password_secret_arn         = module.secrets_rds.arn

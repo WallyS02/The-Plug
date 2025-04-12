@@ -22,7 +22,7 @@ resource "aws_route53_record" "records" {
     content {
       name                   = alias.value.name
       zone_id                = alias.value.zone_id
-      evaluate_target_health = lookup(alias.value, "evaluate_target_health", false)
+      evaluate_target_health = alias.value.evaluate_target_health
     }
   }
 

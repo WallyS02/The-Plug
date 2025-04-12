@@ -10,7 +10,7 @@ environ.Env.read_env()
 
 @receiver([post_save, post_delete], sender=AppUser)
 def invalidate_user_cache(sender, instance, **kwargs):
-    if env('USE_CACHE') is True:
+    if bool(env('USE_CACHE')) is True:
         created = kwargs.get("created", None)
         if created is not None and not created:
             cache.delete_pattern(f'*user_get_{instance.id}*')
@@ -18,7 +18,7 @@ def invalidate_user_cache(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender=Plug)
 def invalidate_plug_cache(sender, instance, **kwargs):
-    if env('USE_CACHE') is True:
+    if bool(env('USE_CACHE')) is True:
         created = kwargs.get("created", None)
         if created is not None and not created:
             cache.delete_pattern(f'*plug_get_{instance.id}*')
@@ -27,7 +27,7 @@ def invalidate_plug_cache(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender=Location)
 def invalidate_location_cache(sender, instance, **kwargs):
-    if env('USE_CACHE') is True:
+    if bool(env('USE_CACHE')) is True:
         created = kwargs.get("created", None)
         if created is not None and not created:
             cache.delete_pattern(f'*location_get_{instance.id}*')
@@ -36,7 +36,7 @@ def invalidate_location_cache(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender=Meeting)
 def invalidate_meeting_cache(sender, instance, **kwargs):
-    if env('USE_CACHE') is True:
+    if bool(env('USE_CACHE')) is True:
         created = kwargs.get("created", None)
         if created is not None and not created:
             cache.delete_pattern(f'*meeting_get_{instance.id}*')
@@ -46,7 +46,7 @@ def invalidate_meeting_cache(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender=HerbOffer)
 def invalidate_herb_offer_cache(sender, instance, **kwargs):
-    if env('USE_CACHE') is True:
+    if bool(env('USE_CACHE')) is True:
         created = kwargs.get("created", None)
         if created is not None and not created:
             cache.delete_pattern(f'*herb_offer_get_{instance.id}*')
@@ -56,5 +56,5 @@ def invalidate_herb_offer_cache(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender=Herb)
 def invalidate_herb_cache(sender, instance, **kwargs):
-    if env('USE_CACHE') is True:
+    if bool(env('USE_CACHE')) is True:
         cache.delete_pattern('*herb_list*')

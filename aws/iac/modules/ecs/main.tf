@@ -56,11 +56,11 @@ resource "aws_ecs_task_definition" "main" {
     }]
     environment = [
       { name = "DB_HOST", value = var.db_endpoint },
-      { name = "CACHE_ENDPOINT", value = "redis://${var.cache_auth_token}@${element(split("://", var.cache_endpoint), 1)}" },
-      { name = "USE_CACHE", value = 1 },
+      { name = "CACHE_ENDPOINT", value = var.cache_endpoint },
+      { name = "USE_CACHE", value = "1" },
       { name = "WEB_APP_URL", value = "http://localhost" },
       { name = "ALLOWED_HOSTS", value = "*" },
-      { name = "DEBUG", value = 1 },
+      { name = "DEBUG", value = "1" },
       { name = "DB_NAME", value = var.db_name },
       { name = "DB_USER", value = var.db_user }
     ]

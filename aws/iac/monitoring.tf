@@ -63,7 +63,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_log_size" {
   namespace           = "AWS/Logs"
   period              = 86400 # 24h
   statistic           = "Maximum"
-  threshold           = 3e9 # 3 GB
+  threshold           = 3221225472 # 3 GB
   alarm_description   = "Log group approaching 5GB limit"
   alarm_actions       = [module.alarm_topic.arn]
   dimensions = {
