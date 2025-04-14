@@ -65,7 +65,7 @@ resource "aws_instance" "nat" {
 
   ebs_block_device {
     device_name           = "/dev/xvda"
-    volume_size           = 2
+    volume_size           = 8
     volume_type           = "gp3"
     delete_on_termination = true
     encrypted             = true
@@ -100,7 +100,7 @@ resource "aws_security_group" "nat_security_group" {
     from_port       = 0
     to_port         = 0
     protocol        = "-1"
-    cidr_blocks     = aws_subnet.private.*.cidr_block
+    cidr_blocks     = concat(aws_subnet.private[*].cidr_block, [aws_subnet.public[1].cidr_block])
     security_groups = var.nat_instance_ingress_security_groups
   }
 

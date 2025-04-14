@@ -23,7 +23,7 @@ variable "redis_version" {
 variable "redis_family" {
   description = "Redis parameter family"
   type        = string
-  default     = "redis7.x"
+  default     = "redis7"
 }
 
 variable "port" {

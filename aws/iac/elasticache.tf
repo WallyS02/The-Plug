@@ -13,8 +13,7 @@ module "elasticache" {
   redis_security_group  = [module.elasticache_security_group.id]
 
   redis_parameters = [
-    { name = "maxmemory-policy", value = "volatile-lru" },
-    { name = "maxmemory", value = "419430400" } # 400 MB for cache.t3.micro
+    { name = "maxmemory-policy", value = "volatile-lru" }
   ]
 
   alarm_topic_arn = module.alarm_topic.arn

@@ -8,32 +8,16 @@ module "rds" {
   instance_class          = "db.t3.micro"
   allocated_storage       = 20
   storage_type            = "gp3"
-  db_name                 = "the-plug-db-postgres"
-  username                = "admin"
+  db_name                 = "postgres"
+  username                = "plug"
   password                = module.secrets_rds.initial_value
   port                    = 5432
   subnet_ids              = module.vpc.private_subnet_ids
   backup_retention_period = 1
   backup_window           = "02:00-03:00"
-  maintenance_window      = "Sun:02:00-Sun:03:00"
+  maintenance_window      = "Sun:03:00-Sun:04:00"
 
-  parameters = [
-    {
-      name         = "shared_buffers"
-      value        = "256MB"
-      apply_method = "immediate"
-    },
-    {
-      name         = "max_connections"
-      value        = "100"
-      apply_method = "immediate"
-    },
-    {
-      name         = "work_mem"
-      value        = "8MB"
-      apply_method = "immediate"
-    }
-  ]
+  parameters = []
 
   rds_security_group           = [module.rds_security_group.id]
   deletion_protection          = false

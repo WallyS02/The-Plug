@@ -52,7 +52,18 @@ resource "aws_iam_role" "ec2_instance_role" {
         Effect    = "Allow"
         Principal = { Service = "ec2.amazonaws.com" }
         Action    = "sts:AssumeRole"
-      },
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "ssm_parameter_access" {
+  name = "ssm-parameters-access"
+  role = aws_iam_role.ec2_instance_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
       {
         Effect   = "Allow"
         Action   = "ssm:GetParameter"

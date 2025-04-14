@@ -1,7 +1,7 @@
 module "s3_frontend_bucket" {
   source = "./modules/s3"
 
-  bucket_name         = "frontend-bucket"
+  bucket_name         = "the-plug-frontend-bucket"
   versioning_enabled  = true
   mfa_delete_enabled  = false
   force_destroy       = true

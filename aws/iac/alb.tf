@@ -10,7 +10,7 @@ module "alb" {
   enable_http                = true
   enable_https               = true
   acm_certificate_arn        = module.acm_alb.certificate_arn
-  enable_deletion_protection = true
+  enable_deletion_protection = false
   enable_access_logs         = false
   health_check_path          = "/api/herb/list/"
 

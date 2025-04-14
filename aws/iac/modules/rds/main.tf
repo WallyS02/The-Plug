@@ -56,7 +56,7 @@ resource "aws_db_instance" "main" {
   final_snapshot_identifier = var.final_snapshot_identifier
 
   performance_insights_enabled          = var.performance_insights_enabled
-  performance_insights_retention_period = var.performance_insights_retention_period
+  performance_insights_retention_period = var.performance_insights_enabled ? var.performance_insights_retention_period : null
 
   enabled_cloudwatch_logs_exports = var.cloud_watch_log_exports
 

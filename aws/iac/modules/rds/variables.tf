@@ -122,7 +122,7 @@ variable "performance_insights_retention_period" {
 variable "cloud_watch_log_exports" {
   description = "Log list to export to CloudWatch"
   type        = list(string)
-  default     = ["error"]
+  default     = ["postgresql"]
 }
 
 variable "skip_final_snapshot" {
