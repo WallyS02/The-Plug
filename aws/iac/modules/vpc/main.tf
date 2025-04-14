@@ -56,7 +56,7 @@ resource "aws_subnet" "private" {
 
 # NAT Instance
 resource "aws_instance" "nat" {
-  ami                         = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI
+  ami                         = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI eu-north-1
   instance_type               = "t3.micro"
   subnet_id                   = aws_subnet.public[0].id
   associate_public_ip_address = true
@@ -85,9 +85,9 @@ resource "aws_instance" "nat" {
               sudo service iptables save
               EOF
 
-  tags = {
+  tags = merge(var.tags, {
     Name = "nat-instance"
-  }
+  })
 }
 
 resource "aws_security_group" "nat_security_group" {

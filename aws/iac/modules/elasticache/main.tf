@@ -61,7 +61,5 @@ resource "aws_cloudwatch_metric_alarm" "redis_high_evictions" {
   }
   alarm_actions = [var.alarm_topic_arn]
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = var.tags
 }

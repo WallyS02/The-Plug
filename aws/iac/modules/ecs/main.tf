@@ -52,7 +52,6 @@ resource "aws_ecs_task_definition" "main" {
     essential = true
     portMappings = [{
       containerPort = var.container_port
-      hostPort      = var.host_port
     }]
     environment = [
       { name = "DB_HOST", value = var.db_endpoint },
@@ -184,7 +183,5 @@ resource "aws_cloudwatch_metric_alarm" "ecs_no_tasks" {
   }
   alarm_actions = [var.alarm_topic_arn]
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = var.tags
 }

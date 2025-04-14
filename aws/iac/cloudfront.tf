@@ -3,7 +3,6 @@ module "cloudfront" {
 
   distribution_name = "the-plug-cdn"
   enabled           = true
-  aliases           = [module.route53.domain_name]
 
   origins = {
     s3_origin = {
@@ -54,7 +53,7 @@ module "cloudfront" {
   depends_on = [module.acm_cloudfront]
 }
 
-resource "null_resource" "invalidation" {
+/*resource "null_resource" "invalidation" {
   triggers = { # Run with every terraform apply
     version = timestamp()
   }
@@ -66,4 +65,4 @@ resource "null_resource" "invalidation" {
         --paths "/*"
     EOT
   }
-}
+}*/

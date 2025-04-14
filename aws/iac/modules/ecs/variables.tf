@@ -26,12 +26,6 @@ variable "container_port" {
   default     = 8080
 }
 
-variable "host_port" {
-  description = "Host port bound to container"
-  type        = number
-  default     = 8080
-}
-
 variable "db_endpoint" {
   description = "Database endpoint"
   type        = string

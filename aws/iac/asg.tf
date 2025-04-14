@@ -2,7 +2,7 @@ module "asg" {
   source = "./modules/asg"
 
   name_prefix         = "the-plug"
-  ami_id              = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI
+  ami_id              = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI eu-north-1
   instance_type       = "t3.micro"
   security_group_ids  = [module.asg_security_group.id]
   vpc_zone_identifier = module.vpc.private_subnet_ids
@@ -11,7 +11,7 @@ module "asg" {
   min_size         = 1
   max_size         = 2
 
-  target_group_arns         = [module.alb.target_group_arn]
+  # target_group_arns         = [module.alb.target_group_arn]
   health_check_type         = "ELB"
   health_check_grace_period = 300
 

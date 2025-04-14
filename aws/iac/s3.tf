@@ -4,7 +4,7 @@ module "s3_frontend_bucket" {
   bucket_name         = "frontend-bucket"
   versioning_enabled  = true
   mfa_delete_enabled  = false
-  force_destroy       = false
+  force_destroy       = true
   object_lock_enabled = false
 
   logging_enabled = false

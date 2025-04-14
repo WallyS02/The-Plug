@@ -135,7 +135,5 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_errors" {
   }
   alarm_actions = [var.alarm_topic_arn]
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = var.tags
 }

@@ -80,9 +80,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
   }
   alarm_actions = [var.alarm_topic_arn]
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_high_connections" {
@@ -99,7 +97,5 @@ resource "aws_cloudwatch_metric_alarm" "rds_high_connections" {
   }
   alarm_actions = [var.alarm_topic_arn]
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = var.tags
 }

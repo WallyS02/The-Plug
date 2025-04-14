@@ -4,10 +4,11 @@ module "rds" {
   identifier              = "the-plug-db"
   engine                  = "postgres"
   engine_version          = "17.4"
+  parameters_group_family = "postgres17"
   instance_class          = "db.t3.micro"
   allocated_storage       = 20
   storage_type            = "gp3"
-  db_name                 = "postgres"
+  db_name                 = "the-plug-db-postgres"
   username                = "admin"
   password                = module.secrets_rds.initial_value
   port                    = 5432
@@ -34,7 +35,6 @@ module "rds" {
     }
   ]
 
-  parameters_group_family      = "postgres17"
   rds_security_group           = [module.rds_security_group.id]
   deletion_protection          = false
   performance_insights_enabled = false

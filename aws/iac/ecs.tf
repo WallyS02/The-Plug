@@ -1,19 +1,19 @@
 module "ecs" {
   source = "./modules/ecs"
 
-  name                           = "the-plug"
-  container_name                 = "the-plug-backend"
-  ecr_repository_url             = module.ecr.repository_url
-  image_tag                      = "latest"
-  container_port                 = 8080
-  host_port                      = 8080
-  target_group_arn               = module.alb.target_group_arn
-  asg_arn                        = module.asg.asg_arn
-  task_subnets                   = module.vpc.private_subnet_ids
-  task_security_groups           = [module.ecs_security_group.id]
-  alarm_topic_arn                = module.alarm_topic.arn
-  db_endpoint                    = module.rds.endpoint
-  cache_endpoint                 = "redis://:${module.elasticache.auth_token}@${module.elasticache.primary_endpoint}:${module.elasticache.port}/1"
+  name                 = "the-plug"
+  container_name       = "the-plug-backend"
+  ecr_repository_url   = module.ecr.repository_url
+  image_tag            = "latest"
+  container_port       = 8080
+  target_group_arn     = module.alb.target_group_arn
+  asg_arn              = module.asg.asg_arn
+  task_subnets         = module.vpc.private_subnet_ids
+  task_security_groups = [module.ecs_security_group.id]
+  alarm_topic_arn      = module.alarm_topic.arn
+  db_endpoint          = module.rds.endpoint
+  # cache_endpoint                 = "redis://:${module.elasticache.auth_token}@${module.elasticache.primary_endpoint}:${module.elasticache.port}/1"
+  cache_endpoint                 = "redis://${module.elasticache.primary_endpoint}:${module.elasticache.port}/1"
   db_name                        = module.rds.db_name
   db_user                        = module.rds.user
   db_password_secret_arn         = module.secrets_rds.arn

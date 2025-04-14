@@ -1,33 +1,31 @@
 # Log groups
 locals {
   log_retention = 1
+
+  tags = {
+    Environment = "dev"
+  }
 }
 
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${module.ecs.name}"
   retention_in_days = local.log_retention
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = local.tags
 }
 
 resource "aws_cloudwatch_log_group" "rds" {
   name              = "/aws/rds/${module.rds.identifier}/${module.rds.db_name}"
   retention_in_days = local.log_retention
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = local.tags
 }
 
 resource "aws_cloudwatch_log_group" "cloudfront" {
   name              = "/aws/cloudfront/${module.cloudfront.distribution_id}"
   retention_in_days = local.log_retention
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = local.tags
 }
 
 # Log policies
@@ -40,7 +38,8 @@ resource "aws_cloudwatch_log_resource_policy" "global" {
       Principal = {
         Service = [
           "ecs.amazonaws.com",
-          "rds.amazonaws.com"
+          "rds.amazonaws.com",
+          "cloudfront.amazonaws.com"
         ]
       },
       Action = [
@@ -70,9 +69,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_log_size" {
     LogGroupName = aws_cloudwatch_log_group.cloudfront.name
   }
 
-  tags = {
-    Environment = "dev"
-  }
+  tags = local.tags
 }
 
 # Dashboards
@@ -255,7 +252,7 @@ resource "aws_cloudwatch_dashboard" "app_performance" {
         properties = {
           query  = "SOURCE '/ecs/${module.ecs.name}' | fields @timestamp, @message\n| filter @message like /ERROR/"
           region = var.region,
-          title  = "Database Error Logs",
+          title  = "Backend Error Logs",
           view   = "table"
         }
       },
