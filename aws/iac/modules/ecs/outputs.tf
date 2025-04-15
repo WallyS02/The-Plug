@@ -7,8 +7,3 @@ output "name" {
   description = "ECS name"
   value       = var.name
 }
-
-output "ecs_no_tasks_alarm_arn" {
-  description = "ECS no tasks alarm ARN"
-  value       = aws_cloudwatch_metric_alarm.ecs_no_tasks.arn
-}

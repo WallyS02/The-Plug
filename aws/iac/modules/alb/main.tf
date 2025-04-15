@@ -5,6 +5,7 @@ resource "aws_lb" "main" {
   load_balancer_type = "application"
   security_groups    = var.security_groups
   subnets            = var.subnet_ids
+  ip_address_type    = "dualstack-without-public-ipv4"
 
   enable_deletion_protection = var.enable_deletion_protection
 

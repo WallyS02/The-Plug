@@ -16,8 +16,6 @@ module "elasticache" {
     { name = "maxmemory-policy", value = "volatile-lru" }
   ]
 
-  alarm_topic_arn = module.alarm_topic.arn
-
   tags = {
     Environment = "dev"
   }
@@ -36,7 +34,7 @@ module "elasticache_security_group" {
       to_port         = 6379
       description     = "Redis cache access on port 6379"
       protocol        = "tcp"
-      security_groups = [module.asg.security_group_id, module.ecs_security_group.id]
+      security_groups = [module.asg.security_group_id]
     }
   ]
 
@@ -68,7 +66,7 @@ resource "random_password" "elasticache_password" {
   min_upper        = 1
   min_lower        = 1
   min_numeric      = 1
-  override_special = "!#%^&*"
+  override_special = "!&#$^<>-"
 }
 
 module "secrets_elasticache" {

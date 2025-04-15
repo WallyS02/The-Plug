@@ -11,8 +11,7 @@ module "asg" {
   min_size         = 1
   max_size         = 2
 
-  # target_group_arns         = [module.alb.target_group_arn]
-  health_check_type         = "ELB"
+  health_check_type         = "EC2"
   health_check_grace_period = 300
 
   enable_monitoring = false
@@ -26,7 +25,6 @@ module "asg" {
   }]
 
   enable_scaling_policies = true
-  scaling_adjustment      = 1
 
   wait_for_capacity_timeout   = "5m"
   cw_agent_ssm_parameter_name = var.cw_agent_ssm_parameter_name
@@ -37,15 +35,14 @@ module "asg" {
     echo ECS_CLUSTER=${module.ecs.cluster_name} >> /etc/ecs/ecs.config
     # echo "ECS_ENABLE_CONTAINER_METRICS=true" >> /etc/ecs/ecs.config
     # SSM Agent
+    yum update -y
+    yum upgrade -y
     yum install -y amazon-ssm-agent
     systemctl enable amazon-ssm-agent && systemctl start amazon-ssm-agent
     # CW Agent
     set -e
     exec > >(tee /var/log/user-data.log|logger -t user-data-extra -s 2>/dev/console) 2>&1
-    yum update -y
-    yum upgrade -y
-    wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
-    rpm -U ./amazon-cloudwatch-agent.rpm
+    yum install -y amazon-cloudwatch-agent
     /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
     -a fetch-config \
     -m ec2 \

@@ -63,13 +63,3 @@ resource "aws_security_group_rule" "alb_asg_access" {
   source_security_group_id = module.asg.security_group_id
   security_group_id        = module.alb_security_group.id
 }
-
-resource "aws_security_group_rule" "alb_ecs_access" {
-  type                     = "egress"
-  description              = "Outbound to ECS"
-  from_port                = 8080
-  to_port                  = 8080
-  protocol                 = "tcp"
-  source_security_group_id = module.ecs_security_group.id
-  security_group_id        = module.alb_security_group.id
-}

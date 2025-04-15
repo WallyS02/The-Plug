@@ -71,11 +71,6 @@ variable "target_group_arn" {
   type        = string
 }
 
-variable "alarm_topic_arn" {
-  description = "Alarm topic ARN"
-  type        = string
-}
-
 variable "log_group" {
   description = "Log group for ECS"
   type        = string
@@ -127,16 +122,6 @@ variable "asg_arn" {
   type        = string
 }
 
-variable "task_subnets" {
-  description = "Subnets associated with the task"
-  type        = list(string)
-}
-
-variable "task_security_groups" {
-  description = "Security groups associated with the task"
-  type        = list(string)
-}
-
 variable "cpu_utilization_threshold" {
   description = "CPU utilization threshold"
   type        = number
@@ -144,9 +129,27 @@ variable "cpu_utilization_threshold" {
 }
 
 variable "memory_utilization_threshold" {
-  description = "memory utilization threshold"
+  description = "Memory utilization threshold"
   type        = number
-  default     = 90
+  default     = 70
+}
+
+variable "minimum_capacity" {
+  description = "Minimum number of running containers"
+  type        = number
+  default     = 1
+}
+
+variable "maximum_capacity" {
+  description = "Maximum number of running containers"
+  type        = number
+  default     = 3
+}
+
+variable "scaling_cooldown" {
+  description = "Time in seconds between scaling actions"
+  type        = number
+  default     = 300
 }
 
 variable "tags" {

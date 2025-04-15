@@ -23,11 +23,6 @@ output "low_storage_alarm_arn" {
   value       = aws_cloudwatch_metric_alarm.rds_low_storage.arn
 }
 
-output "high_connections_alarm_arn" {
-  description = "High Connections Alarm ARN"
-  value       = aws_cloudwatch_metric_alarm.rds_high_connections.arn
-}
-
 output "user" {
   description = "Database username"
   value       = aws_db_instance.main.username

@@ -48,12 +48,6 @@ variable "max_size" {
   default     = 2
 }
 
-variable "target_group_arns" {
-  description = "Target group ARN list"
-  type        = list(string)
-  default     = []
-}
-
 variable "health_check_type" {
   description = "Health check type (EC2/ELB)"
   type        = string
@@ -102,34 +96,16 @@ variable "enable_scaling_policies" {
   default     = false
 }
 
-variable "scaling_adjustment" {
-  description = "Number of instances to add/delete during scaling"
-  type        = number
-  default     = 1
-}
-
-variable "cpu_utilization_high_threshold" {
-  description = "High CPU utilization threshold"
+variable "cpu_utilization_threshold" {
+  description = "CPU utilization threshold"
   type        = number
   default     = 70
 }
 
-variable "cpu_utilization_low_threshold" {
-  description = "Low CPU utilization threshold"
+variable "memory_utilization_threshold" {
+  description = "Memory utilization threshold"
   type        = number
-  default     = 30
-}
-
-variable "memory_utilization_high_threshold" {
-  description = "High memory utilization threshold"
-  type        = number
-  default     = 90
-}
-
-variable "memory_utilization_low_threshold" {
-  description = "Low memory utilization threshold"
-  type        = number
-  default     = 10
+  default     = 70
 }
 
 variable "wait_for_capacity_timeout" {

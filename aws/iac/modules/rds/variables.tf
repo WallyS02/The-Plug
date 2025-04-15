@@ -154,12 +154,6 @@ variable "low_storage_threshold" {
   default     = 4294967296 # 4GB
 }
 
-variable "high_connections_amount" {
-  description = "High number of database connections threshold"
-  type        = number
-  default     = 80
-}
-
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

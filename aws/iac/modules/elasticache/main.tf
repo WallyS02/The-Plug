@@ -45,21 +45,3 @@ resource "aws_elasticache_replication_group" "main" {
     Name = var.name
   })
 }
-
-# CloudWatch alarms
-resource "aws_cloudwatch_metric_alarm" "redis_high_evictions" {
-  alarm_name          = "Redis-High-Evictions"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  metric_name         = "Evictions"
-  namespace           = "AWS/ElastiCache"
-  period              = 300
-  statistic           = "Average"
-  threshold           = var.high_evictions_threshold
-  dimensions = {
-    CacheClusterId = aws_elasticache_replication_group.main.id
-  }
-  alarm_actions = [var.alarm_topic_arn]
-
-  tags = var.tags
-}

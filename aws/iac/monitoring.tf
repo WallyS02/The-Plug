@@ -14,13 +14,6 @@ resource "aws_cloudwatch_log_group" "ecs" {
   tags = local.tags
 }
 
-resource "aws_cloudwatch_log_group" "rds" {
-  name              = "/aws/rds/${module.rds.identifier}/${module.rds.db_name}"
-  retention_in_days = local.log_retention
-
-  tags = local.tags
-}
-
 resource "aws_cloudwatch_log_group" "cloudfront" {
   name              = "/aws/cloudfront/${module.cloudfront.distribution_id}"
   retention_in_days = local.log_retention
@@ -51,27 +44,6 @@ resource "aws_cloudwatch_log_resource_policy" "global" {
   })
 }
 
-# CloudFront log storage size exceeded alarm
-resource "aws_cloudwatch_metric_alarm" "cloudfront_log_size" {
-  alarm_name          = "${aws_cloudwatch_log_group.cloudfront.name}-Size-Alarm"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  datapoints_to_alarm = 2
-  treat_missing_data  = "notBreaching"
-  metric_name         = "StoredBytes"
-  namespace           = "AWS/Logs"
-  period              = 86400 # 24h
-  statistic           = "Maximum"
-  threshold           = 3221225472 # 3 GB
-  alarm_description   = "Log group approaching 5GB limit"
-  alarm_actions       = [module.alarm_topic.arn]
-  dimensions = {
-    LogGroupName = aws_cloudwatch_log_group.cloudfront.name
-  }
-
-  tags = local.tags
-}
-
 # Dashboards
 resource "aws_cloudwatch_dashboard" "global" {
   dashboard_name = "Global-Health"
@@ -84,9 +56,10 @@ resource "aws_cloudwatch_dashboard" "global" {
         properties = {
           metrics = [
             ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", module.asg.asg_name],
-            ["CWAgent", "mem_used_percent", { label : "Memory" }]
+            ["CWAgent", "mem_used_percent", "AutoScalingGroupName", module.asg.asg_name]
           ],
           view   = "timeSeries",
+          region = var.region,
           title  = "EC2 Resources",
           period = 300 # 5-min aggregation
         }
@@ -102,8 +75,9 @@ resource "aws_cloudwatch_dashboard" "global" {
             ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", module.alb.arn],
             ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", module.alb.arn]
           ],
-          view  = "timeSeries",
-          title = "ALB Traffic"
+          view   = "timeSeries",
+          region = var.region,
+          title  = "ALB Traffic"
         }
       },
 
@@ -116,8 +90,9 @@ resource "aws_cloudwatch_dashboard" "global" {
             ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", module.rds.identifier],
             ["AWS/RDS", "FreeStorageSpace", "DBInstanceIdentifier", module.rds.identifier]
           ],
-          view  = "timeSeries",
-          title = "Database Health"
+          view   = "timeSeries",
+          region = var.region,
+          title  = "Database Health"
         }
       },
 
@@ -130,8 +105,9 @@ resource "aws_cloudwatch_dashboard" "global" {
             ["AWS/CloudFront", "5xxErrorRate", "DistributionId", module.cloudfront.distribution_id],
             ["AWS/CloudFront", "CacheHitRate", "DistributionId", module.cloudfront.distribution_id]
           ],
-          view  = "timeSeries",
-          title = "CDN Performance"
+          view   = "timeSeries",
+          region = "us-east-1",
+          title  = "CDN Performance"
         }
       },
 
@@ -143,8 +119,9 @@ resource "aws_cloudwatch_dashboard" "global" {
           metrics = [
             ["AWS/S3", "BucketSizeBytes", "BucketName", module.s3_frontend_bucket.name, "StorageType", "StandardStorage"]
           ],
-          view  = "singleValue",
-          title = "S3 Usage"
+          view   = "singleValue",
+          region = var.region,
+          title  = "S3 Usage"
         }
       },
 
@@ -155,7 +132,6 @@ resource "aws_cloudwatch_dashboard" "global" {
           title = "Active Alarms",
           alarms = [
             module.cloudfront.cloudfront_errors_alarm_arn,
-            module.rds.high_connections_alarm_arn,
             module.rds.low_storage_alarm_arn
           ]
         }
@@ -187,8 +163,9 @@ resource "aws_cloudwatch_dashboard" "app_performance" {
             ["AWS/ECS", "RunningTaskCount", "ClusterName", module.ecs.cluster_name],
             ["AWS/ECS", "MemoryReservation", "ClusterName", module.ecs.cluster_name]
           ],
-          view  = "timeSeries",
-          title = "ECS Tasks"
+          view   = "timeSeries",
+          region = var.region,
+          title  = "ECS Tasks"
         }
       },
 
@@ -200,7 +177,17 @@ resource "aws_cloudwatch_dashboard" "app_performance" {
             ["ECS/ContainerInsights", "CpuUtilized", "ClusterName", module.ecs.cluster_name],
             ["ECS/ContainerInsights", "MemoryUtilized", "ClusterName", module.ecs.cluster_name]
           ],
-          view  = "gauge",
+          view   = "gauge",
+          region = var.region,
+          "yAxis" : {
+            "left" : {
+              "min" : 0,
+              "max" : 100
+            },
+            "right" : {
+              "min" : 50
+            }
+          }
           title = "Container Resources"
         }
       },
@@ -212,7 +199,8 @@ resource "aws_cloudwatch_dashboard" "app_performance" {
           metrics = [
             ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", module.alb.arn]
           ],
-          view = "timeSeries",
+          region = var.region,
+          view   = "timeSeries",
           annotations = {
             horizontal = [{
               label = "SLA Threshold",
@@ -229,8 +217,9 @@ resource "aws_cloudwatch_dashboard" "app_performance" {
           metrics = [
             ["AWS/CloudFront", "CacheHitRate", "DistributionId", module.cloudfront.distribution_id]
           ],
-          view  = "pie",
-          title = "Cache Efficiency"
+          view   = "pie",
+          region = "us-east-1",
+          title  = "Cache Efficiency"
         }
       },
 
@@ -240,8 +229,7 @@ resource "aws_cloudwatch_dashboard" "app_performance" {
         properties = {
           title = "Active Alarms",
           alarms = [
-            module.cloudfront.cloudfront_errors_alarm_arn,
-            module.ecs.ecs_no_tasks_alarm_arn
+            module.cloudfront.cloudfront_errors_alarm_arn
           ]
         }
       },
@@ -273,8 +261,9 @@ resource "aws_cloudwatch_dashboard" "data_layer" {
             ["AWS/RDS", "WriteLatency", "DBInstanceIdentifier", module.rds.identifier],
             ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", module.rds.identifier]
           ],
-          view  = "timeSeries",
-          title = "RDS Performance"
+          view   = "timeSeries",
+          region = var.region,
+          title  = "RDS Performance"
         }
       },
 
@@ -287,8 +276,9 @@ resource "aws_cloudwatch_dashboard" "data_layer" {
             ["AWS/ElastiCache", "CurrConnections", "CacheClusterId", module.elasticache.id],
             ["AWS/ElastiCache", "Evictions", "CacheClusterId", module.elasticache.id]
           ],
-          view  = "timeSeries",
-          title = "Redis Metrics"
+          view   = "timeSeries",
+          region = var.region,
+          title  = "Redis Metrics"
         }
       },
 
@@ -298,9 +288,7 @@ resource "aws_cloudwatch_dashboard" "data_layer" {
         properties = {
           title = "Active Alarms",
           alarms = [
-            module.rds.high_connections_alarm_arn,
-            module.rds.low_storage_alarm_arn,
-            module.elasticache.high_evictions_alarm_arn
+            module.rds.low_storage_alarm_arn
           ]
         }
       },

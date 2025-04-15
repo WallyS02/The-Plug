@@ -1,8 +1,9 @@
 # Secret creation
 resource "aws_secretsmanager_secret" "this" {
-  name        = var.name
-  description = var.description
-  kms_key_id  = null
+  name                    = var.name
+  description             = var.description
+  kms_key_id              = null
+  recovery_window_in_days = 0
 
   tags = var.tags
 }

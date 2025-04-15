@@ -1,8 +1,9 @@
 # VPC configuration
 resource "aws_vpc" "main" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_support   = true # Enables DNS name resolution within a VPC
-  enable_dns_hostnames = true # Automatic hostname assignment for EC2 instances
+  cidr_block                       = var.vpc_cidr
+  assign_generated_ipv6_cidr_block = true
+  enable_dns_support               = true # Enables DNS name resolution within a VPC
+  enable_dns_hostnames             = true # Automatic hostname assignment for EC2 instances
 
   tags = merge(var.tags, {
     Name = "vpc"
@@ -28,12 +29,20 @@ resource "aws_internet_gateway" "main" {
 }
 
 # Public Subnets
+locals {
+  public_subnets_ipv6_cidrs = [
+    cidrsubnet(aws_vpc.main.ipv6_cidr_block, 8, 0),
+    cidrsubnet(aws_vpc.main.ipv6_cidr_block, 8, 1)
+  ]
+}
+
 resource "aws_subnet" "public" {
   count             = length(var.public_subnets_cidrs)
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.public_subnets_cidrs[count.index]
+  ipv6_cidr_block   = local.public_subnets_ipv6_cidrs[count.index]
   availability_zone = var.azs[count.index] # Physical location of the subnet
-  # map_public_ip_on_launch = true                 # Automatically assigns a public IP to instances running in this subnet
+  # map_public_ip_on_launch = true         # Automatically assigns a public IP to instances running in this subnet
 
   tags = merge(var.tags, {
     Name = "public-${substr(var.azs[count.index], -1, 1)}"
@@ -120,9 +129,13 @@ resource "aws_security_group" "nat_security_group" {
 # Route Tables
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
-  route { # Internet Gateway routing
+  route { # Internet Gateway IPv4 routing
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
+  }
+  route { # Internet Gateway IPv6 routing
+    ipv6_cidr_block = "::/0"
+    gateway_id      = aws_internet_gateway.main.id
   }
 
   tags = merge(var.tags, {

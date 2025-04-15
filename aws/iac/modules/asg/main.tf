@@ -112,7 +112,6 @@ resource "aws_autoscaling_group" "main" {
   max_size            = var.max_size
   min_size            = var.min_size
   vpc_zone_identifier = var.vpc_zone_identifier
-  target_group_arns   = var.target_group_arns
 
   launch_template {
     id      = aws_launch_template.main.id
@@ -124,7 +123,7 @@ resource "aws_autoscaling_group" "main" {
   wait_for_capacity_timeout = var.wait_for_capacity_timeout
 
   dynamic "tag" {
-    for_each = merge(var.tags, { "Name" = "${var.name_prefix}-asg" })
+    for_each = merge(var.tags, { "Name" = "${var.name_prefix}-asg" }, { "AmazonECSManaged" = "true" })
     content {
       key                 = tag.key
       value               = tag.value
@@ -145,97 +144,36 @@ resource "aws_autoscaling_group" "main" {
 }
 
 # Scaling Policies
-resource "aws_autoscaling_policy" "scale_up" {
+resource "aws_autoscaling_policy" "cpu" {
   count                  = var.enable_scaling_policies ? 1 : 0
-  name                   = "${var.name_prefix}-scale-up"
-  scaling_adjustment     = var.scaling_adjustment
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  name                   = "cpu-scaling"
+  policy_type            = "TargetTrackingScaling"
   autoscaling_group_name = aws_autoscaling_group.main.name
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = var.cpu_utilization_threshold
+  }
 }
 
-resource "aws_autoscaling_policy" "scale_down" {
+resource "aws_autoscaling_policy" "memory" {
   count                  = var.enable_scaling_policies ? 1 : 0
-  name                   = "${var.name_prefix}-scale-down"
-  scaling_adjustment     = -var.scaling_adjustment
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  name                   = "memory-scaling"
+  policy_type            = "TargetTrackingScaling"
   autoscaling_group_name = aws_autoscaling_group.main.name
-}
 
-# CloudWatch alarms
-resource "aws_cloudwatch_metric_alarm" "high_cpu" {
-  count               = var.enable_scaling_policies ? 1 : 0
-  alarm_name          = "${var.name_prefix}-high-cpu"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 120
-  statistic           = "Average"
-  threshold           = var.cpu_utilization_high_threshold
-  alarm_actions       = [aws_autoscaling_policy.scale_up[0].arn]
-
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.main.name
+  target_tracking_configuration {
+    customized_metric_specification {
+      metric_name = "MemoryUtilization"
+      namespace   = "AWS/EC2"
+      statistic   = "Average"
+      metric_dimension {
+        name  = "AutoScalingGroupName"
+        value = aws_autoscaling_group.main.name
+      }
+    }
+    target_value = var.memory_utilization_threshold
   }
-
-  tags = var.tags
-}
-
-resource "aws_cloudwatch_metric_alarm" "low_cpu" {
-  count               = var.enable_scaling_policies ? 1 : 0
-  alarm_name          = "${var.name_prefix}-low-cpu"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 120
-  statistic           = "Average"
-  threshold           = var.cpu_utilization_low_threshold
-  alarm_actions       = [aws_autoscaling_policy.scale_down[0].arn]
-
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.main.name
-  }
-
-  tags = var.tags
-}
-
-resource "aws_cloudwatch_metric_alarm" "high_memory" {
-  count               = var.enable_scaling_policies ? 1 : 0
-  alarm_name          = "${var.name_prefix}-high-memory"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "MemoryUtilization"
-  namespace           = "AWS/EC2"
-  period              = 120
-  statistic           = "Average"
-  threshold           = var.memory_utilization_high_threshold
-  alarm_actions       = [aws_autoscaling_policy.scale_up[0].arn]
-
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.main.name
-  }
-
-  tags = var.tags
-}
-
-resource "aws_cloudwatch_metric_alarm" "low_memory" {
-  count               = var.enable_scaling_policies ? 1 : 0
-  alarm_name          = "${var.name_prefix}-low-memory"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "MemoryUtilization"
-  namespace           = "AWS/EC2"
-  period              = 120
-  statistic           = "Average"
-  threshold           = var.memory_utilization_low_threshold
-  alarm_actions       = [aws_autoscaling_policy.scale_down[0].arn]
-
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.main.name
-  }
-
-  tags = var.tags
 }

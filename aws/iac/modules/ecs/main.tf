@@ -9,6 +9,21 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
+# ECS capacity provider
+resource "aws_ecs_capacity_provider" "asg" {
+  name = "${var.name}-capacity-provider"
+
+  auto_scaling_group_provider {
+    auto_scaling_group_arn         = var.asg_arn
+    managed_termination_protection = "ENABLED"
+
+    managed_scaling {
+      status          = "ENABLED"
+      target_capacity = 100
+    }
+  }
+}
+
 resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_providers" {
   cluster_name = aws_ecs_cluster.main.name
 
@@ -16,29 +31,20 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_providers" {
 
   default_capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.asg.name
-  }
-}
-
-# ECS capacity provider
-resource "aws_ecs_capacity_provider" "asg" {
-  name = "${var.name}-capacity-provider"
-
-  auto_scaling_group_provider {
-    auto_scaling_group_arn = var.asg_arn
-
-    managed_scaling {
-      status = "DISABLED"
-    }
+    weight            = 100
+    base              = 1
   }
 }
 
 # ECS task definition
 resource "aws_ecs_task_definition" "main" {
-  family             = "${var.name}-task"
-  network_mode       = "awsvpc"
-  cpu                = var.task_cpu
-  memory             = var.task_memory
-  execution_role_arn = aws_iam_role.ecs_execution_role.arn
+  family                   = "${var.name}-task"
+  network_mode             = "bridge"
+  requires_compatibilities = ["EC2"]
+  cpu                      = var.task_cpu
+  memory                   = var.task_memory
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_execution_role.arn
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"
@@ -52,6 +58,7 @@ resource "aws_ecs_task_definition" "main" {
     essential = true
     portMappings = [{
       containerPort = var.container_port
+      hostPort      = var.container_port
     }]
     environment = [
       { name = "DB_HOST", value = var.db_endpoint },
@@ -100,19 +107,18 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 
 # ECS service
 resource "aws_ecs_service" "main" {
-  name            = "${var.name}-service"
-  cluster         = aws_ecs_cluster.main.arn
-  task_definition = aws_ecs_task_definition.main.arn
-  desired_count   = var.desired_count
+  name                    = "${var.name}-service"
+  cluster                 = aws_ecs_cluster.main.arn
+  task_definition         = aws_ecs_task_definition.main.arn
+  desired_count           = var.desired_count
+  enable_ecs_managed_tags = true
+  propagate_tags          = "SERVICE"
+  wait_for_steady_state   = true
 
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.asg.name
-  }
-
-  network_configuration {
-    subnets          = var.task_subnets
-    security_groups  = var.task_security_groups
-    assign_public_ip = false
+    weight            = 100
+    base              = 1
   }
 
   load_balancer {
@@ -128,8 +134,8 @@ resource "aws_ecs_service" "main" {
 
 # ECS task scaling
 resource "aws_appautoscaling_target" "ecs_target" {
-  max_capacity       = 3
-  min_capacity       = 1
+  max_capacity       = var.maximum_capacity
+  min_capacity       = var.minimum_capacity
   resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -143,7 +149,9 @@ resource "aws_appautoscaling_policy" "ecs_cpu" {
   service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value = var.cpu_utilization_threshold
+    target_value       = var.cpu_utilization_threshold
+    scale_in_cooldown  = var.scaling_cooldown
+    scale_out_cooldown = var.scaling_cooldown
 
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
@@ -159,29 +167,12 @@ resource "aws_appautoscaling_policy" "ecs_memory" {
   service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value = var.memory_utilization_threshold
+    target_value       = var.memory_utilization_threshold
+    scale_in_cooldown  = var.scaling_cooldown
+    scale_out_cooldown = var.scaling_cooldown
 
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageMemoryUtilization"
     }
   }
-}
-
-# CloudWatch alarms
-resource "aws_cloudwatch_metric_alarm" "ecs_no_tasks" {
-  alarm_name          = "ECS-No-Running-Tasks"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "RunningTaskCount"
-  namespace           = "AWS/ECS"
-  period              = 60
-  statistic           = "Sum"
-  threshold           = 1
-  dimensions = {
-    ClusterName = aws_ecs_cluster.main.name
-    ServiceName = aws_ecs_service.main.name
-  }
-  alarm_actions = [var.alarm_topic_arn]
-
-  tags = var.tags
 }
