@@ -45,7 +45,7 @@ variable "min_size" {
 variable "max_size" {
   description = "Maximal number of instances"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "health_check_type" {
@@ -83,7 +83,7 @@ variable "block_device_mappings" {
   }))
   default = [{
     device_name           = "/dev/xvda"
-    volume_size           = 8
+    volume_size           = 30
     volume_type           = "gp3"
     delete_on_termination = true
     encrypted             = true

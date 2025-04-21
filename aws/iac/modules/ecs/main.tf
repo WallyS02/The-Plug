@@ -41,8 +41,6 @@ resource "aws_ecs_task_definition" "main" {
   family                   = "${var.name}-task"
   network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
-  cpu                      = var.task_cpu
-  memory                   = var.task_memory
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_execution_role.arn
   runtime_platform {
@@ -51,11 +49,10 @@ resource "aws_ecs_task_definition" "main" {
   }
 
   container_definitions = jsonencode([{
-    name      = var.container_name
-    image     = "${var.ecr_repository_url}:${var.image_tag}"
-    cpu       = var.container_cpu
-    memory    = var.container_memory
-    essential = true
+    name              = var.container_name
+    image             = "${var.ecr_repository_url}:${var.image_tag}"
+    memoryReservation = var.container_memory
+    essential         = true
     portMappings = [{
       containerPort = var.container_port
       hostPort      = var.container_port
@@ -64,7 +61,6 @@ resource "aws_ecs_task_definition" "main" {
       { name = "DB_HOST", value = var.db_endpoint },
       { name = "CACHE_ENDPOINT", value = var.cache_endpoint },
       { name = "USE_CACHE", value = "1" },
-      { name = "WEB_APP_URL", value = "http://localhost" },
       { name = "ALLOWED_HOSTS", value = "*" },
       { name = "DEBUG", value = "1" },
       { name = "DB_NAME", value = var.db_name },
@@ -72,6 +68,7 @@ resource "aws_ecs_task_definition" "main" {
     ]
     secrets = [
       { name = "DB_PASSWORD", valueFrom = var.db_password_secret_arn },
+      { name = "CACHE_PASSWORD", valueFrom = var.cache_password_secret_arn },
       { name = "EMAIL_HOST_USER", valueFrom = var.email_host_user_secret_arn },
       { name = "EMAIL_HOST_PASSWORD", valueFrom = var.email_host_password_secret_arn },
       { name = "SECRET_KEY", valueFrom = var.secret_key_secret_arn },
@@ -103,6 +100,25 @@ resource "aws_iam_role" "ecs_execution_role" {
 resource "aws_iam_role_policy_attachment" "ecs_execution" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role_policy" "secrets_access" {
+  name = "secrets-access"
+  role = aws_iam_role.ecs_execution_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = "secretsmanager:GetSecretValue",
+      Resource = [
+        var.db_password_secret_arn,
+        var.email_host_password_secret_arn,
+        var.email_host_user_secret_arn,
+        var.secret_key_secret_arn
+      ]
+    }]
+  })
 }
 
 # ECS service

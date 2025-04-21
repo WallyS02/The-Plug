@@ -126,7 +126,7 @@ resource "aws_cloudwatch_dashboard" "global" {
       },
 
       # 6. Alarms
-      {
+      /*{
         type = "alarm",
         properties = {
           title = "Active Alarms",
@@ -135,7 +135,7 @@ resource "aws_cloudwatch_dashboard" "global" {
             module.rds.low_storage_alarm_arn
           ]
         }
-      },
+      },*/
 
       # 7. Query Analysis
       {
@@ -224,15 +224,15 @@ resource "aws_cloudwatch_dashboard" "app_performance" {
       },
 
       # 5. Alarms
-      {
+      /*{
         type = "alarm",
         properties = {
           title = "Active Alarms",
           alarms = [
-            module.cloudfront.cloudfront_errors_alarm_arn
+            #module.cloudfront.cloudfront_errors_alarm_arn
           ]
         }
-      },
+      },*/
 
       # 6. Query Analysis
       {
@@ -283,7 +283,7 @@ resource "aws_cloudwatch_dashboard" "data_layer" {
       },
 
       # 3. Alarms
-      {
+      /*{
         type = "alarm",
         properties = {
           title = "Active Alarms",
@@ -291,13 +291,13 @@ resource "aws_cloudwatch_dashboard" "data_layer" {
             module.rds.low_storage_alarm_arn
           ]
         }
-      },
+      },*/
 
       # 4. Query Analysis
       {
         type = "log",
         properties = {
-          query  = "SOURCE '/aws/rds/${module.rds.identifier}/${module.rds.db_name}' | fields @timestamp, @message\n| filter @message like /ERROR/"
+          query  = "SOURCE '/aws/rds/instance/${module.rds.identifier}/postgresql' | fields @timestamp, @message\n| filter @message like /ERROR/"
           region = var.region,
           title  = "Database Error Logs",
           view   = "table"

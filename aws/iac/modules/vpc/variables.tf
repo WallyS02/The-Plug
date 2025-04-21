@@ -34,12 +34,6 @@ variable "log_bucket" {
   default     = ""
 }
 
-variable "nat_instance_ingress_security_groups" {
-  description = "Ingress security groups for NAT Instance ingress control"
-  type        = list(string)
-  default     = []
-}
-
 variable "region" {
   description = "Used region"
   type        = string

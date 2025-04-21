@@ -107,11 +107,12 @@ resource "aws_ssm_parameter" "cw_agent" {
 
 # Auto Scaling Group
 resource "aws_autoscaling_group" "main" {
-  name                = "${var.name_prefix}-instance"
-  desired_capacity    = var.desired_capacity
-  max_size            = var.max_size
-  min_size            = var.min_size
-  vpc_zone_identifier = var.vpc_zone_identifier
+  name                  = "${var.name_prefix}-instance"
+  desired_capacity      = var.desired_capacity
+  max_size              = var.max_size
+  min_size              = var.min_size
+  vpc_zone_identifier   = var.vpc_zone_identifier
+  protect_from_scale_in = true
 
   launch_template {
     id      = aws_launch_template.main.id

@@ -51,6 +51,11 @@ variable "db_password_secret_arn" {
   type        = string
 }
 
+variable "cache_password_secret_arn" {
+  description = "Cache password secret ARN"
+  type        = string
+}
+
 variable "email_host_user_secret_arn" {
   description = "Email host user secret ARN"
   type        = string
@@ -81,34 +86,16 @@ variable "log_region" {
   type        = string
 }
 
-variable "task_cpu" {
-  description = "Number of cpu units used by the task"
-  type        = number
-  default     = 768 # 0.75 vCPU
-}
-
-variable "task_memory" {
-  description = "Amount (in MiB) of memory used by the task"
-  type        = number
-  default     = 768 # 768 MB
-}
-
-variable "container_cpu" {
-  description = "Number of cpu units used by the single task container"
-  type        = number
-  default     = 256 # 0.25 vCPU
-}
-
 variable "container_memory" {
   description = "Amount (in MiB) of memory used by the single task container"
   type        = number
-  default     = 256 # 256 MB
+  default     = 512 # 512 MB
 }
 
 variable "desired_count" {
   description = "Number of instances of the task definition to place and keep running"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "enable_container_insights" {
@@ -143,7 +130,7 @@ variable "minimum_capacity" {
 variable "maximum_capacity" {
   description = "Maximum number of running containers"
   type        = number
-  default     = 3
+  default     = 2
 }
 
 variable "scaling_cooldown" {

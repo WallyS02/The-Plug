@@ -120,7 +120,7 @@ resource "aws_s3_bucket_policy" "cloudfront_access" {
 }
 
 # CloudWatch alarms
-resource "aws_cloudwatch_metric_alarm" "cloudfront_errors" {
+/*resource "aws_cloudwatch_metric_alarm" "cloudfront_errors" {
   alarm_name          = "CloudFront-High-Errors"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
@@ -136,4 +136,4 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_errors" {
   alarm_actions = [var.alarm_topic_arn]
 
   tags = var.tags
-}
+}*/

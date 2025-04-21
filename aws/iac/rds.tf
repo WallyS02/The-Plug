@@ -7,7 +7,7 @@ module "rds" {
   parameters_group_family = "postgres17"
   instance_class          = "db.t3.micro"
   allocated_storage       = 20
-  storage_type            = "gp3"
+  storage_type            = "gp2"
   db_name                 = "postgres"
   username                = "plug"
   password                = module.secrets_rds.initial_value
@@ -79,7 +79,8 @@ module "secrets_rds" {
   initial_value     = random_password.rds_password.result
   rotation_enabled  = false
   policy_statements = [
-    data.aws_iam_policy_document.rds_access.json
+    data.aws_iam_policy_document.rds_access.json,
+    data.aws_iam_policy_document.ecs_rds_access.json
   ]
 
   tags = {
@@ -96,7 +97,19 @@ data "aws_iam_policy_document" "rds_access" {
     resources = [module.secrets_rds.arn]
     principals {
       type        = "Service"
-      identifiers = ["rds.amazonaws.com", "ecs-tasks.amazonaws.com"]
+      identifiers = ["rds.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "ecs_rds_access" {
+  statement {
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [module.secrets_rds.arn]
+    principals {
+      type        = "AWS"
+      identifiers = [module.ecs.execution_role_arn]
     }
   }
 }

@@ -3,6 +3,7 @@ module "cloudfront" {
 
   distribution_name = "the-plug-cdn"
   enabled           = true
+  aliases           = [module.route53.domain_name]
 
   origins = {
     s3_origin = {
@@ -10,7 +11,7 @@ module "cloudfront" {
       type        = "s3"
     }
     alb_origin = {
-      domain_name = module.alb.dns_name
+      domain_name = "alb.theplug.software"
       type        = "custom"
     }
   }
@@ -24,7 +25,7 @@ module "cloudfront" {
   }
 
   ordered_cache_behaviour = {
-    path_pattern     = "/api*"
+    path_pattern     = "/api/*"
     target_origin_id = "alb_origin"
     allowed_methods  = ["GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]

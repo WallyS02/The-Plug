@@ -33,13 +33,9 @@ DEBUG = bool(env('DEBUG'))
 APPEND_SLASH = False
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')
-CSRF_TRUSTED_ORIGINS = [
-    env('WEB_APP_URL')
-]
+# CSRF_TRUSTED_ORIGINS = []
 
-CORS_ALLOWED_ORIGINS = [
-    env('WEB_APP_URL')
-]
+# CORS_ALLOWED_ORIGINS = []
 
 # SMTP Mail service
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -161,6 +157,7 @@ if bool(env('USE_CACHE')) is True:
             'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': env('CACHE_ENDPOINT'),
             'OPTIONS': {
+                'PASSWORD': env('CACHE_PASSWORD'),
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             }
         }

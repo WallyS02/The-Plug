@@ -18,10 +18,10 @@ output "db_name" {
   value       = aws_db_instance.main.db_name
 }
 
-output "low_storage_alarm_arn" {
+/*output "low_storage_alarm_arn" {
   description = "Low Storage Alarm ARN"
   value       = aws_cloudwatch_metric_alarm.rds_low_storage.arn
-}
+}*/
 
 output "user" {
   description = "Database username"

@@ -21,6 +21,15 @@ module "route53" {
         zone_id                = module.alb.hosted_zone_id
         evaluate_target_health = false
       }
+    },
+    {
+      name = "alb",
+      type = "AAAA",
+      alias = {
+        name                   = module.alb.dns_name
+        zone_id                = module.alb.hosted_zone_id
+        evaluate_target_health = false
+      }
     }
   ]
 

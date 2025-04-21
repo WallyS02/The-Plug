@@ -66,7 +66,7 @@ resource "aws_db_instance" "main" {
 }
 
 # CloudWatch alarms
-resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
+/*resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
   alarm_name          = "RDS-Low-Storage"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 2
@@ -81,4 +81,4 @@ resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
   alarm_actions = [var.alarm_topic_arn]
 
   tags = var.tags
-}
+}*/

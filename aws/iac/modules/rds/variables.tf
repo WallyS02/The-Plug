@@ -30,7 +30,7 @@ variable "allocated_storage" {
 variable "storage_type" {
   description = "Storage disk type (gp2/gp3/io1)"
   type        = string
-  default     = "gp3"
+  default     = "gp2"
 }
 
 variable "db_name" {

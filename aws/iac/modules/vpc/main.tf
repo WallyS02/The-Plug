@@ -64,6 +64,11 @@ resource "aws_subnet" "private" {
 }
 
 # NAT Instance
+resource "aws_key_pair" "nat_key" {
+  key_name   = "nat-key"
+  public_key = file("${path.module}/nat-key.pub")
+}
+
 resource "aws_instance" "nat" {
   ami                         = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI eu-north-1
   instance_type               = "t3.micro"
@@ -71,6 +76,7 @@ resource "aws_instance" "nat" {
   associate_public_ip_address = true
   source_dest_check           = false
   ebs_optimized               = true
+  key_name                    = aws_key_pair.nat_key.key_name
 
   ebs_block_device {
     device_name           = "/dev/xvda"
@@ -84,13 +90,12 @@ resource "aws_instance" "nat" {
 
   user_data = <<-EOF
               #!/bin/bash
-              sudo yum install iptables-services -y
+              sudo dnf install iptables-services -y
               sudo systemctl enable iptables
               sudo systemctl start iptables
-              sudo sysctl -w net.ipv4.ip_forward=1
+              echo "net.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/custom-ip.conf
               sudo sysctl -p /etc/sysctl.d/custom-ip.conf
-              sudo /sbin/iptables -t nat -A POSTROUTING -o enX0 -j MASQUERADE
-              sudo /sbin/iptables -F FORWARD
+              sudo /sbin/iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
               sudo service iptables save
               EOF
 
@@ -105,12 +110,19 @@ resource "aws_security_group" "nat_security_group" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description     = "NAT ingress from private subnets services"
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = concat(aws_subnet.private[*].cidr_block, [aws_subnet.public[1].cidr_block])
-    security_groups = var.nat_instance_ingress_security_groups
+    description = "NAT ingress from private subnets services"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = concat(aws_subnet.private[*].cidr_block)
+  }
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["89.64.29.109/32"]
   }
 
   egress {

@@ -33,25 +33,5 @@ resource "aws_secretsmanager_secret_policy" "this" {
 }
 
 data "aws_iam_policy_document" "policies" {
-  source_policy_documents = concat(
-    [data.aws_iam_policy_document.default_policy.json],
-    var.policy_statements
-  )
-}
-
-data "aws_iam_policy_document" "default_policy" {
-  statement {
-    effect    = "Deny"
-    actions   = ["secretsmanager:*"]
-    resources = ["*"]
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-    condition {
-      test     = "Bool"
-      variable = "aws:MultiFactorAuthPresent"
-      values   = ["false"]
-    }
-  }
+  source_policy_documents = var.policy_statements
 }

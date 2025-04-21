@@ -10,7 +10,7 @@ resource "aws_route53_zone" "main" {
 
 # DNS records (CloudFront and ALB)
 resource "aws_route53_record" "records" {
-  for_each = { for record in var.records : record.name => record }
+  for_each = { for record in var.records : record.name != "" ? "${record.name}-${record.type}" : record.type => record }
 
   name    = each.value.name != "" ? "${each.value.name}.${var.domain_name}" : var.domain_name
   type    = each.value.type

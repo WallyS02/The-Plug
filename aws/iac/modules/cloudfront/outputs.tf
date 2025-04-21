@@ -18,7 +18,7 @@ output "oai_iam_arn" {
   value       = try(aws_cloudfront_origin_access_identity.s3_oai[0].iam_arn, "")
 }
 
-output "cloudfront_errors_alarm_arn" {
+/*output "cloudfront_errors_alarm_arn" {
   description = "CloudFront Errors Alarm ARN"
   value       = aws_cloudwatch_metric_alarm.cloudfront_errors.arn
-}
+}*/
