@@ -1,0 +1,21 @@
+{
+  "agent": {
+    "metrics_collection_interval": 10
+  },
+  "metrics": {
+    "metrics_collected": {
+      "disk": {
+        "resources": ["/", "/tmp", "/var"],
+        "measurement": ["free", "total", "used"],
+        "ignore_file_system_types": ["sysfs", "devtmpfs"]
+      },
+      "mem": {
+        "measurement": ["active", "available", "buffered", "cached", "free", "total", "used"]
+      },
+      "swap": {
+        "measurement": ["free", "used"]
+      }
+    },
+    "aggregation_dimensions": [["InstanceId", "InstanceType"], ["InstanceId"]]
+  }
+}

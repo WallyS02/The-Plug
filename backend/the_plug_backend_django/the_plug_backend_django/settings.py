@@ -33,13 +33,9 @@ DEBUG = bool(env('DEBUG'))
 APPEND_SLASH = False
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')
-CSRF_TRUSTED_ORIGINS = [
-    env('WEB_APP_URL')
-]
+# CSRF_TRUSTED_ORIGINS = []
 
-CORS_ALLOWED_ORIGINS = [
-    env('WEB_APP_URL')
-]
+# CORS_ALLOWED_ORIGINS = []
 
 # SMTP Mail service
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -106,8 +102,8 @@ DATABASES = {
         "NAME": env('DB_NAME'),
         "USER": env('DB_USER'),
         "PASSWORD": env('DB_PASSWORD'),
-        "HOST": env('DB_HOST'),
-        "PORT": "5432",
+        "HOST": str(env('DB_HOST')).split(':')[0],
+        "PORT": str(env('DB_HOST')).split(':')[1],
     }
 }
 
@@ -154,3 +150,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+if bool(env('USE_CACHE')) is True:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': env('CACHE_ENDPOINT'),
+            'OPTIONS': {
+                'PASSWORD': env('CACHE_PASSWORD'),
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
