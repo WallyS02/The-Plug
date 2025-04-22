@@ -3,41 +3,47 @@ from django.utils import timezone
 
 from api.models import AppUser, Plug, Location, Meeting, HerbOffer, ChosenOffer, Herb
 
+TEST_WIKIPEDIA_LINK = "https://en.wikipedia.org/wiki/Sample_Herb"
+TEST_HERB_NAME = "Sample Herb"
+TEST_USERNAME = "testuser"
+TEST_PASSWORD = "testpass123"
+TEST_ADMIN_USERNAME = "admin"
+TEST_ADMIN_PASSWORD = "adminpass123"
+TEST_CURRENCY = "USD"
 
-# Create your tests here.
 
 class AppUserManagerTests(TestCase):
     def test_create_user_successfully(self):
-        user = AppUser.objects.create_user(username="testuser", password="testpass123")
-        self.assertEqual(user.username, "testuser")
-        self.assertTrue(user.check_password("testpass123"))
+        user = AppUser.objects.create_user(username=TEST_USERNAME, password=TEST_PASSWORD)
+        self.assertEqual(user.username, TEST_USERNAME)
+        self.assertTrue(user.check_password(TEST_PASSWORD))
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
 
     def test_create_user_without_username_raises_error(self):
         with self.assertRaises(ValueError) as context:
-            AppUser.objects.create_user(username="", password="testpass123")
+            AppUser.objects.create_user(username="", password=TEST_PASSWORD)
         self.assertEqual(str(context.exception), "The Username must be set")
 
     def test_create_superuser_successfully(self):
-        admin_user = AppUser.objects.create_superuser(username="admin", password="adminpass123")
+        admin_user = AppUser.objects.create_superuser(username=TEST_ADMIN_USERNAME, password=TEST_ADMIN_PASSWORD)
         self.assertTrue(admin_user.is_superuser)
         self.assertTrue(admin_user.is_staff)
         self.assertTrue(admin_user.is_active)
 
     def test_create_superuser_without_is_staff_raises_error(self):
         with self.assertRaises(ValueError) as context:
-            AppUser.objects.create_superuser(username="admin", password="adminpass123", is_staff=False)
+            AppUser.objects.create_superuser(username=TEST_ADMIN_USERNAME, password=TEST_ADMIN_PASSWORD, is_staff=False)
         self.assertEqual(str(context.exception), "Superuser must have is_staff=True.")
 
     def test_create_superuser_without_is_superuser_raises_error(self):
         with self.assertRaises(ValueError) as context:
-            AppUser.objects.create_superuser(username="admin", password="adminpass123", is_superuser=False)
+            AppUser.objects.create_superuser(username=TEST_ADMIN_USERNAME, password=TEST_ADMIN_PASSWORD, is_superuser=False)
         self.assertEqual(str(context.exception), "Superuser must have is_superuser=True.")
 
     def test_user_str_returns_username(self):
-        user = AppUser.objects.create_user(username="testuser", password="testpass123")
-        self.assertEqual(str(user), "testuser")
+        user = AppUser.objects.create_user(username=TEST_USERNAME, password=TEST_ADMIN_PASSWORD)
+        self.assertEqual(str(user), TEST_USERNAME)
 
 
 class PlugModelTest(TestCase):
@@ -102,7 +108,7 @@ class LocationModelTest(TestCase):
 
 class MeetingModelTest(TestCase):
     def setUp(self):
-        self.user = AppUser.objects.create_user(username="testuser", password="testpass")
+        self.user = AppUser.objects.create_user(username=TEST_USERNAME, password=TEST_PASSWORD)
 
     def test_create_meeting_with_defaults(self):
         meeting = Meeting.objects.create(
@@ -129,14 +135,14 @@ class MeetingModelTest(TestCase):
 
 class ChosenOfferModelTest(TestCase):
     def setUp(self):
-        self.user = AppUser.objects.create_user(username="testuser", password="testpass")
+        self.user = AppUser.objects.create_user(username=TEST_USERNAME, password=TEST_PASSWORD)
         self.meeting = Meeting.objects.create(
             date=timezone.now(),
             user=self.user,
             location_id=1
         )
         self.plug = Plug.objects.create()
-        self.herb = Herb.objects.create(name="Sample Herb", wikipedia_link="https://en.wikipedia.org/wiki/Sample_Herb")
+        self.herb = Herb.objects.create(name=TEST_HERB_NAME, wikipedia_link=TEST_WIKIPEDIA_LINK)
         self.herb_offer = HerbOffer.objects.create(grams_in_stock=5, price_per_gram=10, herb=self.herb, plug=self.plug)
 
     def test_create_chosen_offer(self):
@@ -161,25 +167,25 @@ class ChosenOfferModelTest(TestCase):
 class HerbModelTest(TestCase):
     def test_create_herb(self):
         herb = Herb.objects.create(
-            name="Sample Herb",
-            wikipedia_link="https://en.wikipedia.org/wiki/Sample_Herb"
+            name=TEST_HERB_NAME,
+            wikipedia_link=TEST_WIKIPEDIA_LINK
         )
-        self.assertEqual(herb.name, "Sample Herb")
-        self.assertEqual(herb.wikipedia_link, "https://en.wikipedia.org/wiki/Sample_Herb")
+        self.assertEqual(herb.name, TEST_HERB_NAME)
+        self.assertEqual(herb.wikipedia_link, TEST_WIKIPEDIA_LINK)
 
     def test_str_method(self):
         herb = Herb.objects.create(
-            name="Sample Herb 2",
-            wikipedia_link="https://en.wikipedia.org/wiki/Sample_Herb2"
+            name=TEST_HERB_NAME + "2",
+            wikipedia_link=TEST_WIKIPEDIA_LINK + "2"
         )
-        self.assertEqual(str(herb), "Sample Herb 2")
+        self.assertEqual(str(herb), TEST_HERB_NAME + "2")
 
 
 class HerbOfferModelTest(TestCase):
     def setUp(self):
         self.herb = Herb.objects.create(
-            name="Sample Herb 3",
-            wikipedia_link="https://en.wikipedia.org/wiki/Sample_Herb3"
+            name=TEST_HERB_NAME + "3",
+            wikipedia_link=TEST_WIKIPEDIA_LINK + "3"
         )
         self.plug = Plug.objects.create()
 
@@ -187,15 +193,15 @@ class HerbOfferModelTest(TestCase):
         offer = HerbOffer.objects.create(
             grams_in_stock=100,
             price_per_gram=12.5,
-            currency="USD",
-            description="Sample Herb 3 offer",
+            currency=TEST_CURRENCY,
+            description=TEST_HERB_NAME + "3",
             herb=self.herb,
             plug=self.plug
         )
         self.assertEqual(offer.grams_in_stock, 100)
         self.assertEqual(offer.price_per_gram, 12.5)
-        self.assertEqual(offer.currency, "USD")
-        self.assertEqual(offer.description, "Sample Herb 3 offer")
+        self.assertEqual(offer.currency, TEST_CURRENCY)
+        self.assertEqual(offer.description, TEST_HERB_NAME + " 3 offer")
         self.assertEqual(offer.herb, self.herb)
         self.assertEqual(offer.plug, self.plug)
 
@@ -203,7 +209,7 @@ class HerbOfferModelTest(TestCase):
         offer = HerbOffer.objects.create(
             grams_in_stock=50,
             price_per_gram=8.0,
-            currency="USD",
+            currency=TEST_CURRENCY,
             herb=self.herb,
             plug=self.plug
         )

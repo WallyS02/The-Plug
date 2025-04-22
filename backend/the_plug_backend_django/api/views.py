@@ -34,8 +34,6 @@ env = environ.Env()
 environ.Env.read_env()
 
 
-# Create your views here.
-
 class CustomMeetingsPagination(PageNumberPagination):
     page_size = 4
     page_size_query_param = 'page_size'

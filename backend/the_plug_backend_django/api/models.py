@@ -3,8 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-# Create your models here.
-
 class AppUserManager(BaseUserManager):
     def create_user(self, username, password, **extra_fields):
         if not username:

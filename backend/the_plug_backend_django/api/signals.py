@@ -8,6 +8,7 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
+
 @receiver([post_save, post_delete], sender=AppUser)
 def invalidate_user_cache(sender, instance, **kwargs):
     if bool(int(env('USE_CACHE'))) is True:
@@ -22,7 +23,7 @@ def invalidate_plug_cache(sender, instance, **kwargs):
         created = kwargs.get("created", None)
         if created is not None and not created:
             cache.delete_pattern(f'*plug_get_{instance.id}*')
-            cache.delete_pattern(f'*user_plug_get*')
+            cache.delete_pattern('*user_plug_get*')
         cache.delete_pattern('*plug_list*')
 
 @receiver([post_save, post_delete], sender=Location)
@@ -42,7 +43,7 @@ def invalidate_meeting_cache(sender, instance, **kwargs):
             cache.delete_pattern(f'*meeting_get_{instance.id}*')
             cache.delete_pattern(f'*chosen_offer_with_herb_and_offer_info_list_{instance.id}*')
         cache.delete_pattern(f'*user_meeting_list_{instance.user.id}*')
-        cache.delete_pattern(f'*plug_meeting_list*')
+        cache.delete_pattern('*plug_meeting_list*')
 
 @receiver([post_save, post_delete], sender=HerbOffer)
 def invalidate_herb_offer_cache(sender, instance, **kwargs):
