@@ -81,7 +81,9 @@ class AppUserRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             return Response({"error": "Only User assigned to this User can update it."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        request.data['password'] = make_password(request.data['password'])
+        serializer = self.get_serializer(user, data={ 'password': request.data.get('password') }, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(password=make_password(request.data.get('password')))
 
         return super().patch(request, *args, **kwargs)
 
@@ -680,8 +682,7 @@ class ChosenOfferWithHerbAndOfferInfoView(generics.ListAPIView):
         chosen_offer = chosen_offers.first()
 
         if chosen_offer.herb_offer.plug.app_user.id != self.request.user.id and meeting.user.id != self.request.user.id:
-            return Response({"error": "Only Users assigned to this Meeting can retrieve it."},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            return ChosenOffer.objects.none()
 
         return chosen_offers
 
@@ -784,7 +785,7 @@ class AddRatingMeeting(generics.UpdateAPIView):
         meeting.save()
 
         if meeting.user.id == request.user.id:
-            self.update_ratings(chosen_offer.herb_offer.plug.app_user.id, True)
+            self.update_ratings(chosen_offer.herb_offer.plug.id, True)
         else:
             self.update_ratings(meeting.user.id, False)
 
@@ -869,7 +870,7 @@ def send_new_herb_request_mail(request):
         'Request to add herb by Name: ' + request.data['name'] + ' and Wikipedia Link: ' + request.data[
             'wikipedia_link'] + '. Check it out!',
         None,
-        [env('EM_ACCOUNT')],
+        [env('EMAIL_HOST_USER')],
         fail_silently=False,
     )
     return Response({}, status=status.HTTP_200_OK)

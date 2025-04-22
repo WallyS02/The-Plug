@@ -31,6 +31,6 @@ urlpatterns = [
     path('meeting/<id>/cancel/', views.CancelMeeting.as_view(), name='cancel-meeting'),
     path('meeting/<id>/add-rating/', views.AddRatingMeeting.as_view(), name='add-rating-meeting'),
     path('new-herb/', views.send_new_herb_request_mail, name='new-herb-request-mail'),
-    re_path('login', views.login),
-    re_path('register', views.register),
+    re_path('login', views.login, name='login'),
+    re_path('register', views.register, name='register')
 ]

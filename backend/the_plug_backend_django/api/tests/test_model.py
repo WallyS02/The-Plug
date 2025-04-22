@@ -1,4 +1,4 @@
-from django.test import TestCase
+from rest_framework.test import APITestCase
 from django.utils import timezone
 
 from api.models import AppUser, Plug, Location, Meeting, HerbOffer, ChosenOffer, Herb
@@ -12,7 +12,7 @@ TEST_ADMIN_PASSWORD = "adminpass123"
 TEST_CURRENCY = "USD"
 
 
-class AppUserManagerTests(TestCase):
+class AppUserManagerTests(APITestCase):
     def test_create_user_successfully(self):
         user = AppUser.objects.create_user(username=TEST_USERNAME, password=TEST_PASSWORD)
         self.assertEqual(user.username, TEST_USERNAME)
@@ -46,7 +46,7 @@ class AppUserManagerTests(TestCase):
         self.assertEqual(str(user), TEST_USERNAME)
 
 
-class PlugModelTest(TestCase):
+class PlugModelTest(APITestCase):
     def test_create_plug_with_defaults(self):
         plug = Plug.objects.create()
         self.assertIsNone(plug.rating)
@@ -67,7 +67,7 @@ class PlugModelTest(TestCase):
         self.assertEqual(plug.minimal_break_between_meetings_in_minutes, 60)
 
 
-class LocationModelTest(TestCase):
+class LocationModelTest(APITestCase):
     def setUp(self):
         self.plug = Plug.objects.create()
 
@@ -106,7 +106,7 @@ class LocationModelTest(TestCase):
         self.assertEqual(str(location), "18.6466, 54.352")
 
 
-class MeetingModelTest(TestCase):
+class MeetingModelTest(APITestCase):
     def setUp(self):
         self.user = AppUser.objects.create_user(username=TEST_USERNAME, password=TEST_PASSWORD)
 
@@ -133,7 +133,7 @@ class MeetingModelTest(TestCase):
         self.assertEqual(str(meeting), f"{meeting.id}, {meeting.date}")
 
 
-class ChosenOfferModelTest(TestCase):
+class ChosenOfferModelTest(APITestCase):
     def setUp(self):
         self.user = AppUser.objects.create_user(username=TEST_USERNAME, password=TEST_PASSWORD)
         self.meeting = Meeting.objects.create(
@@ -164,7 +164,7 @@ class ChosenOfferModelTest(TestCase):
         self.assertEqual(str(chosen_offer), str(chosen_offer.id))
 
 
-class HerbModelTest(TestCase):
+class HerbModelTest(APITestCase):
     def test_create_herb(self):
         herb = Herb.objects.create(
             name=TEST_HERB_NAME,
@@ -181,7 +181,7 @@ class HerbModelTest(TestCase):
         self.assertEqual(str(herb), TEST_HERB_NAME + "2")
 
 
-class HerbOfferModelTest(TestCase):
+class HerbOfferModelTest(APITestCase):
     def setUp(self):
         self.herb = Herb.objects.create(
             name=TEST_HERB_NAME + "3",
@@ -194,7 +194,7 @@ class HerbOfferModelTest(TestCase):
             grams_in_stock=100,
             price_per_gram=12.5,
             currency=TEST_CURRENCY,
-            description=TEST_HERB_NAME + "3",
+            description=TEST_HERB_NAME + " 3 offer",
             herb=self.herb,
             plug=self.plug
         )
