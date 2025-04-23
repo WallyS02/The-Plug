@@ -2,9 +2,13 @@ import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import viteCompression from 'vite-plugin-compression';
 import viteImagemin from 'vite-plugin-imagemin';
+import {svelteTesting} from "@testing-library/svelte/vite";
 
 
 // https://vitejs.dev/config/
+// @ts-ignore
+// @ts-ignore
+// @ts-ignore
 export default defineConfig({
   server: {
     proxy: {
@@ -31,7 +35,15 @@ export default defineConfig({
           plugins: [{ removeViewBox: false }, { cleanupIDs: false }],
         },
       }),
+      svelteTesting()
   ],
+  // @ts-ignore
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./vitest-setup.ts'],
+    include: ['src/**/*.spec.ts'],
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
