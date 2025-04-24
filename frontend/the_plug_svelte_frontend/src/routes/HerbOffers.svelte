@@ -212,10 +212,10 @@
             <section class="bg-darkMossGreen p-6 rounded-lg shadow-lg flex-1">
                 <h2 class="text-2xl font-bold mb-4">Add New Herb Offer</h2>
                 <form on:submit|preventDefault={createNewHerbOffer} class="space-y-4">
-                    <label for="herb" class="block text-xl font-semibold mb-2">Herb Type:</label>
-                    <input list="herbs" id="herb" name="herb" bind:value={herbName} required
+                    <label for="new-herb" class="block text-xl font-semibold mb-2">Herb Type:</label>
+                    <input list="new-herbs" id="new-herb" name="new-herb" bind:value={herbName} required
                            class="w-full p-2 border border-asparagus rounded focus:outline-none focus:ring-2 focus:ring-olivine text-darkGreen"/>
-                    <datalist id="herbs">
+                    <datalist id="new-herbs">
                         {#each herbs as herb}
                             <option value={herb.name}/>
                         {/each}
