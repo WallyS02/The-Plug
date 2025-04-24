@@ -11,6 +11,7 @@
     import {getNotificationsContext} from "svelte-notifications";
     import {account_id, plug_id, token, username} from "../stores";
     import {getHerbs} from "../service/herb-service";
+    import {onDestroy} from "svelte";
 
     interface LocationOnMap extends Location {
         username: string;
@@ -266,7 +267,27 @@
             .openOn(map)
     }
 
-    function initializeMap(location: {longitude: number, latitude: number}) {
+    function checkIfMapReady() {
+        return new Promise<void>((resolve) => {
+            const check = () => {
+                const mapElement = document.getElementById('map');
+                if (mapElement) {
+                    resolve();
+                } else {
+                    setTimeout(check, 10);
+                }
+            };
+            check();
+        });
+    }
+
+    async function initializeMap(location: {longitude: number, latitude: number}) {
+        await checkIfMapReady();
+        if (map != undefined) {
+            map.off();
+            map = map.remove();
+        }
+        document.getElementById('map')!.innerHTML = `<div id='map' class='${mapClass}'></div>`;
         map = L.map('map').setView([location.latitude, location.longitude], 15);
         layerGroup.addTo(map);
 
@@ -280,7 +301,7 @@
             map.on('click', onMapClick);
         }
 
-        getLocations(true);
+        await getLocations(true);
     }
 
     function addToChosenHerb() {
@@ -340,6 +361,13 @@
         }
         getLocations(false);
     }
+
+    onDestroy(() => {
+        if (map) {
+            map.off();
+            map = map.remove();
+        }
+    });
 
 </script>
 

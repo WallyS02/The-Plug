@@ -3,13 +3,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-# Create your models here.
-
 class AppUserManager(BaseUserManager):
     def create_user(self, username, password, **extra_fields):
         if not username:
             raise ValueError("The Username must be set")
-        user = self.model(login=username, **extra_fields)
+        user = self.model(username=username, **extra_fields)
         user.set_password(password)
         user.save()
         return user
@@ -27,7 +25,7 @@ class AppUserManager(BaseUserManager):
 
 
 class AppUser(AbstractUser):
-    username = models.CharField(max_length=50, blank=False, null=False, unique=True)
+    username = models.CharField(max_length=50, unique=True)
     isPartner = models.BooleanField(default=False)
     isSlanderer = models.BooleanField(default=False)
     email = None
@@ -55,9 +53,9 @@ class Plug(models.Model):
 class Location(models.Model):
     longitude = models.FloatField()
     latitude = models.FloatField()
-    street_name = models.CharField(max_length=50, blank=True, null=True)
-    street_number = models.CharField(max_length=50, blank=True, null=True)
-    city = models.CharField(max_length=50, blank=True, null=True)
+    street_name = models.CharField(max_length=50, blank=True)
+    street_number = models.CharField(max_length=50, blank=True)
+    city = models.CharField(max_length=50, blank=True)
     plug = models.ForeignKey('Plug', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -92,7 +90,7 @@ class HerbOffer(models.Model):
     id = models.AutoField(primary_key=True)
     grams_in_stock = models.IntegerField()
     price_per_gram = models.FloatField()
-    currency = models.CharField()
+    currency = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     herb = models.ForeignKey('Herb', on_delete=models.CASCADE)
     plug = models.ForeignKey('Plug', on_delete=models.CASCADE)
@@ -102,8 +100,8 @@ class HerbOffer(models.Model):
 
 
 class Herb(models.Model):
-    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
-    wikipedia_link = models.URLField(max_length=500, blank=False, null=False)
+    name = models.CharField(max_length=50, unique=True)
+    wikipedia_link = models.URLField(max_length=500)
 
     def __str__(self):
         return self.name
