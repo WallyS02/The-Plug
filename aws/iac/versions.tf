@@ -5,7 +5,7 @@ terraform {
     organization = "The-Plug"
 
     workspaces {
-      name = "The-Plug-Workspace"
+      name = "The-Plug-Workspace-GitHub-Actions"
     }
   }
 
