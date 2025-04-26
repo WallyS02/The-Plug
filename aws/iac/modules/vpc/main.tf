@@ -64,11 +64,6 @@ resource "aws_subnet" "private" {
 }
 
 # NAT Instance
-resource "aws_key_pair" "nat_key" {
-  key_name   = "nat-key"
-  public_key = file("${path.module}/nat-key.pub")
-}
-
 resource "aws_instance" "nat" {
   ami                         = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI eu-north-1
   instance_type               = "t3.micro"
@@ -76,7 +71,6 @@ resource "aws_instance" "nat" {
   associate_public_ip_address = true
   source_dest_check           = false
   ebs_optimized               = true
-  key_name                    = aws_key_pair.nat_key.key_name
 
   ebs_block_device {
     device_name           = "/dev/xvda"
@@ -90,6 +84,7 @@ resource "aws_instance" "nat" {
 
   user_data = <<-EOF
               #!/bin/bash
+              # NAT configuration
               sudo dnf install iptables-services -y
               sudo systemctl enable iptables
               sudo systemctl start iptables
@@ -97,6 +92,12 @@ resource "aws_instance" "nat" {
               sudo sysctl -p /etc/sysctl.d/custom-ip.conf
               sudo /sbin/iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
               sudo service iptables save
+              # SSM Agent
+              sudo yum update -y
+              sudo yum upgrade -y
+              sudo yum install -y amazon-ssm-agent
+              sudo systemctl enable amazon-ssm-agent
+              sudo systemctl start amazon-ssm-agent
               EOF
 
   tags = merge(var.tags, {
