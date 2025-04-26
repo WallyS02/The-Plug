@@ -5,7 +5,7 @@ on:
     branches:
       - cicd # TODO change to main after debug
     paths:
-      - aws/iac
+      - aws/iac/**
   workflow_dispatch:
 
 env:
