@@ -28,11 +28,12 @@ jobs:
 
       - name: Prepare variable values
         run: |
-          echo "email_host_user_secret     = ${{ secrets.EMAIL_HOST_USER }}
+          cat > prod.auto.tfvars<< EOF
+          email_host_user_secret     = ${{ secrets.EMAIL_HOST_USER }}
           email_host_password_secret = ${{ secrets.EMAIL_HOST_PASSWORD }}
           secret_key_secret          = ${{ secrets.SECRET_KEY }}
           email                      = ${{ secrets.NOTIFICATION_EMAIL }}
-          " > prod.auto.tfvars
+          EOF
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
