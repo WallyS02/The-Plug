@@ -5,6 +5,7 @@ terraform {
     organization = "The-Plug"
 
     workspaces {
+      // TEST COMMENT TO TRIGGER ACTIONS WORKFLOW - REMOVE LATER!
       name = "The-Plug-Workspace-GitHub-Actions"
     }
   }
