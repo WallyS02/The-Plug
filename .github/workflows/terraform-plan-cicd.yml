@@ -35,13 +35,22 @@ jobs:
         run: terraform fmt -recursive
 
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform validate -backend=false
 
 
   plan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Prepare variable values
+        working-directory: aws/iac
+        run: |
+          echo "email_host_user_secret     = ${{ secrets.EMAIL_HOST_USER }}
+          email_host_password_secret = ${{ secrets.EMAIL_HOST_PASSWORD }}
+          secret_key_secret          = ${{ secrets.SECRET_KEY }}
+          email                      = ${{ secrets.NOTIFICATION_EMAIL }}
+          " > prod.auto.tfvars
 
       - name: Upload Configuration
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
