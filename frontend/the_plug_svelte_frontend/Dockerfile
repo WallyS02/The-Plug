@@ -13,12 +13,10 @@ RUN apk add --no-cache \
     python3 \
     zlib-dev
 
-#COPY frontend/the_plug_svelte_frontend/package.json frontend/the_plug_svelte_frontend/package-lock.json ./
 COPY package.json package-lock.json ./
 
 RUN npm install
 
-#COPY frontend/the_plug_svelte_frontend/. .
 COPY . .
 
 RUN npm run build
@@ -38,7 +36,6 @@ ENV VERSION="1.0.0"
 
 ENV NGINX_ENVSUBST_OUTPUT_DIR=/opt/bitnami/nginx/conf
 
-#COPY frontend/the_plug_svelte_frontend/docker/etc/nginx/configs/ /etc/nginx/configs/
 COPY docker/etc/nginx/configs/ /opt/bitnami/nginx/conf/server_blocks/
 
 COPY --from=builder /app/dist /app
