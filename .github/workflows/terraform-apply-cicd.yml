@@ -3,7 +3,7 @@ name: The Plug Terraform infrastructure CI/CD - apply
 on:
   push:
     branches:
-      - cicd # TODO change to main after debug
+      - main
     paths:
       - aws/iac/**
   workflow_dispatch:

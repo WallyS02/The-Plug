@@ -83,21 +83,3 @@ module "secrets_rds" {
 
   depends_on = [random_password.rds_password]
 }
-
-data "aws_iam_policy_document" "rds_access_policy" {
-  statement {
-    effect    = "Allow"
-    actions   = ["ssm:GetParameter"]
-    resources = [module.secrets_rds.arn]
-    principals {
-      type        = "Service"
-      identifiers = ["rds.amazonaws.com"]
-    }
-  }
-}
-
-resource "aws_iam_policy" "rds_access" {
-  name = "rds-ssm-access-policy"
-  description = "Allow RDS to access SSM secret parameter"
-  policy = data.aws_iam_policy_document.rds_access_policy.json
-}
