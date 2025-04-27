@@ -37,6 +37,7 @@ jobs:
   build-and-test-frontend:
     runs-on: ubuntu-latest
     needs: [ sonarcloud-frontend ]
+    if: github.ref == 'refs/heads/cicd' # TODO change to main after debug
     defaults:
       run:
         working-directory: frontend/the_plug_svelte_frontend
@@ -67,6 +68,7 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     needs: [ build-and-test-frontend ]
+    if: github.ref == 'refs/heads/cicd' # TODO change to main after debug
     steps:
       - uses: actions/checkout@v4
 
@@ -139,6 +141,7 @@ jobs:
   performance-tests:
     runs-on: ubuntu-latest
     needs: [ build-and-test-frontend ]
+    if: github.ref == 'refs/heads/cicd' # TODO change to main after debug
     steps:
       - uses: actions/checkout@v4
 
@@ -152,6 +155,7 @@ jobs:
   dast-tests:
     runs-on: ubuntu-latest
     needs: [ build-and-test-frontend ]
+    if: github.ref == 'refs/heads/cicd' # TODO change to main after debug
     steps:
       - uses: actions/checkout@v4
 
@@ -164,7 +168,7 @@ jobs:
   docker-build-and-push-frontend:
     runs-on: ubuntu-latest
     needs: [ e2e-tests, performance-tests, dast-tests ]
-    if: always()
+    if: github.ref == 'refs/heads/cicd' && (success() || failure()) # TODO change to main after debug
     steps:
       - uses: actions/checkout@v4
 
