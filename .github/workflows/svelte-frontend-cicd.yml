@@ -29,15 +29,15 @@ env:
   AWS_REGION: 'eu-north-1'
 
 jobs:
-  sonarcloud-frontend:
+  sonarqube-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: SonarCloud Linting + SAST scan
-        uses: SonarSource/sonarcloud-github-action@v5
+      - name: SonarQube Linting + SAST scan
+        uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: frontend/the_plug_svelte_frontend
         env:
@@ -47,7 +47,7 @@ jobs:
 
   build-and-test-frontend:
     runs-on: ubuntu-latest
-    needs: [ sonarcloud-frontend ]
+    needs: [ sonarqube-frontend ]
     if: github.ref == 'refs/heads/cicd' # TODO change to main after debug
     defaults:
       run:
@@ -81,7 +81,7 @@ jobs:
 
   backend-dependencies:
     runs-on: ubuntu-latest
-    needs: [ sonarcloud-frontend ]
+    needs: [ sonarqube-frontend ]
     if: github.ref == 'refs/heads/cicd' # TODO change to main after debug
     steps:
       - uses: actions/checkout@v4
@@ -114,7 +114,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/the_plug_backend_django/requirements.txt
 
-      - name: Install pip dependencies
+      - name: Install cached pip dependencies
         working-directory: backend/the_plug_backend_django
         run: pip install -r requirements.txt
 
@@ -125,11 +125,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/the_plug_svelte_frontend/package-lock.json
 
-      - name: Download frontend build
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/the_plug_svelte_frontend/dist/
+      - name: Install cached npm dependencies
+        working-directory: frontend/the_plug_svelte_frontend
+        run: npm ci
 
       - name: Run Django makemigrations
         working-directory: backend/the_plug_backend_django
@@ -147,14 +145,15 @@ jobs:
         working-directory: backend/the_plug_backend_django
         run: python manage.py runserver 0.0.0.0:8080 --settings=the_plug_backend_django.e2e_test_settings &
 
+      - name: Run Svelte frontend
+        working-directory: frontend/the_plug_svelte_frontend
+        run: npm run dev &
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           config-file: frontend/the_plug_svelte_frontend/cypress.config.ts
           browser: chrome
-          start: |
-            cd frontend/the_plug_svelte_frontend
-            npm run dev
           wait-on: 'http://localhost, http://localhost:8080/api/herbs/list/'
         env:
           API_URL: 'http://localhost:8080/api/'
@@ -175,7 +174,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/the_plug_backend_django/requirements.txt
 
-      - name: Install pip dependencies
+      - name: Install cached pip dependencies
         working-directory: backend/the_plug_backend_django
         run: pip install -r requirements.txt
 
@@ -186,11 +185,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/the_plug_svelte_frontend/package-lock.json
 
-      - name: Download frontend build
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/the_plug_svelte_frontend/dist/
+      - name: Install cached npm dependencies
+        working-directory: frontend/the_plug_svelte_frontend
+        run: npm ci
 
       - name: Run Django makemigrations
         working-directory: backend/the_plug_backend_django
@@ -233,7 +230,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/the_plug_backend_django/requirements.txt
 
-      - name: Install pip dependencies
+      - name: Install cached pip dependencies
         working-directory: backend/the_plug_backend_django
         run: pip install -r requirements.txt
 
@@ -244,11 +241,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/the_plug_svelte_frontend/package-lock.json
 
-      - name: Download frontend build
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/the_plug_svelte_frontend/dist/
+      - name: Install cached npm dependencies
+        working-directory: frontend/the_plug_svelte_frontend
+        run: npm ci
 
       - name: Run Django makemigrations
         working-directory: backend/the_plug_backend_django
