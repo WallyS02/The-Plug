@@ -2,11 +2,11 @@ name: The Plug Django REST backend CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ cicd ]
     paths:
       - backend/the_plug_backend_django/**
   pull_request:
-    branches: [ main ]
+    branches: [ cicd ]
     paths:
       - backend/the_plug_backend_django/**
   workflow_dispatch:
@@ -49,7 +49,7 @@ jobs:
   dependencies-and-test-backend:
     runs-on: ubuntu-latest
     needs: [ sonarqube-backend ]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/cicd'
     defaults:
       run:
         working-directory: backend/the_plug_backend_django
@@ -78,7 +78,7 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     needs: [ dependencies-and-test-backend ]
-    if: github.ref == 'refs/heads/main' && (success() || failure())
+    if: github.ref == 'refs/heads/cicd' && (success() || failure())
     steps:
       - uses: actions/checkout@v4
 
@@ -134,7 +134,7 @@ jobs:
   performance-tests:
     runs-on: ubuntu-latest
     needs: [ dependencies-and-test-backend ]
-    if: github.ref == 'refs/heads/main' && (success() || failure())
+    if: github.ref == 'refs/heads/cicd' && (success() || failure())
     defaults:
       run:
         working-directory: backend/the_plug_backend_django
@@ -177,7 +177,7 @@ jobs:
   dast-tests:
     runs-on: ubuntu-latest
     needs: [ dependencies-and-test-backend ]
-    if: github.ref == 'refs/heads/main' && (success() || failure())
+    if: github.ref == 'refs/heads/cicd' && (success() || failure())
     steps:
       - uses: actions/checkout@v4
 
@@ -218,7 +218,7 @@ jobs:
   docker-build-and-push-backend:
     runs-on: ubuntu-latest
     needs: [ e2e-tests, performance-tests, dast-tests ]
-    if: github.ref == 'refs/heads/main' && (success() || failure())
+    if: github.ref == 'refs/heads/cicd' && (success() || failure())
     steps:
       - uses: actions/checkout@v4
 
@@ -260,7 +260,7 @@ jobs:
   deploy-ecs-backend: # TODO test after debugging Terraform apply pipeline
     runs-on: ubuntu-latest
     needs: [ docker-build-and-push-backend ]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/cicd'
     steps:
       - uses: actions/checkout@v4
 
