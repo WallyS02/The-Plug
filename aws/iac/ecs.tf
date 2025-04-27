@@ -26,7 +26,7 @@ module "ecs" {
 }
 
 module "email_host_password_secret" {
-  source = "modules/ssm-secret-parameter"
+  source = "./modules/ssm-secret-parameter"
 
   name              = "email-host-password"
   description       = "Email host password for ECS"
@@ -38,7 +38,7 @@ module "email_host_password_secret" {
 }
 
 module "email_host_user_secret" {
-  source = "modules/ssm-secret-parameter"
+  source = "./modules/ssm-secret-parameter"
 
   name              = "email-host-user"
   description       = "Email host user for ECS"
@@ -50,7 +50,7 @@ module "email_host_user_secret" {
 }
 
 module "secret_key_secret" {
-  source = "modules/ssm-secret-parameter"
+  source = "./modules/ssm-secret-parameter"
 
   name              = "secret-key-secret"
   description       = "Secret Key for ECS"
