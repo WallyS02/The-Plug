@@ -150,7 +150,7 @@ jobs:
         with:
           config-file: frontend/the_plug_svelte_frontend/cypress.config.ts
           browser: chrome
-          wait-on: 'http://localhost:4200, http://localhost:8080/api/herbs/list/'
+          wait-on: http://localhost:8080/api/herb/list/
           config: baseUrl=http://localhost:4200
           working-directory: frontend/the_plug_svelte_frontend
           start: npm run dev -- --port 4200
