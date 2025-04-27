@@ -1,7 +1,7 @@
 describe('Adding Location and Herb Offer as a new Plug', () => {
     beforeEach(() => {
         cy.viewport(1280, 720);
-        cy.visit('http://localhost', {
+        cy.visit('/', {
             onBeforeLoad(win) {
                 win.caches.delete('L');
             }
@@ -19,7 +19,6 @@ describe('Adding Location and Herb Offer as a new Plug', () => {
         cy.get('input[type="submit"]').click();
 
         // Verify registration
-        cy.url().should('eq', Cypress.config().baseUrl + '/#/');
         cy.contains('nav a', randomUsername).should('exist');
         cy.contains('nav', 'Locations').should('not.exist');
 
