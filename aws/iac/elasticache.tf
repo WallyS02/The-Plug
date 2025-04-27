@@ -70,17 +70,11 @@ resource "random_password" "elasticache_password" {
 }
 
 module "secrets_elasticache" {
-  source = "./modules/secrets-manager"
+  source = "modules/ssm-secret-parameter"
 
   name              = "elasticache-auth-token"
   description       = "Auth token for Elasticache"
-  enable_init_value = true
   initial_value     = random_password.elasticache_password.result
-  rotation_enabled  = false
-  policy_statements = [
-    data.aws_iam_policy_document.elasticache_access.json,
-    data.aws_iam_policy_document.ecs_elasticache_access.json
-  ]
 
   tags = {
     Environment = "dev"
@@ -89,10 +83,10 @@ module "secrets_elasticache" {
   depends_on = [random_password.elasticache_password]
 }
 
-data "aws_iam_policy_document" "elasticache_access" {
+data "aws_iam_policy_document" "elasticache_access_policy" {
   statement {
     effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
+    actions   = ["ssm:GetParameter"]
     resources = [module.secrets_elasticache.arn]
     principals {
       type        = "Service"
@@ -101,14 +95,8 @@ data "aws_iam_policy_document" "elasticache_access" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_elasticache_access" {
-  statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [module.secrets_elasticache.arn]
-    principals {
-      type        = "AWS"
-      identifiers = [module.ecs.execution_role_arn]
-    }
-  }
+resource "aws_iam_policy" "elasticache_access" {
+  name = "elasticache-ssm-access-policy"
+  description = "Allow Elasticache to access SSM secret parameter"
+  policy = data.aws_iam_policy_document.elasticache_access_policy.json
 }

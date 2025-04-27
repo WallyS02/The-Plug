@@ -71,17 +71,11 @@ resource "random_password" "rds_password" {
 }
 
 module "secrets_rds" {
-  source = "./modules/secrets-manager"
+  source = "modules/ssm-secret-parameter"
 
   name              = "rds-password"
   description       = "Password for RDS database"
-  enable_init_value = true
   initial_value     = random_password.rds_password.result
-  rotation_enabled  = false
-  policy_statements = [
-    data.aws_iam_policy_document.rds_access.json,
-    data.aws_iam_policy_document.ecs_rds_access.json
-  ]
 
   tags = {
     Environment = "dev"
@@ -90,10 +84,10 @@ module "secrets_rds" {
   depends_on = [random_password.rds_password]
 }
 
-data "aws_iam_policy_document" "rds_access" {
+data "aws_iam_policy_document" "rds_access_policy" {
   statement {
     effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
+    actions   = ["ssm:GetParameter"]
     resources = [module.secrets_rds.arn]
     principals {
       type        = "Service"
@@ -102,14 +96,8 @@ data "aws_iam_policy_document" "rds_access" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_rds_access" {
-  statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [module.secrets_rds.arn]
-    principals {
-      type        = "AWS"
-      identifiers = [module.ecs.execution_role_arn]
-    }
-  }
+resource "aws_iam_policy" "rds_access" {
+  name = "rds-ssm-access-policy"
+  description = "Allow RDS to access SSM secret parameter"
+  policy = data.aws_iam_policy_document.rds_access_policy.json
 }

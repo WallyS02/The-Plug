@@ -110,9 +110,10 @@ resource "aws_iam_role_policy" "secrets_access" {
     Version = "2012-10-17",
     Statement = [{
       Effect = "Allow",
-      Action = "secretsmanager:GetSecretValue",
+      Action = "ssm:GetParameter",
       Resource = [
         var.db_password_secret_arn,
+        var.cache_password_secret_arn,
         var.email_host_password_secret_arn,
         var.email_host_user_secret_arn,
         var.secret_key_secret_arn
