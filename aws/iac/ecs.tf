@@ -28,9 +28,9 @@ module "ecs" {
 module "email_host_password_secret" {
   source = "./modules/ssm-secret-parameter"
 
-  name              = "email-host-password"
-  description       = "Email host password for ECS"
-  initial_value     = var.email_host_password_secret # use .tfvars file
+  name          = "email-host-password"
+  description   = "Email host password for ECS"
+  initial_value = var.email_host_password_secret # use .tfvars file
 
   tags = {
     Environment = "dev"
@@ -40,9 +40,9 @@ module "email_host_password_secret" {
 module "email_host_user_secret" {
   source = "./modules/ssm-secret-parameter"
 
-  name              = "email-host-user"
-  description       = "Email host user for ECS"
-  initial_value     = var.email_host_user_secret # use .tfvars file
+  name          = "email-host-user"
+  description   = "Email host user for ECS"
+  initial_value = var.email_host_user_secret # use .tfvars file
 
   tags = {
     Environment = "dev"
@@ -52,9 +52,9 @@ module "email_host_user_secret" {
 module "secret_key_secret" {
   source = "./modules/ssm-secret-parameter"
 
-  name              = "secret-key-secret"
-  description       = "Secret Key for ECS"
-  initial_value     = var.secret_key_secret # use .tfvars file
+  name          = "secret-key-secret"
+  description   = "Secret Key for ECS"
+  initial_value = var.secret_key_secret # use .tfvars file
 
   tags = {
     Environment = "dev"

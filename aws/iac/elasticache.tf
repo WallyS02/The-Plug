@@ -72,9 +72,9 @@ resource "random_password" "elasticache_password" {
 module "secrets_elasticache" {
   source = "./modules/ssm-secret-parameter"
 
-  name              = "elasticache-auth-token"
-  description       = "Auth token for Elasticache"
-  initial_value     = random_password.elasticache_password.result
+  name          = "elasticache-auth-token"
+  description   = "Auth token for Elasticache"
+  initial_value = random_password.elasticache_password.result
 
   tags = {
     Environment = "dev"

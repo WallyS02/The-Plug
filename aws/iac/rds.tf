@@ -73,9 +73,9 @@ resource "random_password" "rds_password" {
 module "secrets_rds" {
   source = "./modules/ssm-secret-parameter"
 
-  name              = "rds-password"
-  description       = "Password for RDS database"
-  initial_value     = random_password.rds_password.result
+  name          = "rds-password"
+  description   = "Password for RDS database"
+  initial_value = random_password.rds_password.result
 
   tags = {
     Environment = "dev"
