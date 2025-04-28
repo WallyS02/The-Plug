@@ -3,9 +3,9 @@ name: The Plug Terraform infrastructure CI/CD - plan
 on:
   pull_request:
     branches:
-      - cicd # TODO change to main after debug
+      - main
     paths:
-      - aws/iac
+      - aws/iac/**
   workflow_dispatch:
 
 env:
@@ -15,7 +15,7 @@ env:
   CONFIG_DIRECTORY: "./aws/iac"
 
 jobs:
-  format-and-validate:
+  plan:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,6 +26,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare variable values
+        run: |
+          cat > prod.auto.tfvars<< EOF
+          email_host_user_secret     = "${{ secrets.EMAIL_HOST_USER }}"
+          email_host_password_secret = "${{ secrets.EMAIL_HOST_PASSWORD }}"
+          secret_key_secret          = "${{ secrets.SECRET_KEY }}"
+          email                      = "${{ secrets.NOTIFICATION_EMAIL }}"
+          EOF
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -33,15 +42,6 @@ jobs:
 
       - name: Terraform Format
         run: terraform fmt -recursive
-
-      - name: Terraform Validate
-        run: terraform validate
-
-
-  plan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Upload Configuration
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0

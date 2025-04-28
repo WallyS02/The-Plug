@@ -26,16 +26,11 @@ module "ecs" {
 }
 
 module "email_host_password_secret" {
-  source = "./modules/secrets-manager"
+  source = "./modules/ssm-secret-parameter"
 
-  name              = "email-host-password"
-  description       = "Email host password for ECS"
-  enable_init_value = true
-  initial_value     = var.email_host_password_secret # use .tfvars file
-  rotation_enabled  = false
-  policy_statements = [
-    data.aws_iam_policy_document.ecs_access.json
-  ]
+  name          = "email-host-password"
+  description   = "Email host password for ECS"
+  initial_value = var.email_host_password_secret # use .tfvars file
 
   tags = {
     Environment = "dev"
@@ -43,16 +38,11 @@ module "email_host_password_secret" {
 }
 
 module "email_host_user_secret" {
-  source = "./modules/secrets-manager"
+  source = "./modules/ssm-secret-parameter"
 
-  name              = "email-host-user"
-  description       = "Email host user for ECS"
-  enable_init_value = true
-  initial_value     = var.email_host_user_secret # use .tfvars file
-  rotation_enabled  = false
-  policy_statements = [
-    data.aws_iam_policy_document.ecs_access.json
-  ]
+  name          = "email-host-user"
+  description   = "Email host user for ECS"
+  initial_value = var.email_host_user_secret # use .tfvars file
 
   tags = {
     Environment = "dev"
@@ -60,34 +50,13 @@ module "email_host_user_secret" {
 }
 
 module "secret_key_secret" {
-  source = "./modules/secrets-manager"
+  source = "./modules/ssm-secret-parameter"
 
-  name              = "secret-key-secret"
-  description       = "Secret Key for ECS"
-  enable_init_value = true
-  initial_value     = var.secret_key_secret # use .tfvars file
-  rotation_enabled  = false
-  policy_statements = [
-    data.aws_iam_policy_document.ecs_access.json
-  ]
+  name          = "secret-key-secret"
+  description   = "Secret Key for ECS"
+  initial_value = var.secret_key_secret # use .tfvars file
 
   tags = {
     Environment = "dev"
-  }
-}
-
-data "aws_iam_policy_document" "ecs_access" {
-  statement {
-    effect  = "Allow"
-    actions = ["secretsmanager:GetSecretValue"]
-    resources = [
-      module.email_host_password_secret.arn,
-      module.email_host_user_secret.arn,
-      module.secret_key_secret.arn
-    ]
-    principals {
-      type        = "AWS"
-      identifiers = [module.ecs.execution_role_arn]
-    }
   }
 }

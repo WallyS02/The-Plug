@@ -2,42 +2,54 @@ name: The Plug Django REST backend CI/CD
 
 on:
   push:
-    branches: [ cicd ] # TODO change to main after debug
+    branches: [ main ]
     paths:
       - backend/the_plug_backend_django/**
   pull_request:
-    branches: [ cicd ] # TODO change to main after debug
+    branches: [ main ]
     paths:
       - backend/the_plug_backend_django/**
   workflow_dispatch:
 
 env:
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+  EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+  DEBUG: ${{ secrets.DEBUG }}
+  CACHE_ENDPOINT: ${{ secrets.CACHE_ENDPOINT }}
+  CACHE_PASSWORD: ${{ secrets.CACHE_PASSWORD }}
   USE_CACHE: 0
   USE_CACHE_CONTAINER: 1
-  DOCKER_REGISTRY: 'docker.io/wallys'
+  DOCKER_REGISTRY: 'docker.io'
   BACKEND_IMAGE: 'wallys02/the-plug-backend'
   AWS_REGION: 'eu-north-1'
 
 jobs:
-  sonarcloud-backend:
+  sonarqube-backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: SonarCloud Linting + SAST scan
-        uses: SonarSource/sonarcloud-github-action@master
+      - name: SonarQube Linting + SAST scan
+        uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: backend/the_plug_backend_django
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BACKEND }}
 
 
   dependencies-and-test-backend:
     runs-on: ubuntu-latest
-    needs: [ sonarcloud-backend ]
+    needs: [ sonarqube-backend ]
+    if: github.ref == 'refs/heads/main'
     defaults:
       run:
         working-directory: backend/the_plug_backend_django
@@ -48,38 +60,25 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/the_plug_backend_django/requirements.txt') }}
+          cache: pip
+          cache-dependency-path: backend/the_plug_backend_django/requirements.txt
 
       - name: Install pip dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Run Django makemigrations
+        run: python manage.py makemigrations api
+
       - name: Run Django tests
         run: python manage.py test
-        env:
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-          EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
-          DEBUG: ${{ secrets.DEBUG }}
-          USE_CACHE: ${{ env.USE_CACHE }}
-          CACHE_ENDPOINT: ${{ secrets.CACHE_ENDPOINT }}
-          CACHE_PASSWORD: ${{ secrets.CACHE_PASSWORD }}
 
 
   e2e-tests:
     runs-on: ubuntu-latest
     needs: [ dependencies-and-test-backend ]
+    if: github.ref == 'refs/heads/main' && (success() || failure())
     steps:
       - uses: actions/checkout@v4
 
@@ -87,28 +86,23 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
+          cache: pip
+          cache-dependency-path: backend/the_plug_backend_django/requirements.txt
 
-      - name: Install pip dependencies
+      - name: Install cached pip dependencies
         working-directory: backend/the_plug_backend_django
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      - name: Export environment variables
-        working-directory: backend/the_plug_backend_django
-        run: |
-          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-          export DB_USER="${{ secrets.DB_USER }}"
-          export DB_NAME="${{ secrets.DB_NAME }}"
-          export DB_HOST="${{ secrets.DB_HOST }}"
-          export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}"
-          export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER }}"
-          export SECRET_KEY="${{ secrets.SECRET_KEY }}"
-          export ALLOWED_HOSTS="${{ secrets.ALLOWED_HOSTS }}"
-          export DEBUG="${{ secrets.DEBUG }}"
-          export USE_CACHE="${{ env.USE_CACHE }}"
-          export CACHE_ENDPOINT="${{ secrets.CACHE_ENDPOINT }}"
-          export CACHE_PASSWORD="${{ secrets.CACHE_PASSWORD }}"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/the_plug_svelte_frontend/package-lock.json
+
+      - name: Install cached npm dependencies
+        working-directory: frontend/the_plug_svelte_frontend
+        run: npm ci
 
       - name: Run Django makemigrations
         working-directory: backend/the_plug_backend_django
@@ -124,62 +118,107 @@ jobs:
 
       - name: Run Django backend
         working-directory: backend/the_plug_backend_django
-        run: python manage.py runserver 0.0.0.0:8080 --settings=the_plug_backend_django.e2e_test_settings
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install npm dependencies
-        working-directory: frontend/the_plug_svelte_frontend
-        run: npm install
+        run: python manage.py runserver 0.0.0.0:8080 --settings=the_plug_backend_django.e2e_test_settings &
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          config-file: frontend/the_plug_svelte_frontend/cypress.config.ts
+          config-file: cypress.config.ts
           browser: chrome
-          start: |
-            cd frontend/the_plug_svelte_frontend
-            npm run dev
-          wait-on: 'http://localhost, http://localhost:8080/api/herbs/list/'
-        env:
-          API_URL: 'http://localhost:8080/api/'
-          APP_URL: 'http://localhost'
+          wait-on: http://localhost:8080/api/herb/list/
+          config: baseUrl=http://localhost:4200
+          working-directory: frontend/the_plug_svelte_frontend
+          start: npm run dev -- --port 4200
 
 
   performance-tests:
     runs-on: ubuntu-latest
     needs: [ dependencies-and-test-backend ]
+    if: github.ref == 'refs/heads/main' && (success() || failure())
     defaults:
       run:
         working-directory: backend/the_plug_backend_django
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: pip
+          cache-dependency-path: backend/the_plug_backend_django/requirements.txt
+
+      - name: Install cached pip dependencies
+        working-directory: backend/the_plug_backend_django
+        run: pip install -r requirements.txt
+
+      - name: Run Django makemigrations
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py makemigrations api --settings=the_plug_backend_django.e2e_test_settings
+
+      - name: Run Django migrations
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py migrate --settings=the_plug_backend_django.e2e_test_settings
+
+      - name: Run Django loaddata
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py loaddata api/fixtures/herbs.json --settings=the_plug_backend_django.e2e_test_settings
+
+      - name: Run Django backend
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py runserver 0.0.0.0:8080 --settings=the_plug_backend_django.e2e_test_settings &
+
       - name: Install and run Locust
         run: |
           pip install locust
-          locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080
+          locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
 
 
   dast-tests:
     runs-on: ubuntu-latest
     needs: [ dependencies-and-test-backend ]
+    if: github.ref == 'refs/heads/main' && (success() || failure())
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: pip
+          cache-dependency-path: backend/the_plug_backend_django/requirements.txt
+
+      - name: Install cached pip dependencies
+        working-directory: backend/the_plug_backend_django
+        run: pip install -r requirements.txt
+
+      - name: Run Django makemigrations
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py makemigrations api --settings=the_plug_backend_django.e2e_test_settings
+
+      - name: Run Django migrations
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py migrate --settings=the_plug_backend_django.e2e_test_settings
+
+      - name: Run Django loaddata
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py loaddata api/fixtures/herbs.json --settings=the_plug_backend_django.e2e_test_settings
+
+      - name: Run Django backend
+        working-directory: backend/the_plug_backend_django
+        run: python manage.py runserver 0.0.0.0:8080 --settings=the_plug_backend_django.e2e_test_settings &
 
       - name: OWASP ZAP scan
         uses: zaproxy/action-full-scan@v0.12.0
         with:
-          target: http://localhost:8080
+          target: http://localhost:8080/api/
+          allow_issue_writing: false
 
 
   docker-build-and-push-backend:
     runs-on: ubuntu-latest
     needs: [ e2e-tests, performance-tests, dast-tests ]
-    if: always()
+    if: github.ref == 'refs/heads/main' && (success() || failure())
     steps:
       - uses: actions/checkout@v4
 
@@ -190,33 +229,30 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD  }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Export environment variables
-        working-directory: backend/the_plug_backend_django
-        run: |
-          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-          export DB_USER="${{ secrets.DB_USER }}"
-          export DB_NAME="${{ secrets.DB_NAME }}"
-          export DB_HOST="${{ secrets.DB_HOST }}"
-          export EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}"
-          export EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER }}"
-          export SECRET_KEY="${{ secrets.SECRET_KEY }}"
-          export ALLOWED_HOSTS="${{ secrets.ALLOWED_HOSTS }}"
-          export DEBUG="${{ secrets.DEBUG }}"
-          export USE_CACHE="${{ env.USE_CACHE_CONTAINER }}"
-          export CACHE_ENDPOINT="${{ secrets.CACHE_ENDPOINT }}"
-          export CACHE_PASSWORD="${{ secrets.CACHE_PASSWORD }}"
-
-      - name: Build and push backend image to Docker Hub and AWS ECR
+      - name: Build and push backend image to Docker Hub
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./backend/the_plug_backend_django/Dockerfile
+          context: ./backend/the_plug_backend_django
           push: true
-          tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
-            ${{ secrets.ECR_REGISTRY }}:latest
+          tags: ${{ env.DOCKER_REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Login to AWS ECR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ECR_REGISTRY }}
+          username: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Build and push backend image to AWS ECR
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend/the_plug_backend_django
+          push: true
+          tags: ${{ secrets.ECR_REGISTRY }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

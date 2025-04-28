@@ -9,12 +9,11 @@ module "ecr" {
     rules = [
       {
         rulePriority = 1
-        description  = "Remove untagged images older than 3 days"
+        description  = "Keep only one untagged image"
         selection = {
           tagStatus   = "untagged"
-          countType   = "sinceImagePushed"
-          countUnit   = "days"
-          countNumber = 3
+          countType   = "imageCountMoreThan"
+          countNumber = 1
         }
         action = {
           type = "expire"

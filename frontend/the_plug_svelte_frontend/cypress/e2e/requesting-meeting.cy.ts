@@ -4,7 +4,7 @@ describe('Requesting a meeting as a new user', () => {
     beforeEach(() => {
         cy.viewport(1280, 720);
         cy.setupInitialData('http://localhost:8080/api');
-        cy.visit('http://localhost');
+        cy.visit('/');
     })
 
     const testUser = {
@@ -28,7 +28,7 @@ describe('Requesting a meeting as a new user', () => {
         cy.contains('Registration successful!').should('exist');
 
         // Search on a map
-        cy.visit('/');
+        cy.get('a[id="home"]').click();
         cy.get('#map', { timeout: 10000 }).should('be.visible');
 
         // Choose location

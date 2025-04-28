@@ -64,9 +64,29 @@ resource "aws_subnet" "private" {
 }
 
 # NAT Instance
-resource "aws_key_pair" "nat_key" {
-  key_name   = "nat-key"
-  public_key = file("${path.module}/nat-key.pub")
+resource "aws_iam_role" "nat_instance_role" {
+  name = "nat-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.nat_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "nat-profile"
+  role = aws_iam_role.nat_instance_role.name
 }
 
 resource "aws_instance" "nat" {
@@ -76,7 +96,7 @@ resource "aws_instance" "nat" {
   associate_public_ip_address = true
   source_dest_check           = false
   ebs_optimized               = true
-  key_name                    = aws_key_pair.nat_key.key_name
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
 
   ebs_block_device {
     device_name           = "/dev/xvda"
@@ -90,13 +110,22 @@ resource "aws_instance" "nat" {
 
   user_data = <<-EOF
               #!/bin/bash
+              # NAT configuration
               sudo dnf install iptables-services -y
               sudo systemctl enable iptables
               sudo systemctl start iptables
               echo "net.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/custom-ip.conf
               sudo sysctl -p /etc/sysctl.d/custom-ip.conf
+              sudo /sbin/iptables -I FORWARD 1 -i ens5 -j ACCEPT
+              sudo /sbin/iptables -I FORWARD 2 -o ens5 -j ACCEPT
               sudo /sbin/iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
               sudo service iptables save
+              # SSM Agent
+              sudo yum update -y
+              sudo yum upgrade -y
+              sudo yum install -y amazon-ssm-agent
+              sudo systemctl enable amazon-ssm-agent
+              sudo systemctl start amazon-ssm-agent
               EOF
 
   tags = merge(var.tags, {

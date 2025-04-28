@@ -70,45 +70,15 @@ resource "random_password" "elasticache_password" {
 }
 
 module "secrets_elasticache" {
-  source = "./modules/secrets-manager"
+  source = "./modules/ssm-secret-parameter"
 
-  name              = "elasticache-auth-token"
-  description       = "Auth token for Elasticache"
-  enable_init_value = true
-  initial_value     = random_password.elasticache_password.result
-  rotation_enabled  = false
-  policy_statements = [
-    data.aws_iam_policy_document.elasticache_access.json,
-    data.aws_iam_policy_document.ecs_elasticache_access.json
-  ]
+  name          = "elasticache-auth-token"
+  description   = "Auth token for Elasticache"
+  initial_value = random_password.elasticache_password.result
 
   tags = {
     Environment = "dev"
   }
 
   depends_on = [random_password.elasticache_password]
-}
-
-data "aws_iam_policy_document" "elasticache_access" {
-  statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [module.secrets_elasticache.arn]
-    principals {
-      type        = "Service"
-      identifiers = ["elasticache.amazonaws.com"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "ecs_elasticache_access" {
-  statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [module.secrets_elasticache.arn]
-    principals {
-      type        = "AWS"
-      identifiers = [module.ecs.execution_role_arn]
-    }
-  }
 }

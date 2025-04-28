@@ -19,7 +19,7 @@
 
 <nav class="p-4 flex flex-wrap justify-between items-center bg-darkMossGreen text-olivine rounded">
     <div class="flex items-center space-x-4">
-        <a href="/" class="block p-2 bg-darkMossGreen hover:bg-asparagus transition-colors duration-300 rounded" use:link>
+        <a href="/" id="home" class="block p-2 bg-darkMossGreen hover:bg-asparagus transition-colors duration-300 rounded" use:link>
             <img src="/the-plug-512.png" alt="Home Logo" class="w-12 h-12 md:w-16 md:h-16">
         </a>
     </div>

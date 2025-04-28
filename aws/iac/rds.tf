@@ -71,45 +71,15 @@ resource "random_password" "rds_password" {
 }
 
 module "secrets_rds" {
-  source = "./modules/secrets-manager"
+  source = "./modules/ssm-secret-parameter"
 
-  name              = "rds-password"
-  description       = "Password for RDS database"
-  enable_init_value = true
-  initial_value     = random_password.rds_password.result
-  rotation_enabled  = false
-  policy_statements = [
-    data.aws_iam_policy_document.rds_access.json,
-    data.aws_iam_policy_document.ecs_rds_access.json
-  ]
+  name          = "rds-password"
+  description   = "Password for RDS database"
+  initial_value = random_password.rds_password.result
 
   tags = {
     Environment = "dev"
   }
 
   depends_on = [random_password.rds_password]
-}
-
-data "aws_iam_policy_document" "rds_access" {
-  statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [module.secrets_rds.arn]
-    principals {
-      type        = "Service"
-      identifiers = ["rds.amazonaws.com"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "ecs_rds_access" {
-  statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [module.secrets_rds.arn]
-    principals {
-      type        = "AWS"
-      identifiers = [module.ecs.execution_role_arn]
-    }
-  }
 }
