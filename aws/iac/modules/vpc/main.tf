@@ -64,6 +64,31 @@ resource "aws_subnet" "private" {
 }
 
 # NAT Instance
+resource "aws_iam_role" "nat_instance_role" {
+  name = "nat-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.nat_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "nat-profile"
+  role = aws_iam_role.nat_instance_role.name
+}
+
 resource "aws_instance" "nat" {
   ami                         = "ami-0274f4b62b6ae3bd5" # Amazon Linux 2023 AMI eu-north-1
   instance_type               = "t3.micro"
@@ -71,6 +96,7 @@ resource "aws_instance" "nat" {
   associate_public_ip_address = true
   source_dest_check           = false
   ebs_optimized               = true
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
 
   ebs_block_device {
     device_name           = "/dev/xvda"
@@ -90,6 +116,8 @@ resource "aws_instance" "nat" {
               sudo systemctl start iptables
               echo "net.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/custom-ip.conf
               sudo sysctl -p /etc/sysctl.d/custom-ip.conf
+              sudo /sbin/iptables -I FORWARD 1 -i ens5 -j ACCEPT
+              sudo /sbin/iptables -I FORWARD 2 -o ens5 -j ACCEPT
               sudo /sbin/iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
               sudo service iptables save
               # SSM Agent
