@@ -75,7 +75,7 @@ This will start the development server, and you can access the application at ht
 - [x] build backend application
 - [x] build frontend application
 - [x] build docker deployment
-- [ ] build github workflow cicd
+- [x] build github workflow cicd
 - [x] complete final README
 - [x] deploy application
 ## Authors
