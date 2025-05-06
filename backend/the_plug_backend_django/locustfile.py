@@ -29,7 +29,7 @@ class APIUser(HttpUser):
 
         if buyer_response.status_code == 201:
             self.buyer_user_id = buyer_response.json()["user"]["id"]
-            self.buyer_headers = {"Authorization": f"Token {buyer_response.json()["token"]}"}
+            self.buyer_headers = {"Authorization": f"Token {buyer_response.json()['token']}"}
 
         response = self.client.post("/register", json={
             "username": self.username,
@@ -38,7 +38,7 @@ class APIUser(HttpUser):
 
         if response.status_code == 201:
             self.user_id = response.json()["user"]["id"]
-            self.headers = {"Authorization": f"Token {response.json()["token"]}"}
+            self.headers = {"Authorization": f"Token {response.json()['token']}"}
 
             plug_data = {
                 "app_user": self.user_id

@@ -58,3 +58,6 @@ aws/iac/*tfplan*
 # Ignore CLI configuration files
 aws/iac/.terraformrc
 aws/iac/terraform.rc
+
+# gitlab-ci-local
+.cache

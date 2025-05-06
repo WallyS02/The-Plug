@@ -28,3 +28,4 @@ values.yaml
 run-helm.sh
 publish-new-chart-version.sh
 plug-namespace.yaml
+.gitlab-ci.yml

@@ -1,0 +1,175 @@
+# Pipeline that runs stages locally
+# Must have preinstalled: Docker, Python, Pip, Locust, Node.js, Chrome browser, Helm
+# Must have running local Kubernetes cluster (tested with Minikube)
+
+stages:
+  - sonarqube
+  - test
+  - run-backend
+  - run-frontend
+  - e2e-tests
+  - performance-tests
+  - dast-tests
+  - stop-backend-and-frontend
+  - deploy
+  - helm
+
+variables:
+  DB_PASSWORD: $DB_PASSWORD
+  DB_USER: $DB_USER
+  DB_NAME: $DB_NAME
+  DB_HOST: $DB_HOST
+  EMAIL_HOST_PASSWORD: $EMAIL_HOST_PASSWORD
+  EMAIL_HOST_USER: $EMAIL_HOST_USER
+  SECRET_KEY: $SECRET_KEY
+  ALLOWED_HOSTS: $ALLOWED_HOSTS
+  DEBUG: $DEBUG
+  CACHE_ENDPOINT: $CACHE_ENDPOINT
+  CACHE_PASSWORD: $CACHE_PASSWORD
+  SONAR_TOKEN_BACKEND: $SONAR_TOKEN_BACKEND
+  DOCKER_USERNAME: $DOCKER_USERNAME
+  DOCKER_PASSWORD: $DOCKER_PASSWORD
+  USE_CACHE: "0"
+  DOCKER_REGISTRY: "docker.io"
+  BACKEND_IMAGE: "wallys02/the-plug-backend"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.cache/npm"
+
+cache:
+  paths:
+    - .cache/pip
+    - .cache/npm
+    - frontend/the_plug_svelte_frontend/node_modules
+
+
+# @Description SonarQube backend scan
+sonarqube-backend:
+  stage: sonarqube
+  image: sonarsource/sonar-scanner-cli:latest
+  script:
+    - sonar-scanner
+      -Dsonar.projectBaseDir=backend/the_plug_backend_django
+      -Dsonar.token=$SONAR_TOKEN_BACKEND
+
+
+# @Description Backend dependencies and tests
+dependencies-and-test-backend:
+  stage: test
+  needs: ["sonarqube-backend"]
+  when: on_success
+  allow_failure: true
+  script:
+    - cd backend/the_plug_backend_django
+    - python3 -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - python3 manage.py makemigrations api
+    - python3 manage.py test
+  cache:
+    key: backend-dependencies
+    paths:
+      - .cache/pip
+    policy: pull-push
+
+
+# @Description Running backend for blackbox tests
+run-backend:
+  stage: run-backend
+  needs: ["dependencies-and-test-backend"]
+  when: always
+  script:
+    - cd backend/the_plug_backend_django
+    - python3 manage.py makemigrations api --settings=the_plug_backend_django.e2e_test_settings
+    - python3 manage.py migrate --settings=the_plug_backend_django.e2e_test_settings
+    - python3 manage.py loaddata api/fixtures/herbs.json --settings=the_plug_backend_django.e2e_test_settings
+    - python3 manage.py runserver 0.0.0.0:8080 --settings=the_plug_backend_django.e2e_test_settings &
+
+
+# @Description Running frontend for blackbox tests
+run-frontend:
+  stage: run-frontend
+  needs: ["dependencies-and-test-backend"]
+  when: always
+  script:
+    - cd frontend/the_plug_svelte_frontend
+    - npm ci
+    - npm run dev -- --port 4200 &
+
+
+# @Description Running e2e tests
+e2e-tests:
+  stage: e2e-tests
+  needs: ["run-backend", "run-frontend"]
+  when: on_success
+  allow_failure: true
+  script:
+    - cd frontend/the_plug_svelte_frontend
+    - npx wait-on http://localhost:8080/api/herb/list/
+    - npx wait-on http://localhost:4200
+    - npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200
+
+
+# @Description Running performance tests
+performance-tests:
+  stage: performance-tests
+  needs: ["run-backend"]
+  when: on_success
+  allow_failure: true
+  script:
+    - cd backend/the_plug_backend_django
+    - locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
+
+
+# @Description Running DAST tests
+dast-tests:
+  stage: dast-tests
+  when: on_success
+  needs: ["dependencies-and-test-backend"]
+  image: ghcr.io/zaproxy/zaproxy:stable
+  allow_failure: true
+  services:
+  - name: wallys02/the-plug-backend:latest
+    entrypoint: ["./test-entrypoint.sh"]
+    alias: backend-service
+  script:
+    - mkdir -p /zap/wrk
+    - zap-full-scan.py -t http://backend-service:8080/api/
+
+
+# @Description Stop running backend and frontend, clear data
+stop-backend-and-frontend:
+  stage: stop-backend-and-frontend
+  needs: ["e2e-tests", "performance-tests", "dast-tests"]
+  when: always
+  script:
+    - kill -9 $(lsof -t -i :8080)
+    - kill -9 $(lsof -t -i :4200)
+    - rm backend/the_plug_backend_django/db.sqlite3
+
+
+# @Description Building and pushing Docker image to registry
+docker-build-and-push-backend:
+  stage: deploy
+  needs: ["stop-backend-and-frontend"]
+  when: on_success
+  before_script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+  script:
+    - docker buildx create --use
+    - docker buildx build
+      --push
+      --cache-from type=registry,ref=$BACKEND_IMAGE:buildcache
+      --cache-to type=registry,ref=$BACKEND_IMAGE:buildcache,mode=max
+      -t $DOCKER_REGISTRY/$BACKEND_IMAGE:latest
+      ./backend/the_plug_backend_django
+
+
+# @Description Upgrading Helm charts release and running deployment
+helm-upgrade:
+  stage: helm
+  needs: ["docker-build-and-push-backend"]
+  when: on_success
+  script: |
+     cd ./k8s/helm/the-plug
+     chmod +x ./run-helm.sh
+     ./run-helm.sh
+     kubectl rollout restart deployment/backend --namespace plug-namespace

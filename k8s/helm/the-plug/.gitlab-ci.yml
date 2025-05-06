@@ -1,0 +1,31 @@
+# Pipeline that runs stages locally
+# Must have preinstalled: Docker, Helm
+# Must have running local Kubernetes cluster (tested with Minikube)
+
+stages:
+  - publish-chart
+  - upgrade-chart
+
+variables:
+  CHART_VERSION: $CHART_VERSION
+
+
+# @Description Building and publishing new chart version
+publish-chart:
+  stage: publish-chart
+  script: |
+     cd ./k8s/helm/the-plug
+     chmod +x ./publish-new-chart-version.sh
+     ./publish-new-chart-version.sh $CHART_VERSION
+
+
+# @Description Upgrading Helm charts
+upgrade-chart:
+  stage: upgrade-chart
+  needs: ["publish-chart"]
+  when: on_success
+  script: |
+     cd ./k8s/helm/the-plug
+     chmod +x ./run-helm.sh
+     sleep 1.5m
+     ./run-helm.sh

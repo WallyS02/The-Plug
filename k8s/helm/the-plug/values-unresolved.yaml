@@ -1,10 +1,12 @@
 namespace: plug-namespace
 
 backendConfigMap:
-  dbHost: db-service
-  webAppUrl: http://frontend-service
+  dbHost: db-service:5432
   allowedHosts: "*"
   debug: "1"
+  useCache: "0"
+  cacheEndpoint: "no"
+  cachePassword: "no"
 
 backendDbNetworkPolicy:
   dbPort: 5432
@@ -17,7 +19,7 @@ backendDeployment:
   requestsCpu: "250m"
   limitsMemory: "2048Mi"
   limitsCpu: "500m"
-  livenessAndReadinessProbePath: /api/drug/list/
+  livenessAndReadinessProbePath: /api/herb/list/
   livenessProbeInitialDelaySeconds: 15
   livenessProbePeriodSeconds: 10
   readinessProbeInitialDelaySeconds: 5
@@ -32,9 +34,9 @@ backendHpa:
   memoryAverageUtilization: 50
 
 backendSecret:
-  dbName: ${POSTGRES_DB}
-  dbUser: ${POSTGRES_USER}
-  dbPassword: ${POSTGRES_PASSWORD}
+  dbName: ${DB_NAME}
+  dbUser: ${DB_USER}
+  dbPassword: ${DB_PASSWORD}
   emailHostUser: ${EMAIL_HOST_USER}
   emailHostPassword: ${EMAIL_HOST_PASSWORD}
   secretKey: ${SECRET_KEY}
@@ -53,9 +55,9 @@ dbPvc:
   storage: 100Mi
 
 dbSecret:
-  postgresDb: ${POSTGRES_DB}
-  postgresUser: ${POSTGRES_USER}
-  postgresPassword: ${POSTGRES_PASSWORD}
+  postgresDb: ${DB_NAME}
+  postgresUser: ${DB_USER}
+  postgresPassword: ${DB_PASSWORD}
 
 dbService:
   port: 5432
