@@ -35,13 +35,13 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /api/drug/list/
+            path: /api/herb/list/
             port: 8080
           initialDelaySeconds: 15
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /api/drug/list/
+            path: /api/herb/list/
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
