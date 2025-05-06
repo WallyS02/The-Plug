@@ -11,4 +11,5 @@ cd The-Plug-Charts
 git add .
 git commit -m "Added new Helm Chart $1 version for The Plug application"
 git push origin main
+cd ..
 rm -rf The-Plug-Charts
