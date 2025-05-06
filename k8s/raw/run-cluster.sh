@@ -17,14 +17,14 @@ k apply -f ./deployments/pgadmin-deployment.yaml
 k apply -f ./services/pgadmin-service.yaml
 k apply -f ./config-maps/backend-config-map.yaml
 k apply -f ./secrets/backend-secret-resolved.yaml
-k apply -f ./deploymentsbackend-deployment.yaml
-k apply -f ./servicesbackend-service.yaml
-k apply -f ./hpasbackend-hpa.yaml
-k apply -f ./network-policiesbackend-db-network-policy.yaml
-k apply -f ./deploymentsfrontend-deployment.yaml
-k apply -f ./servicesfrontend-service.yaml
-k apply -f ./hpasfrontend-hpa.yaml
-k apply -f ./network-policiesfrontend-backend-network-policy.yaml
-k apply -f ./ingressesingress.yaml
+k apply -f ./deployments/backend-deployment.yaml
+k apply -f ./services/backend-service.yaml
+k apply -f ./hpas/backend-hpa.yaml
+k apply -f ./network-policies/backend-db-network-policy.yaml
+k apply -f ./deployments/frontend-deployment.yaml
+k apply -f ./services/frontend-service.yaml
+k apply -f ./hpas/frontend-hpa.yaml
+k apply -f ./network-policies/frontend-backend-network-policy.yaml
+k apply -f ./ingresses/ingress.yaml
 k config set-context --current --namespace=plug-namespace
 # minikube tunnel # command asks for password for permissions

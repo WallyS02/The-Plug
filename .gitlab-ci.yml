@@ -1,0 +1,36 @@
+# Run with gitlab-ci-local --variables-file .env
+# Use standard .env file with secret variables values
+
+stages:
+  - trigger
+
+workflow:
+  rules:
+    - { if: $GITLAB_CI == 'false' }
+
+trigger_backend:
+  stage: trigger
+  trigger:
+    include: backend/the_plug_backend_django/.gitlab-ci.yml
+    strategy: depend
+  rules:
+    - changes:
+        - backend/the_plug_backend_django/**/*
+
+#trigger_frontend:
+#  stage: trigger
+#  trigger:
+#    include: frontend/the_plug_svelte_frontend/.gitlab-ci.yml
+#    strategy: depend
+#  rules:
+#    - changes:
+#        - frontend/the_plug_svelte_frontend/**/*
+#
+#trigger_helm:
+#  stage: trigger
+#  trigger:
+#    include: k8s/helm/the-plug/.gitlab-ci.yml
+#    strategy: depend
+#  rules:
+#    - changes:
+#        - k8s/helm/the-plug/**/*

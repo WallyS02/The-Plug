@@ -7,6 +7,8 @@ metadata:
     plug: backend-config-map
 data:
   DB_HOST: {{ .Values.backendConfigMap.dbHost }}
-  WEB_APP_URL: {{ .Values.backendConfigMap.webAppUrl }}
   ALLOWED_HOSTS: {{ .Values.backendConfigMap.allowedHosts | quote }}
   DEBUG: {{ .Values.backendConfigMap.debug | quote }}
+  USE_CACHE: {{ .Values.backendConfigMap.useCache | quote }}
+  CACHE_ENDPOINT: {{ .Values.backendConfigMap.cacheEndpoint | quote }}
+  CACHE_PASSWORD: {{ .Values.backendConfigMap.cachePassword | quote }}
