@@ -17,20 +17,20 @@ trigger_backend:
     - changes:
         - backend/the_plug_backend_django/**/*
 
-#trigger_frontend:
-#  stage: trigger
-#  trigger:
-#    include: frontend/the_plug_svelte_frontend/.gitlab-ci.yml
-#    strategy: depend
-#  rules:
-#    - changes:
-#        - frontend/the_plug_svelte_frontend/**/*
-#
-#trigger_helm:
-#  stage: trigger
-#  trigger:
-#    include: k8s/helm/the-plug/.gitlab-ci.yml
-#    strategy: depend
-#  rules:
-#    - changes:
-#        - k8s/helm/the-plug/**/*
+trigger_frontend:
+  stage: trigger
+  trigger:
+    include: frontend/the_plug_svelte_frontend/.gitlab-ci.yml
+    strategy: depend
+  rules:
+    - changes:
+        - frontend/the_plug_svelte_frontend/**/*
+
+trigger_helm:
+  stage: trigger
+  trigger:
+    include: k8s/helm/the-plug/.gitlab-ci.yml
+    strategy: depend
+  rules:
+    - changes:
+        - k8s/helm/the-plug/**/*

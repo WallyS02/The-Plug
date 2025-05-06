@@ -1,5 +1,5 @@
 # Pipeline that runs stages locally
-# Must have preinstalled: Docker, Python, Pip, Locust, Node.js, Chrome browser, Helm
+# Must have preinstalled: Docker, Python, Pip, Node.js, Chrome browser, Helm
 # Must have running local Kubernetes cluster (tested with Minikube)
 
 stages:
@@ -26,12 +26,12 @@ variables:
   DEBUG: $DEBUG
   CACHE_ENDPOINT: $CACHE_ENDPOINT
   CACHE_PASSWORD: $CACHE_PASSWORD
-  SONAR_TOKEN_BACKEND: $SONAR_TOKEN_BACKEND
+  $SONAR_TOKEN_FRONTEND: $SONAR_TOKEN_FRONTEND
   DOCKER_USERNAME: $DOCKER_USERNAME
   DOCKER_PASSWORD: $DOCKER_PASSWORD
   USE_CACHE: "0"
   DOCKER_REGISTRY: "docker.io"
-  BACKEND_IMAGE: "wallys02/the-plug-backend"
+  FRONTEND_IMAGE: "wallys02/the-plug-frontend"
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.cache/npm"
 
@@ -42,39 +42,38 @@ cache:
     - frontend/the_plug_svelte_frontend/node_modules
 
 
-# @Description SonarQube backend scan
-sonarqube-backend:
+# @Description SonarQube frontend scan
+sonarqube-frontend:
   stage: sonarqube
   image: sonarsource/sonar-scanner-cli:latest
   script:
     - sonar-scanner
-      -Dsonar.projectBaseDir=backend/the_plug_backend_django
-      -Dsonar.token=$SONAR_TOKEN_BACKEND
+      -Dsonar.projectBaseDir=frontend/the_plug_svelte_frontend
+      -Dsonar.token=$SONAR_TOKEN_FRONTEND
 
 
-# @Description Backend dependencies and tests
-dependencies-and-test-backend:
+# @Description Frontend dependencies and tests
+dependencies-and-test-frontend:
   stage: test
-  needs: ["sonarqube-backend"]
+  needs: ["sonarqube-frontend"]
   when: on_success
   allow_failure: true
   script:
-    - cd backend/the_plug_backend_django
-    - python3 -m pip install --upgrade pip
-    - pip install -r requirements.txt
-    - python3 manage.py makemigrations api
-    - python3 manage.py test
+    - cd frontend/the_plug_svelte_frontend
+    - npm ci
+    - npm run test
   cache:
-    key: backend-dependencies
+    key: frontend-dependencies
     paths:
-      - .cache/pip
+      - .cache/npm
+      - frontend/the_plug_svelte_frontend/node_modules
     policy: pull-push
 
 
 # @Description Running backend for blackbox tests
 run-backend:
   stage: run-backend
-  needs: ["dependencies-and-test-backend"]
+  needs: ["dependencies-and-test-frontend"]
   when: always
   script:
     - cd backend/the_plug_backend_django
@@ -87,7 +86,7 @@ run-backend:
 # @Description Running frontend for blackbox tests
 run-frontend:
   stage: run-frontend
-  needs: ["dependencies-and-test-backend"]
+  needs: ["dependencies-and-test-frontend"]
   when: always
   script:
     - cd frontend/the_plug_svelte_frontend
@@ -111,28 +110,31 @@ e2e-tests:
 # @Description Running performance tests
 performance-tests:
   stage: performance-tests
-  needs: ["run-backend"]
+  needs: ["run-frontend"]
   when: on_success
   allow_failure: true
   script:
-    - cd backend/the_plug_backend_django
-    - locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
+    - cd frontend/the_plug_svelte_frontend
+    - export CHROME_PATH="/usr/bin/google-chrome"
+    - lighthouse http://localhost:4200 --chrome-flags="--headless" --output json --output-path ./lighthouse-results.json
 
 
 # @Description Running DAST tests
 dast-tests:
   stage: dast-tests
   when: on_success
-  needs: ["dependencies-and-test-backend"]
+  needs: ["dependencies-and-test-frontend"]
   image: ghcr.io/zaproxy/zaproxy:stable
   allow_failure: true
   services:
   - name: wallys02/the-plug-backend:latest
     entrypoint: ["./test-entrypoint.sh"]
     alias: backend-service
+  - name: wallys02/the-plug-frontend:latest
+    alias: frontend
   script:
     - mkdir -p /zap/wrk
-    - zap-full-scan.py -t http://backend-service:8080/api/
+    - zap-full-scan.py -t http://frontend:8080
 
 
 # @Description Stop running backend and frontend, clear data
@@ -147,7 +149,7 @@ stop-backend-and-frontend:
 
 
 # @Description Building and pushing Docker image to registry
-docker-build-and-push-backend:
+docker-build-and-push-frontend:
   stage: deploy
   needs: ["stop-backend-and-frontend"]
   when: on_success
@@ -157,19 +159,19 @@ docker-build-and-push-backend:
     - docker buildx create --use
     - docker buildx build
       --push
-      --cache-from type=registry,ref=$BACKEND_IMAGE:buildcache
-      --cache-to type=registry,ref=$BACKEND_IMAGE:buildcache,mode=max
-      -t $DOCKER_REGISTRY/$BACKEND_IMAGE:latest
-      ./backend/the_plug_backend_django
+      --cache-from type=registry,ref=$FRONTEND_IMAGE:buildcache
+      --cache-to type=registry,ref=$FRONTEND_IMAGE:buildcache,mode=max
+      -t $DOCKER_REGISTRY/$FRONTEND_IMAGE:latest
+      ./frontend/the_plug_svelte_frontend
 
 
 # @Description Upgrading Helm charts release and running deployment
 helm-upgrade:
   stage: helm
-  needs: ["docker-build-and-push-backend"]
+  needs: ["docker-build-and-push-frontend"]
   when: on_success
   script: |
      cd ./k8s/helm/the-plug
      chmod +x ./run-helm.sh
      ./run-helm.sh
-     kubectl rollout restart deployment/backend --namespace plug-namespace
+     kubectl rollout restart deployment/frontend --namespace plug-namespace
