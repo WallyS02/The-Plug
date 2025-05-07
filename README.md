@@ -45,10 +45,11 @@ Make migrations and migrate
 ```bash
   python manage.py makemigrations
   python manage.py migrate
+  python manage.py loaddata api/fixtures/herbs.json
 ```
 Run application
 ```
-  python manage.py runserver localhost:8080
+  python manage.py runserver 0.0.0.0:8080
 ```
 Once the application is running, you can access it locally by navigating to http://localhost:8080.
 
@@ -69,6 +70,16 @@ Run the Development Server
   npm run dev
 ```
 This will start the development server, and you can access the application at http://localhost:80 in your web browser.
+
+## Important directories and files
+* **.github** - directory that contains GitHub Actions pipelines
+* **aws** - directory that contains AWS cloud architecture for application and it's implementation using IaC practise with Terraform
+* **backend** - directory that contains backend application code
+* **documentation** - directory that contains application design and it's diagrams
+* **frontend** - directory that contains frontend application code
+* **k8s** - directory that contains raw Kubernetes manifests and Helm charts for application, also contains some utility bash scripts
+* **.gitlab-ci.yml** - main GitLab CI/CD pipeline, which uses gitlab-ci-local, that triggers child pipelines located in backend, frontend and k8s subdirectories
+* **docker-compose-local.yml** - docker-compose file that allows running application locally
 
 ## Roadmap
 - [x] build project diagrams
