@@ -82,12 +82,15 @@ This will start the development server, and you can access the application at ht
 * **docker-compose-local.yml** - docker-compose file that allows running application locally
 
 ## Roadmap
-- [x] build project diagrams
-- [x] build backend application
-- [x] build frontend application
-- [x] build docker deployment
-- [x] build github workflow cicd
+- [x] prepare project design
+- [x] create backend application
+- [x] create frontend application
+- [x] create Docker images
+- [x] create Kubernetes (raw + Helm) deployment
+- [x] prepare AWS cloud architecture
+- [x] create example unit, integration, e2e and performance tests
+- [x] create IaC Terraform configuration for application's AWS cloud
+- [ ] create GitHub Actions, GitLab CI/CD (gitlab-ci-local) and Jenkins CI/CD pipelines
 - [x] complete final README
-- [x] deploy application
 ## Authors
 - [@WallyS02](https://github.com/WallyS02) everything
