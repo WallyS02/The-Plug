@@ -32,12 +32,20 @@ pipeline {
         pollSCM '* * * * *'
     }
 
+    tools {
+
+    }
+
     stages {
             stage('SonarQube Analysis') {
+                environment {
+                    SCANNER_HOME = tool 'sonar-scanner-7'
+                }
+
                 steps {
                     dir("${BACKEND_DIR}") {
                         withSonarQubeEnv('sonar-backend') {
-                            sh("sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=${SONAR_TOKEN_BACKEND}")
+                            sh("${SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=${SONAR_TOKEN_BACKEND}")
                         }
                     }
                 }
