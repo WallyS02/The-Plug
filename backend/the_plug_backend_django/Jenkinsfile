@@ -4,22 +4,24 @@ pipeline {
     environment {
         SONAR_TOKEN_BACKEND = credentials('sonar-token-backend')
         DB_PASSWORD = credentials('db-password')
-        DB_USER= "admin"
-        DB_NAME= "postgres"
-        DB_HOST= "localhost:5432"
+        DB_USER = 'admin'
+        DB_NAME = 'postgres'
+        DB_HOST = 'localhost:5432'
         EMAIL_HOST_PASSWORD = credentials('email-host-password')
         EMAIL_HOST_USER = credentials('email-host-user')
         SECRET_KEY = credentials('secret-key')
-        ALLOWED_HOSTS = "*"
-        DEBUG = "1"
-        CACHE_ENDPOINT = "no"
-        CACHE_PASSWORD = "no"
-        USE_CACHE = "0"
-        DOCKER_REGISTRY = "https://docker.io"
-        BACKEND_IMAGE = "wallys02/the-plug-backend"
+        ALLOWED_HOSTS = '*'
+        DEBUG = '1'
+        CACHE_ENDPOINT = 'no'
+        CACHE_PASSWORD = 'no'
+        USE_CACHE = '0'
+        DOCKER_REGISTRY = 'https://docker.io'
+        BACKEND_IMAGE = 'wallys02/the-plug-backend'
         PIP_CACHE_DIR = "${env.HOME}/.cache/pip"
         NPM_CONFIG_CACHE = "${env.HOME}/.cache/npm"
         KUBECONFIG = "${env.HOME}/.kube/config"
+        BACKEND_DIR = 'backend/the_plug_backend_django'
+        FRONTEND_DIR = 'frontend/the_plug_svelte_frontend'
     }
 
     triggers {
@@ -29,7 +31,7 @@ pipeline {
     stages {
             stage('SonarQube Analysis') {
                 steps {
-                    dir('backend/the_plug_backend_django') {
+                    dir($BACKEND_DIR) {
                         withSonarQubeEnv('SonarQube-Server') {
                             sh 'sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=$SONAR_TOKEN_BACKEND'
                         }
@@ -39,7 +41,7 @@ pipeline {
 
             stage('Backend Tests') {
                 steps {
-                    dir('backend/the_plug_backend_django') {
+                    dir($BACKEND_DIR) {
                         sh '''
                             python3 -m pip install --upgrade pip
                             pip install -r requirements.txt
@@ -53,8 +55,8 @@ pipeline {
             stage('Run Services') {
                 steps {
                     parallel(
-                        "Backend": {
-                            dir('backend/the_plug_backend_django') {
+                        'Backend': {
+                            dir($BACKEND_DIR) {
                                 sh '''
                                     python3 manage.py migrate --settings=the_plug_backend_django.e2e_test_settings
                                     python3 manage.py loaddata api/fixtures/herbs.json --settings=the_plug_backend_django.e2e_test_settings
@@ -62,8 +64,8 @@ pipeline {
                                 '''
                             }
                         },
-                        "Frontend": {
-                            dir('frontend/the_plug_svelte_frontend') {
+                        'Frontend': {
+                            dir($FRONTEND_DIR) {
                                 sh '''
                                     npm ci
                                     nohup npm run dev -- --port 4200 &
@@ -76,7 +78,7 @@ pipeline {
 
             stage('E2E Tests') {
                 steps {
-                    dir('frontend/the_plug_svelte_frontend') {
+                    dir($FRONTEND_DIR) {
                         sh '''
                             npx wait-on http://localhost:8080/api/herb/list/
                             npx wait-on http://localhost:4200
@@ -88,7 +90,7 @@ pipeline {
 
             stage('Performance Tests') {
                 steps {
-                    dir('backend/the_plug_backend_django') {
+                    dir($BACKEND_DIR) {
                         sh 'locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api'
                     }
                 }
@@ -121,7 +123,7 @@ pipeline {
                 steps {
                     script {
                         docker.withRegistry($DOCKER_REGISTRY, 'dockerhub-creds') {
-                            docker.build("wallys02/the-plug-backend:latest", "./backend/the_plug_backend_django")
+                            docker.build('wallys02/the-plug-backend:latest', './backend/the_plug_backend_django')
                                 .push()
                         }
                     }
@@ -139,12 +141,11 @@ pipeline {
                     }
                 }
             }
-        }
+    }
 
-        post {
-            always {
-                cleanWs()
-            }
+    post {
+        always {
+            cleanWs()
         }
     }
 }
