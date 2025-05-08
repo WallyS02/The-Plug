@@ -10,16 +10,15 @@ export default defineConfig({
     video: false,
     supportFile: 'cypress/support/e2e.{js,jsx,ts,tsx}',
 
+    env: {
+      apiUrl: 'http://localhost:8080/api'
+    },
+
     setupNodeEvents(on, config) {
       on('file:preprocessor', vitePreprocessor());
       config = cypressBrowserPermissionsPlugin.cypressBrowserPermissionsPlugin(on, config);
       config.env = {
         ...config.env,
-        apiUrl: 'http://localhost:8080/api',
-        testCredentials: {
-          adminUser: 'test-admin',
-          adminPass: 'admin123'
-        },
         browserPermissions: {
           geolocation: "block"
         }

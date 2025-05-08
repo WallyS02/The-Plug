@@ -99,6 +99,7 @@ pipeline {
                 }
             }
 
+            // TODO debug
             stage('E2E Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -110,7 +111,7 @@ pipeline {
                             sh '''
                                 npx wait-on http-get://127.0.0.1:8080/api/herb/list/
                                 npx wait-on http-get://127.0.0.1:4200
-                                npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200
+                                npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://127.0.0.1:4200 env.apiUrl=http://127.0.0.1:8080/api/herb/list/
                             '''
                         }
                     }
@@ -129,8 +130,9 @@ pipeline {
                         }
                     }
                 }
-            }*/ //
+            }*/
 
+            // TODO debug
             stage('DAST Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -148,20 +150,7 @@ pipeline {
                 }
             }
 
-            stage('Cleanup') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
-
-                steps {
-                    sh '''
-                        pkill -f "python3 manage.py runserver" || true
-                        pkill -f "npm run dev" || true
-                        rm -f backend/the_plug_backend_django/db.sqlite3
-                    '''
-                }
-            }
-
+            // TODO debug
             stage('Docker Build & Push') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -177,6 +166,7 @@ pipeline {
                 }
             }
 
+            // TODO debug
             stage('Helm Deployment') {
                 when {
                     changeset "${CHANGESET_DIR}"
