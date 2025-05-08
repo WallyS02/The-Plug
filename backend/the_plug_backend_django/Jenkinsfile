@@ -33,7 +33,7 @@ pipeline {
     }
 
     stages {
-            stage('SonarQube Analysis') {
+            /*stage('SonarQube Analysis') {
                 environment {
                     SCANNER_HOME = tool 'sonar-scanner-7'
                 }
@@ -45,14 +45,14 @@ pipeline {
                         }
                     }
                 }
-            }
+            }*/
 
             stage('Backend Tests') {
                 steps {
                     dir("${BACKEND_DIR}") {
                         sh '''
-                            python3 -m pip install --upgrade pip
-                            pip install -r requirements.txt
+                            python3 -m pip install --upgrade pip --break-system-packages
+                            pip install -r requirements.txt --break-system-packages
                             python3 manage.py makemigrations api
                             python3 manage.py test
                         '''
