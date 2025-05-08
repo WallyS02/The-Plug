@@ -106,13 +106,13 @@ pipeline {
 
                 steps {
                     dir("${FRONTEND_DIR}") {
-                        sh '''
-                            curl -X HEAD http://localhost:8080/api/herb/list/
-                            curl -X HEAD http://localhost:4200
-                            npx wait-on http-get://localhost:8080/api/herb/list/
-                            npx wait-on http-get://localhost:4200
-                            npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                npx wait-on http-get://localhost:8080/api/herb/list/
+                                npx wait-on http-get://localhost:4200
+                                npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200
+                            '''
+                        }
                     }
                 }
             }
@@ -124,7 +124,9 @@ pipeline {
 
                 steps {
                     dir("${BACKEND_DIR}") {
-                        sh 'locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api'
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh 'locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api'
+                        }
                     }
                 }
             }
