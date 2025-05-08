@@ -36,8 +36,8 @@ pipeline {
             stage('SonarQube Analysis') {
                 steps {
                     dir("${BACKEND_DIR}") {
-                        withSonarQubeEnv('SonarQube-Server') {
-                            sh 'sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=$SONAR_TOKEN_BACKEND'
+                        withSonarQubeEnv('sonar-backend') {
+                            sh("sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=${SONAR_TOKEN_BACKEND}")
                         }
                     }
                 }
