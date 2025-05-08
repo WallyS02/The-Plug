@@ -26,6 +26,7 @@ pipeline {
         KUBECONFIG = "${env.HOME}/.kube/config"
         BACKEND_DIR = 'backend/the_plug_backend_django'
         FRONTEND_DIR = 'frontend/the_plug_svelte_frontend'
+        CHANGESET_DIR = 'backend/**'
     }
 
     triggers {
@@ -49,11 +50,11 @@ pipeline {
                         }
                     }
                 }
-            }*/
+            }
 
             stage('Backend Tests') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
 
                 steps {
@@ -68,11 +69,11 @@ pipeline {
                         }
                     }
                 }
-            }
+            }*/
 
             stage('Run Services') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
 
                 steps {
@@ -100,7 +101,7 @@ pipeline {
 
             stage('E2E Tests') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
 
                 steps {
@@ -116,7 +117,7 @@ pipeline {
 
             stage('Performance Tests') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
 
                 steps {
@@ -128,7 +129,7 @@ pipeline {
 
             stage('DAST Tests') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
 
                 steps {
@@ -145,7 +146,7 @@ pipeline {
 
             stage('Cleanup') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
 
                 steps {
@@ -159,7 +160,7 @@ pipeline {
 
             stage('Docker Build & Push') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
 
                 steps {
@@ -174,9 +175,9 @@ pipeline {
 
             stage('Helm Deployment') {
                 when {
-                    changeset 'backend/**'
+                    changeset "${CHANGESET_DIR}"
                 }
-                
+
                 steps {
                     dir('k8s/helm/the-plug') {
                         sh '''
