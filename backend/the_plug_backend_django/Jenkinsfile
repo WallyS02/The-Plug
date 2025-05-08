@@ -108,8 +108,8 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                npx wait-on http-get://localhost:8080/api/herb/list/
-                                npx wait-on http-get://localhost:4200
+                                npx wait-on http-get://127.0.0.1:8080/api/herb/list/
+                                npx wait-on http-get://127.0.0.1:4200
                                 npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200
                             '''
                         }
