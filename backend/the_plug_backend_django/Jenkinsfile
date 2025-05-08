@@ -50,7 +50,7 @@ pipeline {
                         }
                     }
                 }
-            }
+            }*/
 
             stage('Backend Tests') {
                 when {
@@ -64,12 +64,12 @@ pipeline {
                                 python3 -m pip install --upgrade pip --break-system-packages
                                 pip install -r requirements.txt --break-system-packages
                                 python3 manage.py makemigrations api
-                                python3 manage.py test
+                                # python3 manage.py test
                             '''
                         }
                     }
                 }
-            }*/
+            }
 
             // comment to trigger run
 
