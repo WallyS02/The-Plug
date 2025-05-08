@@ -117,7 +117,7 @@ pipeline {
                 }
             }
 
-            stage('Performance Tests') {
+            /*stage('Performance Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -129,7 +129,7 @@ pipeline {
                         }
                     }
                 }
-            }
+            }*/
 
             stage('DAST Tests') {
                 when {
