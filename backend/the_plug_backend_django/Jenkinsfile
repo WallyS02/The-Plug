@@ -32,13 +32,12 @@ pipeline {
         pollSCM '* * * * *'
     }
 
-    when {
-        beforeAgent true
-        changeset 'backend/**'
-    }
-
     stages {
             /*stage('SonarQube Analysis') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 environment {
                     SCANNER_HOME = tool 'sonar-scanner-7'
                 }
@@ -53,6 +52,10 @@ pipeline {
             }*/
 
             stage('Backend Tests') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 steps {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
@@ -68,6 +71,10 @@ pipeline {
             }
 
             stage('Run Services') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 steps {
                     parallel(
                         'Backend': {
@@ -92,6 +99,10 @@ pipeline {
             }
 
             stage('E2E Tests') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 steps {
                     dir("${FRONTEND_DIR}") {
                         sh '''
@@ -104,6 +115,10 @@ pipeline {
             }
 
             stage('Performance Tests') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 steps {
                     dir("${BACKEND_DIR}") {
                         sh 'locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api'
@@ -112,6 +127,10 @@ pipeline {
             }
 
             stage('DAST Tests') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 steps {
                     script {
                         docker.image('ghcr.io/zaproxy/zaproxy:stable').inside {
@@ -125,6 +144,10 @@ pipeline {
             }
 
             stage('Cleanup') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 steps {
                     sh '''
                         pkill -f "python3 manage.py runserver" || true
@@ -135,6 +158,10 @@ pipeline {
             }
 
             stage('Docker Build & Push') {
+                when {
+                    changeset 'backend/**'
+                }
+
                 steps {
                     script {
                         docker.withRegistry("${DOCKER_REGISTRY}", 'dockerhub-creds') {
@@ -146,6 +173,10 @@ pipeline {
             }
 
             stage('Helm Deployment') {
+                when {
+                    changeset 'backend/**'
+                }
+                
                 steps {
                     dir('k8s/helm/the-plug') {
                         sh '''
