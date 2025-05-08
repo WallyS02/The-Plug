@@ -1,5 +1,9 @@
 pipeline {
-    agent docker-agent
+    agent {
+        node {
+            label 'docker-agent'
+        }
+    }
 
     environment {
         SONAR_TOKEN_BACKEND = credentials('sonar-token-backend')
