@@ -107,10 +107,10 @@ pipeline {
                 steps {
                     dir("${FRONTEND_DIR}") {
                         sh '''
-                            curl -X GET http://localhost:8080/api/herb/list/
-                            curl -X GET http://localhost:4200
-                            npx wait-on http://localhost:8080/api/herb/list/
-                            npx wait-on http://localhost:4200
+                            curl -X HEAD http://localhost:8080/api/herb/list/
+                            curl -X HEAD http://localhost:4200
+                            npx wait-on http-get://localhost:8080/api/herb/list/
+                            npx wait-on http-get://localhost:4200
                             npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200
                         '''
                     }
