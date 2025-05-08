@@ -71,8 +71,6 @@ pipeline {
                 }
             }
 
-            // comment to trigger run
-
             stage('Run Services') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -109,6 +107,8 @@ pipeline {
                 steps {
                     dir("${FRONTEND_DIR}") {
                         sh '''
+                            curl -X GET http://localhost:8080/api/herb/list/
+                            curl -X GET http://localhost:4200
                             npx wait-on http://localhost:8080/api/herb/list/
                             npx wait-on http://localhost:4200
                             npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200
