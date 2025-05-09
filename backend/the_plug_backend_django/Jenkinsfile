@@ -171,6 +171,19 @@ pipeline {
                 }
             }
 
+            stage('Cleanup') {
+                /*when {
+                    changeset "${CHANGESET_DIR}"
+                }*/
+
+                steps {
+                    sh '''
+                        docker stop frontend
+                        docker stop backend-service
+                    '''
+                }
+            }
+
             // TODO debug
             stage('Docker Build & Push') {
                 /*when {
