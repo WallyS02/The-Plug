@@ -89,7 +89,7 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         script {
                             docker.build('wallys02/the-plug-backend:latest').run(
-                                '--name backend-service --rm -p 8080:8080 --network host --entrypoint ./test-entrypoint.sh ' +
+                                '--name backend-service --rm -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
                                 '-e "DB_PASSWORD=$DB_PASSWORD" ' +
                                 '-e "DB_USER=$DB_USER" ' +
                                 '-e "DB_NAME=$DB_NAME" ' +
@@ -104,7 +104,6 @@ pipeline {
                                 '-e "USE_CACHE=$USE_CACHE"'
                             )
                         }
-                        sh 'docker network connect test backend-service'
                     }
 
                     dir("${FRONTEND_DIR}") {
@@ -145,6 +144,11 @@ pipeline {
                 steps {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            script {
+                                docker.image('locustio/locust:latest').inside('--name locust --rm --network test -v $PWD:/mnt/locust') {
+                                    sh 'locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api'
+                                }
+                            }
                             sh '''
                                 locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
                             '''
