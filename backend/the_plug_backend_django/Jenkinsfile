@@ -89,7 +89,7 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         script {
                             docker.build('wallys02/the-plug-backend:latest').run(
-                                '--name backend-service --rm -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
+                                '--name backend-service --rm -p 8080:8080 --network host --entrypoint ./test-entrypoint.sh ' +
                                 '-e "DB_PASSWORD=$DB_PASSWORD" ' +
                                 '-e "DB_USER=$DB_USER" ' +
                                 '-e "DB_NAME=$DB_NAME" ' +
@@ -104,6 +104,7 @@ pipeline {
                                 '-e "USE_CACHE=$USE_CACHE"'
                             )
                         }
+                        sh 'docker network connect test backend-service'
                     }
 
                     dir("${FRONTEND_DIR}") {
