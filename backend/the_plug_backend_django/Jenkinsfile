@@ -76,13 +76,13 @@ pipeline {
                 steps {
                     dir("${BACKEND_DIR}") {
                         script {
-                            docker.build('wallys02/the-plug-backend:latest').withRun('--name backend-service -d --rm -p 8080:8080 --network jenkins --entrypoint ./test-entrypoint.sh')
+                            docker.build('wallys02/the-plug-backend:latest').run('--name backend-service -d --rm -p 8080:8080 --network jenkins --entrypoint ./test-entrypoint.sh')
                         }
                     }
 
                     dir("${FRONTEND_DIR}") {
                         script {
-                            docker.build('wallys02/the-plug-frontend:latest').withRun('--name frontend -d --rm --network jenkins')
+                            docker.build('wallys02/the-plug-frontend:latest').run('--name frontend -d --rm --network jenkins')
                         }
                     }
                 }
@@ -98,7 +98,7 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
-                                docker.image('cypress/included:latest').withRun('-v $PWD:/e2e -w /e2e --rm --config-file cypress.config.ts --browser chrome --config baseUrl=http://frontend:4200 env.apiUrl=http://backend-service:8080/api/herb/list/')
+                                docker.image('cypress/included:latest').run('-v $PWD:/e2e -w /e2e --rm --config-file cypress.config.ts --browser chrome --config baseUrl=http://frontend:4200 env.apiUrl=http://backend-service:8080/api/herb/list/')
                             }
                         }
                     }
