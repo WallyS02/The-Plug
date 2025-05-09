@@ -91,16 +91,16 @@ pipeline {
                             /*docker.build('wallys02/the-plug-backend:latest')*/
                             docker.image('wallys02/the-plug-backend:latest').run(
                                 '--name backend-service -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
-                                '-e DB_PASSWORD=$DB_PASSWORD ' +
-                                '-e DB_USER=$DB_USER ' +
-                                '-e EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD ' +
-                                '-e EMAIL_HOST_USER=$EMAIL_HOST_USER ' +
-                                '-e SECRET_KEY=$SECRET_KEY ' +
-                                '-e ALLOWED_HOSTS=$ALLOWED_HOSTS ' +
-                                '-e DEBUG=$DEBUG ' +
-                                '-e CACHE_ENDPOINT=$CACHE_ENDPOINT ' +
-                                '-e CACHE_PASSWORD=$CACHE_PASSWORD ' +
-                                '-e USE_CACHE=$USE_CACHE'
+                                '-e "DB_PASSWORD=$DB_PASSWORD" ' +
+                                '-e "DB_USER=$DB_USER" ' +
+                                '-e "EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD" ' +
+                                '-e "EMAIL_HOST_USER=$EMAIL_HOST_USER" ' +
+                                '-e "SECRET_KEY=$SECRET_KEY" ' +
+                                '-e "ALLOWED_HOSTS=$ALLOWED_HOSTS" ' +
+                                '-e "DEBUG=$DEBUG" ' +
+                                '-e "CACHE_ENDPOINT=$CACHE_ENDPOINT" ' +
+                                '-e "CACHE_PASSWORD=$CACHE_PASSWORD" ' +
+                                '-e "USE_CACHE=$USE_CACHE"'
                             )
                         }
                     }
