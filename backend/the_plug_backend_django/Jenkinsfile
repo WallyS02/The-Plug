@@ -72,7 +72,7 @@ pipeline {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
-
+    
                 steps {
                     sh 'docker network create test'
 
