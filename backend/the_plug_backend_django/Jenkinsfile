@@ -105,8 +105,8 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                curl -X GET http-get://localhost:8080/api/herb/list/
-                                curl -X GET http-get://localhost:4200
+                                curl -X GET http://localhost:8080/api/herb/list/
+                                curl -X GET http://localhost:4200
                                 npx wait-on http-get://localhost:8080/api/herb/list/
                                 npx wait-on http-get://localhost:4200
                                 npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200 env.apiUrl=http://localhost:8080/api/herb/list/
@@ -125,8 +125,8 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                curl -X GET http-get://localhost:8080/api/herb/list/
-                                curl -X GET http-get://localhost:4200
+                                curl -X GET http://localhost:8080/api/herb/list/
+                                curl -X GET http://localhost:4200
                                 locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
                             '''
                         }
@@ -144,10 +144,10 @@ pipeline {
                     script {
                         docker.image('ghcr.io/zaproxy/zaproxy:stable').inside {
                             sh '''
-                                curl -X GET http-get://host.docker.internal:8080/api/herb/list/
-                                curl -X GET http-get://host.docker.internal:4200
-                                curl -X GET http-get://172.17.0.1:8080/api/herb/list/
-                                curl -X GET http-get://172.17.0.1:4200
+                                curl -X GET http://host.docker.internal:8080/api/herb/list/
+                                curl -X GET http://host.docker.internal:4200
+                                curl -X GET http://172.17.0.1:8080/api/herb/list/
+                                curl -X GET http://172.17.0.1:4200
                                 mkdir -p /zap/wrk
                                 zap-full-scan.py -t http://localhost:8080/api/
                             '''
