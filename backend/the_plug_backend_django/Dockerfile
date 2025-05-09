@@ -48,6 +48,10 @@ RUN sed -i 's/\r$//' ./entrypoint.sh  && \
         chmod +x ./test-entrypoint.sh
 
 RUN addgroup -S user && adduser -S user -G user
+
+RUN touch db.sqlite3 && chown user:user db.sqlite3 && \
+        chown -R user:user ./api/migrations
+
 USER user
 
 EXPOSE 8080
