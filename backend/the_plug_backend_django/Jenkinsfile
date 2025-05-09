@@ -89,7 +89,7 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         script {
                             docker.build('wallys02/the-plug-backend:latest').run(
-                                '--name backend-service --rm -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
+                                '--name backend-service --rm -p 8081:8080 --network test --entrypoint ./test-entrypoint.sh ' +
                                 '-e "DB_PASSWORD=$DB_PASSWORD" ' +
                                 '-e "DB_USER=$DB_USER" ' +
                                 '-e "DB_NAME=$DB_NAME" ' +
@@ -126,9 +126,8 @@ pipeline {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
                                 docker.image('cypress/included:14.3.3').run(
-                                    '-v $PWD:/e2e -w /e2e --rm --network test' +
-                                    '--entrypoint /bin/bash cypress run --config-file cypress.config.ts --browser chrome' +
-                                    '--config baseUrl=http://frontend:4200 env.apiUrl=http://backend-service:8080/api/herb/list/'
+                                    '-v $PWD:/e2e -w /e2e --rm --network test -e "CYPRESS_DEFAULT_BROWSER=chrome"' +
+                                    '-e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/"'
                                 )
                             }
                         }
@@ -146,7 +145,7 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
+                                locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8081/api
                             '''
                         }
                     }
