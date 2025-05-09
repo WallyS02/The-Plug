@@ -126,7 +126,7 @@ pipeline {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
                                 docker.image('cypress/included:14.3.3').run(
-                                    '-v $PWD:/e2e -w /e2e --rm --network test -e "CYPRESS_DEFAULT_BROWSER=chrome" ' +
+                                    '-v $PWD:/e2e -w /e2e --network test -e "CYPRESS_DEFAULT_BROWSER=chrome" ' +
                                     '-e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/"'
                                 )
                             }
