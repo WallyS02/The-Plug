@@ -78,19 +78,27 @@ pipeline {
 
                     dir("${BACKEND_DIR}") {
                         script {
-                            docker.build('wallys02/the-plug-backend:latest').run('--name backend-service -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh')
+                            docker.build('wallys02/the-plug-backend:latest').run(
+                                '--name backend-service -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh' +
+                                "-e DB_PASSWORD=${env.DB_PASSWORD}" +
+                                "-e DB_USER=${env.DB_USER}" +
+                                "-e EMAIL_HOST_PASSWORD=${env.EMAIL_HOST_PASSWORD}" +
+                                "-e EMAIL_HOST_USER=${env.EMAIL_HOST_USER}" +
+                                "-e SECRET_KEY=${env.SECRET_KEY}" +
+                                "-e ALLOWED_HOSTS=${env.ALLOWED_HOSTS}" +
+                                "-e DEBUG=${env.DEBUG}" +
+                                "-e CACHE_ENDPOINT=${env.CACHE_ENDPOINT}" +
+                                "-e CACHE_PASSWORD=${env.CACHE_PASSWORD}" +
+                                "-e USE_CACHE=${env.USE_CACHE}"
+                            )
                         }
                     }
-
-                    sh 'docker ps'
 
                     dir("${FRONTEND_DIR}") {
                         script {
                             docker.build('wallys02/the-plug-frontend:latest').run('--name frontend --network test')
                         }
                     }
-
-                    sh 'docker ps'
                 }
             }
 
@@ -104,7 +112,11 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
-                                docker.image('cypress/included:14.3.3').run('-v $PWD:/e2e -w /e2e --rm --network test --entrypoint /bin/bash cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://frontend:4200 env.apiUrl=http://backend-service:8080/api/herb/list/')
+                                docker.image('cypress/included:14.3.3').run(
+                                    '-v $PWD:/e2e -w /e2e --rm --network test' +
+                                    '--entrypoint /bin/bash cypress run --config-file cypress.config.ts --browser chrome' +
+                                    '--config baseUrl=http://frontend:4200 env.apiUrl=http://backend-service:8080/api/herb/list/'
+                                )
                             }
                         }
                     }
