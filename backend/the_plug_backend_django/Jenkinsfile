@@ -81,16 +81,16 @@ pipeline {
 
             // TODO debug
             stage('Run Services') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     dir("${BACKEND_DIR}") {
                         script {
                             /*docker.build('wallys02/the-plug-backend:latest')*/
                             docker.image('wallys02/the-plug-backend:latest').run(
-                                '--name backend-service -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
+                                '--name backend-service --rm -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
                                 '-e "DB_PASSWORD=$DB_PASSWORD" ' +
                                 '-e "DB_USER=$DB_USER" ' +
                                 '-e "EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD" ' +
@@ -116,9 +116,9 @@ pipeline {
 
             // TODO debug
             stage('E2E Tests') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     dir("${FRONTEND_DIR}") {
@@ -137,9 +137,9 @@ pipeline {
 
             // TODO debug
             stage('Performance Tests') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     dir("${BACKEND_DIR}") {
@@ -154,9 +154,9 @@ pipeline {
 
             // TODO debug
             stage('DAST Tests') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     script {
@@ -172,9 +172,9 @@ pipeline {
 
             // TODO debug
             stage('Docker Build & Push') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     script {
@@ -188,9 +188,9 @@ pipeline {
 
             // TODO debug
             stage('Helm Deployment') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     dir('k8s/helm/the-plug') {
