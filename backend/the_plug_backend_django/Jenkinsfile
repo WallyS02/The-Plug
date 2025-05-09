@@ -90,7 +90,7 @@ pipeline {
                         script {
                             /*docker.build('wallys02/the-plug-backend:latest')*/
                             docker.image('wallys02/the-plug-backend:latest').run(
-                                '--name backend-service --rm -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
+                                '--name backend-service -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
                                 '-e "DB_PASSWORD=$DB_PASSWORD" ' +
                                 '-e "DB_USER=$DB_USER" ' +
                                 '-e "EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD" ' +
@@ -108,7 +108,7 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         script {
                             /*docker.build('wallys02/the-plug-frontend:latest')*/
-                            docker.image('wallys02/the-plug-frontend:latest').run('--name frontend --rm --network test')
+                            docker.image('wallys02/the-plug-frontend:latest').run('--name frontend --network test')
                         }
                     }
                 }
