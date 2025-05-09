@@ -67,6 +67,7 @@ pipeline {
                 }
             }
 
+            // TODO debug
             stage('Run Services') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -76,19 +77,12 @@ pipeline {
                     parallel(
                         'Backend': {
                             dir("${BACKEND_DIR}") {
-                                sh '''
-                                    python3 manage.py migrate --settings=the_plug_backend_django.e2e_test_settings
-                                    python3 manage.py loaddata api/fixtures/herbs.json --settings=the_plug_backend_django.e2e_test_settings
-                                    nohup python3 manage.py runserver 0.0.0.0:8080 --settings=the_plug_backend_django.e2e_test_settings &
-                                '''
+                                docker.build('wallys02/the-plug-backend:latest').withRun('--name backend-service -d --rm -p 8080:8080 --network jenkins --entrypoint ./test-entrypoint.sh')
                             }
                         },
                         'Frontend': {
                             dir("${FRONTEND_DIR}") {
-                                sh '''
-                                    npm ci
-                                    nohup npm run dev -- --port 4200 &
-                                '''
+                                docker.build('wallys02/the-plug-frontend:latest').withRun('--name frontend -d --rm --network jenkins')
                             }
                         }
                     )
@@ -104,18 +98,13 @@ pipeline {
                 steps {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            sh '''
-                                curl -X GET http://localhost:8080/api/herb/list/
-                                curl -X GET http://localhost:4200
-                                npx wait-on http-get://localhost:8080/api/herb/list/
-                                npx wait-on http-get://localhost:4200
-                                npx cypress run --config-file cypress.config.ts --browser chrome --config baseUrl=http://localhost:4200 env.apiUrl=http://localhost:8080/api/herb/list/
-                            '''
+                            docker.image('cypress/included:latest').withRun('-v $PWD:/e2e -w /e2e --rm --config-file cypress.config.ts --browser chrome --config baseUrl=http://frontend:4200 env.apiUrl=http://backend-service:8080/api/herb/list/')
                         }
                     }
                 }
             }
 
+            // TODO debug
             stage('Performance Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -125,8 +114,6 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                curl -X GET http://localhost:8080/api/herb/list/
-                                curl -X GET http://localhost:4200
                                 locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
                             '''
                         }
@@ -144,10 +131,8 @@ pipeline {
                     script {
                         docker.image('ghcr.io/zaproxy/zaproxy:stable').inside {
                             sh '''
-                                curl -X GET http://172.17.0.1:8080/api/herb/list/
-                                curl -X GET http://172.17.0.1:4200
                                 mkdir -p /zap/wrk
-                                zap-full-scan.py -t http://localhost:8080/api/
+                                zap-full-scan.py -t http://backend-service:8080/api/
                             '''
                         }
                     }
