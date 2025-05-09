@@ -88,8 +88,9 @@ pipeline {
                 steps {
                     dir("${BACKEND_DIR}") {
                         script {
-                            docker.build('wallys02/the-plug-backend:latest').run(
-                                '--name backend-service -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh ' +
+                            /*docker.build('wallys02/the-plug-backend:latest')*/
+                            docker.image('wallys02/the-plug-backend:latest').run(
+                                '--name backend-service -p 8080:8080 --network test --entrypoint ./test-entrypoint.sh '/* +
                                 "-e DB_PASSWORD=${env.DB_PASSWORD} " +
                                 "-e DB_USER=${env.DB_USER} " +
                                 "-e EMAIL_HOST_PASSWORD=${env.EMAIL_HOST_PASSWORD} " +
@@ -99,14 +100,15 @@ pipeline {
                                 "-e DEBUG=${env.DEBUG} " +
                                 "-e CACHE_ENDPOINT=${env.CACHE_ENDPOINT} " +
                                 "-e CACHE_PASSWORD=${env.CACHE_PASSWORD} " +
-                                "-e USE_CACHE=${env.USE_CACHE}"
+                                "-e USE_CACHE=${env.USE_CACHE}"*/
                             )
                         }
                     }
 
                     dir("${FRONTEND_DIR}") {
                         script {
-                            docker.build('wallys02/the-plug-frontend:latest').run('--name frontend --network test')
+                            /*docker.build('wallys02/the-plug-frontend:latest')*/
+                            docker.image('wallys02/the-plug-frontend:latest').run('--name frontend --network test')
                         }
                     }
                 }
