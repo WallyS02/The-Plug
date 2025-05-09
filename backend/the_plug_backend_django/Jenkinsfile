@@ -144,8 +144,6 @@ pipeline {
                     script {
                         docker.image('ghcr.io/zaproxy/zaproxy:stable').inside {
                             sh '''
-                                curl -X GET http://host.docker.internal:8080/api/herb/list/
-                                curl -X GET http://host.docker.internal:4200
                                 curl -X GET http://172.17.0.1:8080/api/herb/list/
                                 curl -X GET http://172.17.0.1:4200
                                 mkdir -p /zap/wrk
@@ -153,6 +151,20 @@ pipeline {
                             '''
                         }
                     }
+                }
+            }
+
+            stage('Cleanup') {
+                when {
+                    changeset "${CHANGESET_DIR}"
+                }
+
+                steps {
+                    sh '''
+                        pkill -f "python3 manage.py runserver" || true
+                        pkill -f "npm run dev" || true
+                        rm -f backend/the_plug_backend_django/db.sqlite3
+                    '''
                 }
             }
 
