@@ -175,9 +175,11 @@ pipeline {
                 }
 
                 steps {
-                    sh '''
-                        zap-full-scan.py -t http://backend-service:8080/api/
-                    '''
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                            zap-full-scan.py -t http://backend-service:8080/api/
+                        '''
+                    }
                 }
             }
 
@@ -187,12 +189,10 @@ pipeline {
                 }
 
                 steps {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        sh '''
-                            docker stop frontend
-                            docker stop backend-service
-                        '''
-                    }
+                    sh '''
+                        docker stop frontend
+                        docker stop backend-service
+                    '''
                 }
             }
 
