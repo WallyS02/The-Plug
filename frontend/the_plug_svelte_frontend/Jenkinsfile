@@ -32,7 +32,7 @@ pipeline {
     }
 
     stages {
-            /*stage('SonarQube Analysis') {
+            stage('SonarQube Analysis') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -77,7 +77,7 @@ pipeline {
                         sh 'docker network create test'
                     }
                 }
-            }*/
+            }
 
             stage('Run Services') {
                 when {
@@ -113,7 +113,7 @@ pipeline {
                 }
             }
 
-            /*stage('E2E Tests') {
+            stage('E2E Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -135,9 +135,8 @@ pipeline {
                         }
                     }
                 }
-            }*/
+            }
 
-            // TODO debug
             stage('Performance Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -161,7 +160,7 @@ pipeline {
                 }
             }
 
-            /*stage('DAST Tests') {
+            stage('DAST Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -180,7 +179,7 @@ pipeline {
                         '''
                     }
                 }
-            }*/
+            }
 
             stage('Cleanup') {
                 when {
@@ -195,7 +194,7 @@ pipeline {
                 }
             }
 
-            /*stage('Docker Login & Push') {
+            stage('Docker Login & Push') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -223,7 +222,7 @@ pipeline {
                         '''
                     }
                 }
-            }*/
+            }
     }
 
     post {
