@@ -21,4 +21,5 @@ fi
 envsubst < values-unresolved.yaml > values.yaml
 
 kubectl apply -f plug-namespace.yaml
+
 helm upgrade --install the-plug-release the-plug-repo/the-plug -f values.yaml --namespace plug-namespace
