@@ -79,11 +79,10 @@ pipeline {
                 }
             }*/
 
-            // TODO debug if test containers can access services
-            stage('Run Services') {
-                /*when {
+            /*stage('Run Services') {
+                when {
                     changeset "${CHANGESET_DIR}"
-                }*/
+                }
 
                 steps {
                     dir("${BACKEND_DIR}") {
@@ -114,7 +113,7 @@ pipeline {
 
                     sleep(5)
                 }
-            }
+            }*/
 
             // TODO debug
             stage('E2E Tests') {
