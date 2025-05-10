@@ -160,7 +160,7 @@ pipeline {
                         }
                     }
                 }
-            }*/
+            }
 
             stage('DAST Tests') {
                 when {
@@ -194,7 +194,7 @@ pipeline {
                         docker stop backend-service
                     '''
                 }
-            }
+            }*/
 
             stage('Docker Login & Push') {
                 when {
@@ -204,7 +204,7 @@ pipeline {
                 steps {
                     script {
                         docker.withRegistry("${DOCKER_REGISTRY}", 'dockerhub-creds') {
-                            docker.image('$BACKEND_IMAGE').push()
+                            docker.image("${BACKEND_IMAGE}").push()
                         }
                     }
                 }
