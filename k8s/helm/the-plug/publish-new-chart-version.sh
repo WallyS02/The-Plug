@@ -2,6 +2,11 @@
 # run with version as argument
 source ~/.bashrc
 helm package .
+if [ -n "$2" ]; then
+    git clone https://$2@github.com/WallyS02/The-Plug-Charts.git
+else
+    git clone https://github.com/WallyS02/The-Plug-Charts.git
+fi
 git clone https://github.com/WallyS02/The-Plug-Charts
 mv the-plug-0.0.1.tgz the-plug-"$1".tgz
 find The-Plug-Charts -type f -name 'the-plug-*' -delete

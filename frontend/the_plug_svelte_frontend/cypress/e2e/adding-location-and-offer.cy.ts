@@ -1,11 +1,7 @@
 describe('Adding Location and Herb Offer as a new Plug', () => {
     beforeEach(() => {
         cy.viewport(1280, 720);
-        cy.visit('/', {
-            onBeforeLoad(win) {
-                win.caches.delete('L');
-            }
-        });
+        cy.visit('/');
     })
 
     const randomUsername = `testuser_${Math.floor(Math.random() * 100000)}`;

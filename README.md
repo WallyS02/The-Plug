@@ -45,10 +45,11 @@ Make migrations and migrate
 ```bash
   python manage.py makemigrations
   python manage.py migrate
+  python manage.py loaddata api/fixtures/herbs.json
 ```
 Run application
 ```
-  python manage.py runserver localhost:8080
+  python manage.py runserver 0.0.0.0:8080
 ```
 Once the application is running, you can access it locally by navigating to http://localhost:8080.
 
@@ -70,13 +71,27 @@ Run the Development Server
 ```
 This will start the development server, and you can access the application at http://localhost:80 in your web browser.
 
+## Important directories and files
+* **.github** - directory that contains GitHub Actions pipelines
+* **aws** - directory that contains AWS cloud architecture for application and it's implementation using IaC practise with Terraform
+* **backend** - directory that contains backend application code
+* **documentation** - directory that contains application design and it's diagrams
+* **frontend** - directory that contains frontend application code
+* **jenkins** - directory that contains local Jenkins configuration files
+* **k8s** - directory that contains raw Kubernetes manifests and Helm charts for application, also contains some utility bash scripts
+* **.gitlab-ci.yml** - main GitLab CI/CD pipeline, which uses gitlab-ci-local, that triggers child pipelines located in backend, frontend and k8s subdirectories
+* **docker-compose-local.yml** - docker-compose file that allows running application locally
+
 ## Roadmap
-- [x] build project diagrams
-- [x] build backend application
-- [x] build frontend application
-- [x] build docker deployment
-- [ ] build github workflow cicd
+- [x] prepare project design
+- [x] create backend application
+- [x] create frontend application
+- [x] create Docker images
+- [x] create Kubernetes (raw + Helm) deployment
+- [x] prepare AWS cloud architecture
+- [x] create example unit, integration, e2e and performance tests
+- [x] create IaC Terraform configuration for application's AWS cloud
+- [x] create GitHub Actions, GitLab CI/CD (gitlab-ci-local) and Jenkins CI/CD pipelines
 - [x] complete final README
-- [x] deploy application
 ## Authors
 - [@WallyS02](https://github.com/WallyS02) everything

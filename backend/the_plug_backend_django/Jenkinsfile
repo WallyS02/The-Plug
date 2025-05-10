@@ -1,0 +1,235 @@
+pipeline {
+    agent any
+
+    environment {
+        SONAR_TOKEN_BACKEND = credentials('sonar-token-backend')
+        DB_PASSWORD = credentials('db-password')
+        DB_USER = 'admin'
+        DB_NAME = 'postgres'
+        DB_HOST = 'localhost:5432'
+        EMAIL_HOST_PASSWORD = credentials('email-host-password')
+        EMAIL_HOST_USER = credentials('email-host-user')
+        SECRET_KEY = credentials('secret-key')
+        PGADMIN_DEFAULT_EMAIL = 'admin@admin.com'
+        PGADMIN_DEFAULT_PASSWORD = credentials('pgadmin-default-password')
+        ALLOWED_HOSTS = '*'
+        DEBUG = '1'
+        CACHE_ENDPOINT = 'no'
+        CACHE_PASSWORD = 'no'
+        USE_CACHE = '0'
+        DOCKER_REGISTRY = 'https://index.docker.io/v1/'
+        BACKEND_IMAGE = 'wallys02/the-plug-backend:latest'
+        PIP_CACHE_DIR = "${env.HOME}/.cache/pip"
+        NPM_CONFIG_CACHE = "${env.HOME}/.cache/npm"
+        KUBECONFIG = "${env.HOME}/.kube/config"
+        BACKEND_DIR = 'backend/the_plug_backend_django'
+        FRONTEND_DIR = 'frontend/the_plug_svelte_frontend'
+        CHANGESET_DIR = 'backend/**'
+    }
+
+    triggers {
+        pollSCM '* * * * *'
+    }
+
+    stages {
+        stage('SonarQube Analysis') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            environment {
+                SCANNER_HOME = tool 'sonar-scanner-7'
+            }
+
+            steps {
+                dir("${BACKEND_DIR}") {
+                    withSonarQubeEnv('sonar-backend') {
+                        sh('$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=$SONAR_TOKEN_BACKEND')
+                    }
+                }
+            }
+        }
+
+        stage('Backend Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                dir("${BACKEND_DIR}") {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                            python3 -m pip install --upgrade pip --break-system-packages
+                            pip install -r requirements.txt --break-system-packages
+                            python3 manage.py makemigrations api
+                            python3 manage.py test
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Setup Docker Network') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'docker network create test'
+                }
+            }
+        }
+
+        stage('Run Services') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                dir("${BACKEND_DIR}") {
+                    script {
+                        docker.build('wallys02/the-plug-backend:latest').run(
+                            '--name backend-service --rm --network test --entrypoint ./test-entrypoint.sh ' +
+                            '-e "DB_PASSWORD=$DB_PASSWORD" ' +
+                            '-e "DB_USER=$DB_USER" ' +
+                            '-e "DB_NAME=$DB_NAME" ' +
+                            '-e "DB_HOST=$DB_HOST" ' +
+                            '-e "EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD" ' +
+                            '-e "EMAIL_HOST_USER=$EMAIL_HOST_USER" ' +
+                            '-e "SECRET_KEY=$SECRET_KEY" ' +
+                            '-e "ALLOWED_HOSTS=$ALLOWED_HOSTS" ' +
+                            '-e "DEBUG=$DEBUG" ' +
+                            '-e "CACHE_ENDPOINT=$CACHE_ENDPOINT" ' +
+                            '-e "CACHE_PASSWORD=$CACHE_PASSWORD" ' +
+                            '-e "USE_CACHE=$USE_CACHE"'
+                        )
+                    }
+                }
+
+                dir("${FRONTEND_DIR}") {
+                    script {
+                        docker.build('wallys02/the-plug-frontend:latest').run('--name frontend --rm --network test')
+                    }
+                }
+            }
+        }
+
+        stage('E2E Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            agent {
+                docker {
+                    image 'cypress/included:14.3.3'
+                    args '--name cypress --network test -u root:root -e "CYPRESS_BASE_URL=http://frontend:8080" --entrypoint=""'
+                }
+            }
+
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                            npm ci
+                            cypress run --config-file cypress.config.ts --browser chrome --env apiUrl=http://backend-service:8080/api
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Performance Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            agent {
+                docker {
+                    image 'locustio/locust:latest'
+                    args '--name locust --network test --entrypoint=""'
+                }
+            }
+
+            steps {
+                dir("${BACKEND_DIR}") {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                            locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('DAST Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            agent {
+                docker {
+                    image 'ghcr.io/zaproxy/zaproxy:stable'
+                    args '--name dast --network test'
+                }
+            }
+
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''
+                        zap-full-scan.py -t http://backend-service:8080/api/
+                    '''
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                sh '''
+                    docker stop frontend
+                    docker stop backend-service
+                '''
+            }
+        }
+
+        stage('Docker Login & Push') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                script {
+                    docker.withRegistry("${DOCKER_REGISTRY}", 'dockerhub-creds') {
+                        docker.image("${BACKEND_IMAGE}").push()
+                    }
+                }
+            }
+        }
+
+        stage('Helm Deployment') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                dir('k8s/helm/the-plug') {
+                    sh '''
+                        chmod +x ./run-helm.sh
+                        ./run-helm.sh
+                        kubectl rollout restart deployment/backend --namespace plug-namespace
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}

@@ -3,7 +3,7 @@ import moment from "moment-timezone";
 describe('Requesting a meeting as a new user', () => {
     beforeEach(() => {
         cy.viewport(1280, 720);
-        cy.setupInitialData('http://localhost:8080/api');
+        cy.setupInitialData(Cypress.env('apiUrl'));
         cy.visit('/');
     })
 

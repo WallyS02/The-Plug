@@ -48,6 +48,9 @@ RUN sed -i 's/\r$//' ./entrypoint.sh  && \
         chmod +x ./test-entrypoint.sh
 
 RUN addgroup -S user && adduser -S user -G user
+
+RUN chmod -R 700 . && chown -R user:user .
+
 USER user
 
 EXPOSE 8080
