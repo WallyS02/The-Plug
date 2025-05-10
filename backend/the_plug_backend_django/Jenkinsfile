@@ -141,8 +141,7 @@ pipeline {
                                 }
                             }*/
                             sh '''
-                                pwd
-                                ls -a
+                                npm ci
                                 cypress run --config-file cypress.config.ts --browser chrome
                             '''
                         }
@@ -159,7 +158,7 @@ pipeline {
                 agent {
                     docker {
                         image 'locustio/locust:latest'
-                        args '--name locust --network test -v $PWD:/mnt/locust --entrypoint=""'
+                        args '--name locust --network test --entrypoint=""'
                     }
                 }
 
@@ -174,9 +173,7 @@ pipeline {
                                  }
                             }*/
                             sh '''
-                                pwd
-                                ls -a
-                                locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
+                                locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
                             '''
                         }
                     }
@@ -197,13 +194,7 @@ pipeline {
                 }
 
                 steps {
-                    /*script {
-                        docker.image('ghcr.io/zaproxy/zaproxy:stable').run('--name dast --network test ' +
-                        '--entrypoint zap-full-scan.py', '-t http://backend-service:8080/api/')
-                    }*/
                     sh '''
-                        pwd
-                        ls -a
                         zap-full-scan.py -t http://backend-service:8080/api/
                     '''
                 }
