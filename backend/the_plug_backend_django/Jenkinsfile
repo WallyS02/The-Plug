@@ -15,7 +15,7 @@ pipeline {
         CACHE_ENDPOINT = 'no'
         CACHE_PASSWORD = 'no'
         USE_CACHE = '0'
-        DOCKER_REGISTRY = 'https://docker.io'
+        DOCKER_REGISTRY = 'docker.io'
         BACKEND_IMAGE = 'wallys02/the-plug-backend'
         PIP_CACHE_DIR = "${env.HOME}/.cache/pip"
         NPM_CONFIG_CACHE = "${env.HOME}/.cache/npm"
@@ -195,7 +195,7 @@ pipeline {
             }*/
 
             // TODO debug
-            stage('Docker Build & Push') {
+            stage('Docker Login & Push') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
