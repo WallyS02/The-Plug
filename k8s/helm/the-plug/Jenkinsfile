@@ -20,12 +20,14 @@ pipeline {
 
             steps {
                 dir("${HELM_DIR}") {
-                    sh '''
-                        git config --global user.email "the-plug-jenkins@the-plug.com"
-                        git config --global user.name "Jenkins"
-                        chmod +x ./publish-new-chart-version.sh
-                        ./publish-new-chart-version.sh $CHART_VERSION
-                    '''
+                    withCredentials([usernamePassword(credentialsId: 'github-pat', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        sh '''
+                            git config --global user.email "the-plug-jenkins@the-plug.com"
+                            git config --global user.name "Jenkins"
+                            chmod +x ./publish-new-chart-version.sh
+                            ./publish-new-chart-version.sh $CHART_VERSION
+                        '''
+                    }
                 }
             }
         }
