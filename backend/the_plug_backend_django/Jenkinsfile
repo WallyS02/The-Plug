@@ -122,38 +122,58 @@ pipeline {
                     changeset "${CHANGESET_DIR}"
                 }*/
 
+                agent {
+                    docker {
+                        image 'cypress/included:14.3.3'
+                        args '--name cypress -v $PWD:/e2e -w /e2e --network test -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/"'
+                    }
+                }
+
                 steps {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            script {
+                            /*script {
                                 docker.image('cypress/included:14.3.3').inside(
                                     '--name cypress -v $PWD:/e2e -w /e2e --network test -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/" --entrypoint=""'
                                     // '--entrypoint cypress', 'run --config-file cypress.config.ts --browser chrome'
                                 ) {
                                     sh 'cypress run --config-file cypress.config.ts --browser chrome'
                                 }
-                            }
+                            }*/
+                            sh 'cypress run --config-file cypress.config.ts --browser chrome'
                         }
                     }
                 }
             }
 
-            /*stage('Performance Tests') {
-                when {
+            // TODO debug
+            stage('Performance Tests') {
+                /*when {
                     changeset "${CHANGESET_DIR}"
+                }*/
+
+                agent {
+                    docker {
+                        image 'locustio/locust:latest'
+                        args '--name locust --network test -v $PWD:/mnt/locust'
+                    }
                 }
 
                 steps {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            script {
-                                docker.image('locustio/locust:latest').run('--name locust  --rm --network test -v $PWD:/mnt/locust ' +
-                                 '--entrypoint locust', '-f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api')
-                            }
+                            /*script {
+                                // '--entrypoint locust', '-f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api')
+                                docker.image('locustio/locust:latest').inside('--name locust  --rm --network test -v $PWD:/mnt/locust --entrypoint=""')
+                                 {
+                                    sh 'locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api'
+                                 }
+                            }*/
+                            sh 'locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api'
                         }
                     }
                 }
-            }*/
+            }
 
             // TODO debug
             stage('DAST Tests') {
@@ -161,11 +181,19 @@ pipeline {
                     changeset "${CHANGESET_DIR}"
                 }*/
 
+                agent {
+                    docker {
+                        image 'ghcr.io/zaproxy/zaproxy:stable'
+                        args '--name dast --network test'
+                    }
+                }
+
                 steps {
-                    script {
+                    /*script {
                         docker.image('ghcr.io/zaproxy/zaproxy:stable').run('--name dast --network test ' +
                         '--entrypoint zap-full-scan.py', '-t http://backend-service:8080/api/')
-                    }
+                    }*/
+                    sh 'zap-full-scan.py -t http://backend-service:8080/api/'
                 }
             }
 
@@ -183,10 +211,10 @@ pipeline {
             }
 
             // TODO debug
-            stage('Docker Build & Push') {
-                /*when {
+            /*stage('Docker Build & Push') {
+                when {
                     changeset "${CHANGESET_DIR}"
-                }*/
+                }
 
                 steps {
                     script {
@@ -200,9 +228,9 @@ pipeline {
 
             // TODO debug
             stage('Helm Deployment') {
-                /*when {
+                when {
                     changeset "${CHANGESET_DIR}"
-                }*/
+                }
 
                 steps {
                     dir('k8s/helm/the-plug') {
@@ -213,7 +241,7 @@ pipeline {
                         '''
                     }
                 }
-            }
+            }*/
     }
 
     post {
