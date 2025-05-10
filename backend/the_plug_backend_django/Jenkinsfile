@@ -81,9 +81,9 @@ pipeline {
 
             // TODO debug if test containers can access services
             stage('Run Services') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     dir("${BACKEND_DIR}") {
