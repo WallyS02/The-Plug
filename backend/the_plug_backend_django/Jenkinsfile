@@ -126,8 +126,8 @@ pipeline {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
                                 docker.image('cypress/included:14.3.3').run(
-                                    '-v $PWD:/e2e -w /e2e --network test --entrypoint="cypress run --config-file cypress.config.ts --browser chrome" ' +
-                                    '-e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/"'
+                                    '-v $PWD:/e2e -w /e2e --network test -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/" ' +
+                                    '--entrypoint cypress', 'run --config-file cypress.config.ts --browser chrome'
                                 )
                             }
                         }
@@ -155,7 +155,7 @@ pipeline {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
                                 docker.image('locustio/locust:latest').run('--name locust --network test -v $PWD:/mnt/locust ' +
-                                 '--entrypoint="locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api"')
+                                 '--entrypoint locust', '-f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api')
                             }
                         }
                     }
@@ -170,9 +170,9 @@ pipeline {
 
                 steps {
                     script {
-                        docker.image('ghcr.io/zaproxy/zaproxy:stable').withRun('--network test -u root') {
+                        docker.image('ghcr.io/zaproxy/zaproxy:stable').withRun('--network test') {
                             sh '''
-                                mkdir -p /zap/wrk
+                                # mkdir -p /zap/wrk
                                 zap-full-scan.py -t http://backend-service:8080/api/
                             '''
                         }
