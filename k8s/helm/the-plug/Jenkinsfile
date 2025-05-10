@@ -21,6 +21,8 @@ pipeline {
             steps {
                 dir("${HELM_DIR}") {
                     sh '''
+                        git config user.email "the-plug-jenkins@the-plug.com"
+                        git config user.name "Jenkins"
                         chmod +x ./publish-new-chart-version.sh
                         ./publish-new-chart-version.sh $CHART_VERSION
                     '''
