@@ -132,7 +132,8 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                apt-get install curl
+                                apt-get update
+                                apt-get install -y curl
                                 curl -X GET http://backend-service:8080/api/herb/list/
                                 curl -X GET http://frontend
                                 npm ci
@@ -160,7 +161,8 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                apt-get install curl
+                                apt-get update
+                                apt-get install -y curl
                                 curl -X GET http://backend-service:8080/api/herb/list/
                                 locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
                             '''
