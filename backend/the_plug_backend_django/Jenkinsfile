@@ -125,7 +125,7 @@ pipeline {
                 agent {
                     docker {
                         image 'cypress/included:14.3.3'
-                        args '--name cypress -v $PWD:/e2e -w /e2e --network test -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/"'
+                        args '--name cypress -v $PWD:/e2e -w /e2e --network test -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/" --entrypoint=""'
                     }
                 }
 
@@ -155,7 +155,7 @@ pipeline {
                 agent {
                     docker {
                         image 'locustio/locust:latest'
-                        args '--name locust --network test -v $PWD:/mnt/locust'
+                        args '--name locust --network test -v $PWD:/mnt/locust --entrypoint=""'
                     }
                 }
 
