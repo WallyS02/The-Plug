@@ -212,9 +212,9 @@ pipeline {
 
             // TODO debug
             stage('Helm Deployment') {
-                when {
+                /*when {
                     changeset "${CHANGESET_DIR}"
-                }
+                }*/
 
                 steps {
                     dir('k8s/helm/the-plug') {
