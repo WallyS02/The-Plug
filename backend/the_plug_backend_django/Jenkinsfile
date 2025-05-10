@@ -65,9 +65,9 @@ pipeline {
                         }
                     }
                 }
-            }*/
+            }
 
-            /*stage('Setup Docker Network') {
+            stage('Setup Docker Network') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -77,9 +77,9 @@ pipeline {
                         sh 'docker network create test'
                     }
                 }
-            }*/
+            }
 
-            /*stage('Run Services') {
+            stage('Run Services') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -124,7 +124,7 @@ pipeline {
                 agent {
                     docker {
                         image 'cypress/included:14.3.3'
-                        args '--name cypress --network test -u root:root -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/" --entrypoint=""'
+                        args '--name cypress --network test -u root:root -e "CYPRESS_BASE_URL=http://frontend:8080" -e "CYPRESS_API_URL=http://backend-service:8080/api/" --entrypoint=""'
                     }
                 }
 
@@ -132,10 +132,6 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                apt-get update
-                                apt-get install -y curl
-                                curl -X GET http://backend-service:8080/api/herb/list/
-                                curl -X GET http://frontend
                                 npm ci
                                 cypress run --config-file cypress.config.ts --browser chrome
                             '''
@@ -144,16 +140,15 @@ pipeline {
                 }
             }
 
-            // TODO debug
-            stage('Performance Tests') {
-                /*when {
+            /*stage('Performance Tests') {
+                when {
                     changeset "${CHANGESET_DIR}"
-                }*/
+                }
 
                 agent {
                     docker {
                         image 'locustio/locust:latest'
-                        args '--name locust --network test -u root:root --entrypoint=""'
+                        args '--name locust --network test --entrypoint=""'
                     }
                 }
 
@@ -161,9 +156,6 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                apt-get update
-                                apt-get install -y curl
-                                curl -X GET http://backend-service:8080/api/herb/list/
                                 locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
                             '''
                         }
@@ -171,7 +163,7 @@ pipeline {
                 }
             }
 
-            /*stage('DAST Tests') {
+            stage('DAST Tests') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
