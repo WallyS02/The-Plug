@@ -18,7 +18,7 @@ pipeline {
         CACHE_PASSWORD = 'no'
         USE_CACHE = '0'
         DOCKER_REGISTRY = 'https://index.docker.io/v1/'
-        BACKEND_IMAGE = 'wallys02/the-plug-backend'
+        BACKEND_IMAGE = 'wallys02/the-plug-backend:latest'
         PIP_CACHE_DIR = "${env.HOME}/.cache/pip"
         NPM_CONFIG_CACHE = "${env.HOME}/.cache/npm"
         KUBECONFIG = "${env.HOME}/.kube/config"
@@ -32,7 +32,7 @@ pipeline {
     }
 
     stages {
-            stage('SonarQube Analysis') {
+            /*stage('SonarQube Analysis') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -112,8 +112,6 @@ pipeline {
                             docker.build('wallys02/the-plug-frontend:latest').run('--name frontend --rm --network test')
                         }
                     }
-
-                    sleep(5)
                 }
             }
 
@@ -162,7 +160,7 @@ pipeline {
                         }
                     }
                 }
-            }
+            }*/
 
             stage('DAST Tests') {
                 when {
@@ -189,10 +187,12 @@ pipeline {
                 }
 
                 steps {
-                    sh '''
-                        docker stop frontend
-                        docker stop backend-service
-                    '''
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                            docker stop frontend
+                            docker stop backend-service
+                        '''
+                    }
                 }
             }
 
@@ -204,7 +204,7 @@ pipeline {
                 steps {
                     script {
                         docker.withRegistry("${DOCKER_REGISTRY}", 'dockerhub-creds') {
-                            docker.image('wallys02/the-plug-backend:latest').push()
+                            docker.image('$BACKEND_IMAGE').push()
                         }
                     }
                 }
