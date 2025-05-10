@@ -32,7 +32,7 @@ pipeline {
             }
         }
 
-        /*stage('Upgrade Charts') {
+        stage('Upgrade Charts') {
             when {
                 changeset "${CHANGESET_DIR}"
             }
@@ -46,7 +46,7 @@ pipeline {
                     '''
                 }
             }
-        }*/
+        }
     }
 
     post {
