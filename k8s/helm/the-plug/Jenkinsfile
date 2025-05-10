@@ -11,7 +11,7 @@ pipeline {
     triggers {
         pollSCM '* * * * *'
     }
-
+    //
     stages {
         stage('Publish Charts') {
             when {
