@@ -145,8 +145,8 @@ pipeline {
 
                 agent {
                     docker {
-                        image 'locustio/locust:latest'
-                        args '--name locust --network test --entrypoint=""'
+                        image 'femtopixel/google-lighthouse:latest'
+                        args '--name lighthouse --network test -v .:/home/chrome/reports --cap-add=SYS_ADMIN --entrypoint=""'
                     }
                 }
 
@@ -154,7 +154,7 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
+                                lighthouse http://frontend:8080 --chrome-flags="--headless" --output json --output-path /home/chrome/reports/lighthouse-results.json
                             '''
                         }
                     }
