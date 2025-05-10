@@ -140,7 +140,9 @@ pipeline {
                                 }
                             }*/
                             sh '''
-                                npm ci
+                                # npm ci
+                                ping http://backend-service:8080
+                                curl -X GET http://backend-service:8080/api/herb/list/
                                 cypress run --config-file cypress.config.ts --browser chrome
                             '''
                         }
@@ -172,6 +174,8 @@ pipeline {
                                  }
                             }*/
                             sh '''
+                                ping http://backend-service:8080
+                                curl -X GET http://backend-service:8080/api/herb/list/
                                 locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
                             '''
                         }
@@ -194,6 +198,8 @@ pipeline {
 
                 steps {
                     sh '''
+                        ping http://backend-service:8080
+                        curl -X GET http://backend-service:8080/api/herb/list/
                         zap-full-scan.py -t http://backend-service:8080/api/
                     '''
                 }
