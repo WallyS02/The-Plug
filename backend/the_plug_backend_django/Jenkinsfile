@@ -124,7 +124,7 @@ pipeline {
                 agent {
                     docker {
                         image 'cypress/included:14.3.3'
-                        args '--name cypress --network test -u root:root -e "CYPRESS_BASE_URL=http://frontend:8080" -e "CYPRESS_API_URL=http://backend-service:8080/api/" --entrypoint=""'
+                        args '--name cypress --network test -u root:root -e "CYPRESS_BASE_URL=http://frontend:8080" --entrypoint=""'
                     }
                 }
 
@@ -133,7 +133,7 @@ pipeline {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
                                 npm ci
-                                cypress run --config-file cypress.config.ts --browser chrome
+                                cypress run --config-file cypress.config.ts --browser chrome --env apiUrl=http://backend-service:8080/api
                             '''
                         }
                     }
