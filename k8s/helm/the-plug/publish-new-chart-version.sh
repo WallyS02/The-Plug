@@ -1,17 +1,5 @@
 #!/bin/bash -i
-# run with version as argument, use -e and -n flags for providing email and name for git config
-while getopts e:n: flag
-do
-    case "${flag}" in
-        e) email=${OPTARG}
-           git config user.email ${OPTARG}
-        ;;
-        n) name=${OPTARG}
-           git config user.name ${OPTARG}
-        ;;
-    esac
-done
-
+# run with version as argument
 source ~/.bashrc
 helm package .
 git clone https://github.com/WallyS02/The-Plug-Charts
