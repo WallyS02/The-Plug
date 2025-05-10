@@ -79,7 +79,7 @@ pipeline {
                 }
             }
 
-            // TODO debug
+            // TODO debug if test containers can access services
             stage('Run Services') {
                 /*when {
                     changeset "${CHANGESET_DIR}"
@@ -115,7 +115,7 @@ pipeline {
                 }
             }
 
-            // TODO debug
+            // TODO debug Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'cypress' imported from /e2e/cypress.config.ts Did you mean to import "cypress/index.js"?
             stage('E2E Tests') {
                 /*when {
                     changeset "${CHANGESET_DIR}"
@@ -136,6 +136,15 @@ pipeline {
             }
 
             // TODO debug
+            /*
+                $ docker run -t -d -u 1000:1000 --name locust --rm --network test -v $PWD:/mnt/locust -w /var/jenkins_home/workspace/backend/backend/the_plug_backend_django -v /var/jenkins_home/workspace/backend/backend/the_plug_backend_django:/var/jenkins_home/workspace/backend/backend/the_plug_backend_django:rw,z -v /var/jenkins_home/workspace/backend/backend/the_plug_backend_django@tmp:/var/jenkins_home/workspace/backend/backend/the_plug_backend_django@tmp:rw,z -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** locustio/locust:latest cat
+                $ docker top 181e4e60c01c7cf73ab1bb904816de647ad82a516ff27b1994198b60a7ac2e3f -eo pid,comm
+                ERROR: The container started but didn't run the expected command. Please double check your ENTRYPOINT does execute the command passed as docker run argument, as required by official docker images (see https://github.com/docker-library/official-images#consistency for entrypoint consistency requirements).
+                Alternatively you can force image entrypoint to be disabled by adding option `--entrypoint=''`.
+                [Pipeline] {
+                [Pipeline] sh
+                + locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
+            */
             stage('Performance Tests') {
                 /*when {
                     changeset "${CHANGESET_DIR}"
@@ -145,13 +154,10 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
-                                docker.image('locustio/locust:latest').inside('--name locust --rm --network test -v $PWD:/mnt/locust') {
+                                docker.image('locustio/locust:latest').inside('--name locust --network test -v $PWD:/mnt/locust') {
                                     sh 'locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api'
                                 }
                             }
-                            sh '''
-                                locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://localhost:8080/api
-                            '''
                         }
                     }
                 }
@@ -165,7 +171,7 @@ pipeline {
 
                 steps {
                     script {
-                        docker.image('ghcr.io/zaproxy/zaproxy:stable').withRun('--rm --network test') {
+                        docker.image('ghcr.io/zaproxy/zaproxy:stable').withRun('--network test') {
                             sh '''
                                 mkdir -p /zap/wrk
                                 zap-full-scan.py -t http://backend-service:8080/api/
