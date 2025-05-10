@@ -22,7 +22,7 @@ pipeline {
                 dir("${HELM_DIR}") {
                     sh '''
                         chmod +x ./publish-new-chart-version.sh
-                        ./publish-new-chart-version.sh $CHART_VERSION -e the-plug-jenkins@the-plug.com -n Jenkins
+                        ./publish-new-chart-version.sh -e the-plug-jenkins@the-plug.com -n Jenkins $CHART_VERSION
                     '''
                 }
             }

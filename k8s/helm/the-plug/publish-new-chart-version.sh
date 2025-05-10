@@ -4,10 +4,10 @@ while getopts e:n: flag
 do
     case "${flag}" in
         e) email=${OPTARG}
-           git config user.email $email
+           git config user.email ${OPTARG}
         ;;
         n) name=${OPTARG}
-           git config user.name $name
+           git config user.name ${OPTARG}
         ;;
     esac
 done
