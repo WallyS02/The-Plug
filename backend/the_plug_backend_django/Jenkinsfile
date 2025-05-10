@@ -162,15 +162,8 @@ pipeline {
 
                 steps {
                     script {
-                        docker.image('ghcr.io/zaproxy/zaproxy:stable').inside('--network test') {
-                            sh '''
-                                # mkdir -p /zap/wrk
-                                pwd
-                                ls -a
-                                sleep 100000
-                                zap-full-scan.py -t http://backend-service:8080/api/
-                            '''
-                        }
+                        docker.image('ghcr.io/zaproxy/zaproxy:stable').run('--network test ' +
+                        '--entrypoint mkdir', '-p /zap/wrk && zap-full-scan.py -t http://backend-service:8080/api/')
                     }
                 }
             }
