@@ -10,7 +10,7 @@ pipeline {
         EMAIL_HOST_PASSWORD = credentials('email-host-password')
         EMAIL_HOST_USER = credentials('email-host-user')
         SECRET_KEY = credentials('secret-key')
-        PGADMIN_DEFAULT_USER = 'admin@admin.com'
+        PGADMIN_DEFAULT_EMAIL = 'admin@admin.com'
         PGADMIN_DEFAULT_PASSWORD = credentials('pgadmin-default-password')
         ALLOWED_HOSTS = '*'
         DEBUG = '1'
@@ -32,7 +32,7 @@ pipeline {
     }
 
     stages {
-            /*stage('SonarQube Analysis') {
+            stage('SonarQube Analysis') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -194,7 +194,7 @@ pipeline {
                         docker stop backend-service
                     '''
                 }
-            }*/
+            }
 
             stage('Docker Login & Push') {
                 when {
