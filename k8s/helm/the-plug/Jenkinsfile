@@ -25,7 +25,7 @@ pipeline {
                             git config --global user.email "the-plug-jenkins@the-plug.com"
                             git config --global user.name "Jenkins"
                             chmod +x ./publish-new-chart-version.sh
-                            ./publish-new-chart-version.sh $CHART_VERSION
+                            ./publish-new-chart-version.sh $CHART_VERSION $GIT_USERNAME:$GIT_PASSWORD
                         '''
                     }
                 }
