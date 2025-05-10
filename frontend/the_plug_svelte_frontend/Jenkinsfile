@@ -32,197 +32,197 @@ pipeline {
     }
 
     stages {
-            stage('SonarQube Analysis') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
+        stage('SonarQube Analysis') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
 
-                environment {
-                    SCANNER_HOME = tool 'sonar-scanner-7'
-                }
+            environment {
+                SCANNER_HOME = tool 'sonar-scanner-7'
+            }
 
-                steps {
-                    dir("${FRONTEND_DIR}") {
-                        withSonarQubeEnv('sonar-frontend') {
-                            sh('$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=$SONAR_TOKEN_FRONTEND')
-                        }
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    withSonarQubeEnv('sonar-frontend') {
+                        sh('$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectBaseDir=. -Dsonar.token=$SONAR_TOKEN_FRONTEND')
                     }
                 }
             }
+        }
 
-            stage('Frontend Tests') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
-
-                steps {
-                    dir("${FRONTEND_DIR}") {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            sh '''
-                                npm ci
-                                npm run test
-                            '''
-                        }
-                    }
-                }
+        stage('Frontend Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
             }
 
-            stage('Setup Docker Network') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
-
-                steps {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        sh 'docker network create test'
-                    }
-                }
-            }
-
-            stage('Run Services') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
-
-                steps {
-                    dir("${BACKEND_DIR}") {
-                        script {
-                            docker.build('wallys02/the-plug-backend:latest').run(
-                                '--name backend-service --rm --network test --entrypoint ./test-entrypoint.sh ' +
-                                '-e "DB_PASSWORD=$DB_PASSWORD" ' +
-                                '-e "DB_USER=$DB_USER" ' +
-                                '-e "DB_NAME=$DB_NAME" ' +
-                                '-e "DB_HOST=$DB_HOST" ' +
-                                '-e "EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD" ' +
-                                '-e "EMAIL_HOST_USER=$EMAIL_HOST_USER" ' +
-                                '-e "SECRET_KEY=$SECRET_KEY" ' +
-                                '-e "ALLOWED_HOSTS=$ALLOWED_HOSTS" ' +
-                                '-e "DEBUG=$DEBUG" ' +
-                                '-e "CACHE_ENDPOINT=$CACHE_ENDPOINT" ' +
-                                '-e "CACHE_PASSWORD=$CACHE_PASSWORD" ' +
-                                '-e "USE_CACHE=$USE_CACHE"'
-                            )
-                        }
-                    }
-
-                    dir("${FRONTEND_DIR}") {
-                        script {
-                            docker.build('wallys02/the-plug-frontend:latest').run('--name frontend --rm --network test')
-                        }
-                    }
-                }
-            }
-
-            stage('E2E Tests') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
-
-                agent {
-                    docker {
-                        image 'cypress/included:14.3.3'
-                        args '--name cypress --network test -u root:root -e "CYPRESS_BASE_URL=http://frontend:8080" --entrypoint=""'
-                    }
-                }
-
-                steps {
-                    dir("${FRONTEND_DIR}") {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            sh '''
-                                npm ci
-                                cypress run --config-file cypress.config.ts --browser chrome --env apiUrl=http://backend-service:8080/api
-                            '''
-                        }
-                    }
-                }
-            }
-
-            stage('Performance Tests') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
-
-                agent {
-                    docker {
-                        image 'femtopixel/google-lighthouse:latest'
-                        args '--name lighthouse --network test -u root:root -v .:/home/chrome/reports --cap-add=SYS_ADMIN --entrypoint=""'
-                    }
-                }
-
-                steps {
-                    dir("${FRONTEND_DIR}") {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            sh '''
-                                lighthouse http://frontend:8080 --chrome-flags="--headless --no-sandbox" --output json --output-path /home/chrome/reports/lighthouse-results.json
-                            '''
-                        }
-                    }
-                }
-            }
-
-            stage('DAST Tests') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
-
-                agent {
-                    docker {
-                        image 'ghcr.io/zaproxy/zaproxy:stable'
-                        args '--name dast --network test'
-                    }
-                }
-
-                steps {
+            steps {
+                dir("${FRONTEND_DIR}") {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         sh '''
-                            zap-full-scan.py -t http://frontend:8080
+                            npm ci
+                            npm run test
                         '''
                     }
                 }
             }
+        }
 
-            stage('Cleanup') {
-                when {
-                    changeset "${CHANGESET_DIR}"
+        stage('Setup Docker Network') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'docker network create test'
+                }
+            }
+        }
+
+        stage('Run Services') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                dir("${BACKEND_DIR}") {
+                    script {
+                        docker.build('wallys02/the-plug-backend:latest').run(
+                            '--name backend-service --rm --network test --entrypoint ./test-entrypoint.sh ' +
+                            '-e "DB_PASSWORD=$DB_PASSWORD" ' +
+                            '-e "DB_USER=$DB_USER" ' +
+                            '-e "DB_NAME=$DB_NAME" ' +
+                            '-e "DB_HOST=$DB_HOST" ' +
+                            '-e "EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD" ' +
+                            '-e "EMAIL_HOST_USER=$EMAIL_HOST_USER" ' +
+                            '-e "SECRET_KEY=$SECRET_KEY" ' +
+                            '-e "ALLOWED_HOSTS=$ALLOWED_HOSTS" ' +
+                            '-e "DEBUG=$DEBUG" ' +
+                            '-e "CACHE_ENDPOINT=$CACHE_ENDPOINT" ' +
+                            '-e "CACHE_PASSWORD=$CACHE_PASSWORD" ' +
+                            '-e "USE_CACHE=$USE_CACHE"'
+                        )
+                    }
                 }
 
-                steps {
+                dir("${FRONTEND_DIR}") {
+                    script {
+                        docker.build('wallys02/the-plug-frontend:latest').run('--name frontend --rm --network test')
+                    }
+                }
+            }
+        }
+
+        stage('E2E Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            agent {
+                docker {
+                    image 'cypress/included:14.3.3'
+                    args '--name cypress --network test -u root:root -e "CYPRESS_BASE_URL=http://frontend:8080" --entrypoint=""'
+                }
+            }
+
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                            npm ci
+                            cypress run --config-file cypress.config.ts --browser chrome --env apiUrl=http://backend-service:8080/api
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Performance Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            agent {
+                docker {
+                    image 'femtopixel/google-lighthouse:latest'
+                    args '--name lighthouse --network test -u root:root -v .:/home/chrome/reports --cap-add=SYS_ADMIN --entrypoint=""'
+                }
+            }
+
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                            lighthouse http://frontend:8080 --chrome-flags="--headless --no-sandbox" --output json --output-path /home/chrome/reports/lighthouse-results.json
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('DAST Tests') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            agent {
+                docker {
+                    image 'ghcr.io/zaproxy/zaproxy:stable'
+                    args '--name dast --network test'
+                }
+            }
+
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh '''
-                        docker stop frontend
-                        docker stop backend-service
+                        zap-full-scan.py -t http://frontend:8080
                     '''
                 }
             }
+        }
 
-            stage('Docker Login & Push') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
+        stage('Cleanup') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
 
-                steps {
-                    script {
-                        docker.withRegistry("${DOCKER_REGISTRY}", 'dockerhub-creds') {
-                            docker.image("${FRONTEND_IMAGE}").push()
-                        }
+            steps {
+                sh '''
+                    docker stop frontend
+                    docker stop backend-service
+                '''
+            }
+        }
+
+        stage('Docker Login & Push') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                script {
+                    docker.withRegistry("${DOCKER_REGISTRY}", 'dockerhub-creds') {
+                        docker.image("${FRONTEND_IMAGE}").push()
                     }
                 }
             }
+        }
 
-            stage('Helm Deployment') {
-                when {
-                    changeset "${CHANGESET_DIR}"
-                }
+        stage('Helm Deployment') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
 
-                steps {
-                    dir('k8s/helm/the-plug') {
-                        sh '''
-                            chmod +x ./run-helm.sh
-                            ./run-helm.sh
-                            kubectl rollout restart deployment/frontend --namespace plug-namespace
-                        '''
-                    }
+            steps {
+                dir('k8s/helm/the-plug') {
+                    sh '''
+                        chmod +x ./run-helm.sh
+                        ./run-helm.sh
+                        kubectl rollout restart deployment/frontend --namespace plug-namespace
+                    '''
                 }
             }
+        }
     }
 
     post {
