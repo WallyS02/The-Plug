@@ -116,7 +116,7 @@ pipeline {
                 }
             }*/
 
-            // TODO debug Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'cypress' imported from /e2e/cypress.config.ts Did you mean to import "cypress/index.js"?
+            // TODO debug
             stage('E2E Tests') {
                 /*when {
                     changeset "${CHANGESET_DIR}"
@@ -126,11 +126,12 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             script {
-                                docker.image('cypress/included:14.3.3').run(
-                                    '--name cypress -v $PWD:/e2e -w /e2e --network test -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/" ' +
-                                    '--entrypoint sleep', '100000'
+                                docker.image('cypress/included:14.3.3').inside(
+                                    '--name cypress -v $PWD:/e2e -w /e2e --network test -e "CYPRESS_BASE_URL=http://frontend" -e "CYPRESS_API_URL=http://backend-service:8080/api/" --entrypoint=""'
                                     // '--entrypoint cypress', 'run --config-file cypress.config.ts --browser chrome'
-                                )
+                                ) {
+                                    sh 'cypress run --config-file cypress.config.ts --browser chrome'
+                                }
                             }
                         }
                     }
@@ -154,7 +155,7 @@ pipeline {
                 }
             }*/
 
-            // TODO debug mkdir: cannot create directory ‘/zap’: Permission denied
+            // TODO debug
             stage('DAST Tests') {
                 /*when {
                     changeset "${CHANGESET_DIR}"
@@ -162,8 +163,8 @@ pipeline {
 
                 steps {
                     script {
-                        docker.image('ghcr.io/zaproxy/zaproxy:stable').run('--network test ' +
-                        '--entrypoint mkdir', '-p /zap/wrk && zap-full-scan.py -t http://backend-service:8080/api/')
+                        docker.image('ghcr.io/zaproxy/zaproxy:stable').run('--name dast --network test ' +
+                        '--entrypoint zap-full-scan.py', '-t http://backend-service:8080/api/')
                     }
                 }
             }
