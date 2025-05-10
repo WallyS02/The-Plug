@@ -10,6 +10,8 @@ pipeline {
         EMAIL_HOST_PASSWORD = credentials('email-host-password')
         EMAIL_HOST_USER = credentials('email-host-user')
         SECRET_KEY = credentials('secret-key')
+        PGADMIN_DEFAULT_USER = 'admin@admin.com'
+        PGADMIN_DEFAULT_PASSWORD = credentials('pgadmin-default-password')
         ALLOWED_HOSTS = '*'
         DEBUG = '1'
         CACHE_ENDPOINT = 'no'
@@ -192,9 +194,8 @@ pipeline {
                         docker stop backend-service
                     '''
                 }
-            }*/
+            }
 
-            // TODO debug
             stage('Docker Login & Push') {
                 when {
                     changeset "${CHANGESET_DIR}"
@@ -207,7 +208,7 @@ pipeline {
                         }
                     }
                 }
-            }
+            }*/
 
             // TODO debug
             stage('Helm Deployment') {

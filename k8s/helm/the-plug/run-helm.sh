@@ -11,10 +11,14 @@ if [ -e "values.yaml" ];
 then
   rm values.yaml
 fi
-set -o allexport
-source .env
-set +o allexport
+
+if [ -e ".env" ];
+then
+  set -o allexport
+  source .env
+  set +o allexport
+fi
 envsubst < values-unresolved.yaml > values.yaml
 
-k apply -f plug-namespace.yaml
+kubectl apply -f plug-namespace.yaml
 helm upgrade --install the-plug-release the-plug-repo/the-plug -f values.yaml --namespace plug-namespace
