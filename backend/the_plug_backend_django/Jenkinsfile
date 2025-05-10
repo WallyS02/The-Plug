@@ -80,7 +80,7 @@ pipeline {
             }*/
 
             // TODO debug if test containers can access services
-            /*stage('Run Services') {
+            stage('Run Services') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -114,7 +114,7 @@ pipeline {
 
                     sh 'sleep 5'
                 }
-            }*/
+            }
 
             // TODO debug
             stage('E2E Tests') {
@@ -140,7 +140,11 @@ pipeline {
                                     sh 'cypress run --config-file cypress.config.ts --browser chrome'
                                 }
                             }*/
-                            sh 'cypress run --config-file cypress.config.ts --browser chrome'
+                            sh '''
+                                pwd
+                                ls -a
+                                cypress run --config-file cypress.config.ts --browser chrome
+                            '''
                         }
                     }
                 }
@@ -169,7 +173,11 @@ pipeline {
                                     sh 'locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api'
                                  }
                             }*/
-                            sh 'locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api'
+                            sh '''
+                                pwd
+                                ls -a
+                                locust -f /mnt/locust/locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
+                            '''
                         }
                     }
                 }
@@ -193,14 +201,18 @@ pipeline {
                         docker.image('ghcr.io/zaproxy/zaproxy:stable').run('--name dast --network test ' +
                         '--entrypoint zap-full-scan.py', '-t http://backend-service:8080/api/')
                     }*/
-                    sh 'zap-full-scan.py -t http://backend-service:8080/api/'
+                    sh '''
+                        pwd
+                        ls -a
+                        zap-full-scan.py -t http://backend-service:8080/api/
+                    '''
                 }
             }
 
-            stage('Cleanup') {
-                /*when {
+            /*stage('Cleanup') {
+                when {
                     changeset "${CHANGESET_DIR}"
-                }*/
+                }
 
                 steps {
                     sh '''
@@ -211,7 +223,7 @@ pipeline {
             }
 
             // TODO debug
-            /*stage('Docker Build & Push') {
+            stage('Docker Build & Push') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
