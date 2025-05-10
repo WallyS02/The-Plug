@@ -115,7 +115,7 @@ pipeline {
                 }
             }*/
 
-            // TODO debug docker run command - Jenkins user, weird volume mounts and working directory
+            // TODO debug
             stage('E2E Tests') {
                 /*when {
                     changeset "${CHANGESET_DIR}"
@@ -132,6 +132,9 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
+                                apt-get install curl
+                                curl -X GET http://backend-service:8080/api/herb/list/
+                                curl -X GET http://frontend
                                 npm ci
                                 cypress run --config-file cypress.config.ts --browser chrome
                             '''
@@ -149,7 +152,7 @@ pipeline {
                 agent {
                     docker {
                         image 'locustio/locust:latest'
-                        args '--name locust --network test --entrypoint=""'
+                        args '--name locust --network test -u root:root --entrypoint=""'
                     }
                 }
 
@@ -157,6 +160,7 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
+                                apt-get install curl
                                 curl -X GET http://backend-service:8080/api/herb/list/
                                 locust -f locustfile.py --headless -u 100 -r 10 -t 3m --host http://backend-service:8080/api
                             '''
