@@ -46,5 +46,5 @@ kubectl config set-context minikube \
 kubectl config use-context minikube;"
 
 # Restore original config
-cp -r /home/wallys/minikube-host-config /home/wallys/.minikube
-cp -r /home/wallys/kube-host-config /home/wallys/.kube
+cp -Tr /home/wallys/minikube-host-config /home/wallys/.minikube
+cp -Tr /home/wallys/kube-host-config /home/wallys/.kube
