@@ -77,6 +77,7 @@ This will start the development server, and you can access the application at ht
 * **backend** - directory that contains backend application code
 * **documentation** - directory that contains application design and it's diagrams
 * **frontend** - directory that contains frontend application code
+* **jenkins** - directory that contains local Jenkins configuration files
 * **k8s** - directory that contains raw Kubernetes manifests and Helm charts for application, also contains some utility bash scripts
 * **.gitlab-ci.yml** - main GitLab CI/CD pipeline, which uses gitlab-ci-local, that triggers child pipelines located in backend, frontend and k8s subdirectories
 * **docker-compose-local.yml** - docker-compose file that allows running application locally
@@ -90,7 +91,7 @@ This will start the development server, and you can access the application at ht
 - [x] prepare AWS cloud architecture
 - [x] create example unit, integration, e2e and performance tests
 - [x] create IaC Terraform configuration for application's AWS cloud
-- [ ] create GitHub Actions, GitLab CI/CD (gitlab-ci-local) and Jenkins CI/CD pipelines
+- [x] create GitHub Actions, GitLab CI/CD (gitlab-ci-local) and Jenkins CI/CD pipelines
 - [x] complete final README
 ## Authors
 - [@WallyS02](https://github.com/WallyS02) everything
