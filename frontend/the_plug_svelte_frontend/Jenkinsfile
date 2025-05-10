@@ -154,7 +154,7 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                lighthouse http://frontend:8080 --chrome-flags="--headless" --output json --output-path /home/chrome/reports/lighthouse-results.json
+                                lighthouse http://frontend:8080 --chrome-flags="--headless --no-sandbox" --output json --output-path /home/chrome/reports/lighthouse-results.json
                             '''
                         }
                     }
