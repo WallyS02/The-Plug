@@ -67,7 +67,7 @@ pipeline {
                 }
             }*/
 
-            stage('Setup Docker Network') {
+            /*stage('Setup Docker Network') {
                 when {
                     changeset "${CHANGESET_DIR}"
                 }
@@ -77,13 +77,13 @@ pipeline {
                         sh 'docker network create test'
                     }
                 }
-            }
+            }*/
 
             // TODO debug if test containers can access services
-            stage('Run Services') {
-                /*when {
+            /*stage('Run Services') {
+                when {
                     changeset "${CHANGESET_DIR}"
-                }*/
+                }
 
                 steps {
                     dir("${BACKEND_DIR}") {
@@ -108,12 +108,11 @@ pipeline {
 
                     dir("${FRONTEND_DIR}") {
                         script {
-                            /*docker.build('wallys02/the-plug-frontend:latest')*/
-                            docker.image('wallys02/the-plug-frontend:latest').run('--name frontend --rm --network test')
+                            docker.build('wallys02/the-plug-frontend:latest').run('--name frontend --rm --network test')
                         }
                     }
                 }
-            }
+            }*/
 
             // TODO debug Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'cypress' imported from /e2e/cypress.config.ts Did you mean to import "cypress/index.js"?
             stage('E2E Tests') {
