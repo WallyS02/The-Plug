@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        KUBECONFIG = "${env.HOME}/.kube/config"
+        HELM_DIR = 'k8s/helm/the-plug'
+        CHANGESET_DIR = 'k8s/helm/**'
+        CHART_VERSION = '0.0.4'
+    }
+
+    triggers {
+        pollSCM '* * * * *'
+    }
+
+    stages {
+        stage('Publish Charts') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                dir("${HELM_DIR}") {
+                    sh '''
+                        chmod +x ./publish-new-chart-version.sh
+                        ./publish-new-chart-version.sh $CHART_VERSION
+                    '''
+                }
+            }
+        }
+
+        stage('Upgrade Charts') {
+            when {
+                changeset "${CHANGESET_DIR}"
+            }
+
+            steps {
+                dir("${HELM_DIR}") {
+                    sleep(90)
+                    sh '''
+                        chmod +x ./run-helm.sh
+                        ./run-helm.sh
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
