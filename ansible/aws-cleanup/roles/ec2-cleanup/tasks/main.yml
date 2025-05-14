@@ -1,0 +1,34 @@
+---
+- name: Find running EC2 instances
+  amazon.aws.ec2_instance_info:
+    region: "{{ aws_region }}"
+    filters:
+      instance-state-name: running
+  register: running_instances
+
+- name: Check CPU usage
+  shell: |
+    aws cloudwatch get-metric-statistics \
+      --region {{ aws_region }} \
+      --namespace AWS/EC2 \
+      --metric-name CPUUtilization \
+      --dimensions Name=InstanceId,Value={{ item.instance_id }} \
+      --start-time "$(date -u -d '24 hours ago' '+%Y-%m-%dT%H:%M:%SZ')" \
+      --end-time "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
+      --period 86400 \
+      --statistics Average \
+      --query 'Datapoints[0].Average' \
+      --output text
+  register: cpu_metrics
+  loop: "{{ running_instances.instances }}"
+  loop_control:
+    label: "{{ item.instance_id }}"
+
+- name: Terminate instances with CPU < {{ cpu_threshold }}%
+  amazon.aws.ec2_instance:
+    instance_ids: "{{ item.item.instance_id }}"
+    state: terminated
+  loop: "{{ cpu_metrics.results }}"
+  when:
+    - item.stdout | float < cpu_threshold
+    - item.rc == 0

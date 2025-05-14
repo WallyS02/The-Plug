@@ -1,0 +1,22 @@
+---
+- name: Find all buckets
+  amazon.aws.s3_bucket_info:
+    region: "{{ aws_region }}"
+  register: s3_buckets
+
+- name: Find buckets objects
+  amazon.aws.s3_object:
+    bucket: "{{ item.name }}"
+    mode: list
+  loop: "{{ s3_buckets.buckets }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: bucket_contents
+
+- name: Terminate empty buckets
+  amazon.aws.s3_bucket:
+    name: "{{ item.invocation.module_args.bucket }}"
+    state: absent
+    force: true
+  loop: "{{ bucket_contents.results }}"
+  when: item.s3_keys | length == 0

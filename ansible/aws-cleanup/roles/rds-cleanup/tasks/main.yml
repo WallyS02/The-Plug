@@ -1,0 +1,12 @@
+---
+- name: Find stopped RDS instances
+  amazon.aws.rds_instance_info:
+    region: "{{ aws_region }}"
+  register: rds_instances
+
+- name: Terminate stopped RDS
+  amazon.aws.rds_instance:
+    instance_id: "{{ item.db_instance_identifier }}"
+    state: absent
+    skip_final_snapshot: true
+  loop: "{{ rds_instances.instances | selectattr('db_instance_status', 'equalto', 'stopped') | list }}"

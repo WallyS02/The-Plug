@@ -1,0 +1,28 @@
+---
+- name: AWS temporary EC2 cleanup
+  hosts: local
+  gather_facts: false
+  tasks:
+    - name: Find instances tagged "temp"
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_region }}"
+        filters:
+          "tag:temp": true
+      register: temp_instances
+
+    - name: Terminate "temp" tagged instances
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ temp_instances.instances | map(attribute='instance_id') | list }}"
+        state: terminated
+      when: temp_instances.instances | length > 0
+
+- name: AWS resources cleanup
+  hosts: local
+  connection: local
+  gather_facts: false
+  roles:
+    - ec2-cleanup
+    - ebs-cleanup
+    - elastic-ip-cleanup
+    - rds-cleanup
+    - s3-cleanup
