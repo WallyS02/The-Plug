@@ -1,0 +1,13 @@
+---
+- name: Application after-deployment smoke tests
+  hosts: local
+  tasks:
+    - name: Verify HTTP endpoint
+      uri:
+        url: "{{ item }}"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: "{{ retries }}"
+      delay: "{{ delay }}"
+      loop: "{{ endpoints }}"

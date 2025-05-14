@@ -1,0 +1,6 @@
+retries: 5
+delay: 10
+
+endpoints:
+  - https://theplug.software
+  - https://alb.theplug.software/api/herb/list/
