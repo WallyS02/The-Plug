@@ -1,0 +1,17 @@
+---
+- name: Install dnf-automatic
+  dnf:
+    name: dnf-automatic
+    state: present
+  notify: restart dnf-automatic
+
+- name: Configure dnf-automatic
+  template:
+    src: dnf-automatic.conf.j2
+    dest: /etc/dnf/automatic.conf
+
+- name: Start dnf-automatic
+  systemd:
+    name: dnf-automatic.timer
+    enabled: yes
+    state: started

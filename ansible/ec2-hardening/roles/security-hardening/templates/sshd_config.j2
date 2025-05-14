@@ -1,0 +1,7 @@
+Port {{ ssh_port }}
+PermitRootLogin {{ 'without-password' if disable_root_ssh_password else 'yes' }}
+PasswordAuthentication {{ 'no' if disable_ssh_password_auth else 'yes' }}
+ChallengeResponseAuthentication no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+MaxAuthTries 3

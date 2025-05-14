@@ -1,0 +1,11 @@
+---
+- name: Find unassociated EIPs
+  amazon.aws.ec2_eip_info:
+    region: "{{ aws_region }}"
+  register: eip_info
+
+- name: Release orphaned EIPs
+  amazon.aws.ec2_eip:
+    public_ip: "{{ item.public_ip }}"
+    state: absent
+  loop: "{{ eip_info.addresses | rejectattr('instance_id', 'defined') | list }}"

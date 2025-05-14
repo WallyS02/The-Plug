@@ -1,0 +1,8 @@
+---
+- name: AWS EC2 auto updates, security hardening, vulnerability scanning
+  hosts: env_dev
+  become: yes
+  roles:
+    - auto-updates
+    - security-hardening
+    - vulnerability-scan

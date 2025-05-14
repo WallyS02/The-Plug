@@ -1,0 +1,24 @@
+---
+- name: restart sshd
+  systemd:
+    name: sshd
+    state: restarted
+    enabled: yes
+
+- name: restart auditd
+  systemd:
+    name: auditd
+    state: restarted
+    enabled: yes
+
+- name: restart fail2ban
+  systemd:
+    name: fail2ban
+    state: restarted
+    enabled: yes
+
+- name: restart crond
+  systemd:
+    name: crond
+    state: restarted
+    enabled: yes

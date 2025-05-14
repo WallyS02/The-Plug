@@ -1,0 +1,4 @@
+cleanup_chaos: false
+
+random_pod_quantity: "{{ 4 | random }}"
+max_overload_processes: 100

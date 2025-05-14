@@ -1,0 +1,4 @@
+aws_region: "eu-north-1"
+
+cleanup_days: 7
+cpu_threshold: 5

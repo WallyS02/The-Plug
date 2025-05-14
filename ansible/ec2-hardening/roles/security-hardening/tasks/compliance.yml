@@ -1,0 +1,34 @@
+---
+- name: Apply CIS password policy
+  lineinfile:
+    path: /etc/security/pwquality.conf
+    regexp: "^#?{{ item.key }}"
+    line: "{{ item.key }} = {{ item.value }}"
+  loop:
+    - { key: 'minlen', value: '12' }
+    - { key: 'minclass', value: '3' }
+
+- name: Install cron
+  dnf:
+    name: cronie
+    state: present
+  notify: restart crond
+
+- name: Restrict access to cron
+  file:
+    path: /etc/cron.deny
+    state: absent
+  ignore_errors: yes
+
+- name: Create cron.allow
+  copy:
+    content: "root\n"
+    dest: /etc/cron.allow
+    mode: 0600
+
+- name: Enforce secure crontab permissions
+  file:
+    path: /etc/crontab
+    mode: 0600
+    owner: root
+    group: root

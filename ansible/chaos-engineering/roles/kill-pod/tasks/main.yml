@@ -1,0 +1,21 @@
+- name: Find pods
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: plug-namespace
+  register: pods
+
+- name: Filter only active pods
+  set_fact:
+    active_pods: "{{ pods.resources | selectattr('status.phase', 'equalto', 'Running') | list }}"
+
+- name: Select random pods to remove
+  set_fact:
+    pods_to_delete: "{{ active_pods | shuffle | slice(random_pod_quantity | int) }}"
+
+- name: Select and terminate pods
+  community.kubernetes.k8s:
+    state: absent
+    kind: Pod
+    name: "{{ item.metadata.name }}"
+    namespace: plug-namespace
+  with_items: "{{ pods_to_delete }}"

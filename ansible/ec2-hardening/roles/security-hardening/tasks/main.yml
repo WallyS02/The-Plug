@@ -1,0 +1,7 @@
+---
+- name: Run security hardening
+  include_tasks: "{{ item }}"
+  loop:
+    - ssh.yml
+    - compliance.yml
+    - audit.yml

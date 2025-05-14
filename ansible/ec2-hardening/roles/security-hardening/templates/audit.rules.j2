@@ -1,0 +1,7 @@
+# Monitoring critical files
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/sudoers -p wa -k privilege-escalation
+
+# Monitoring network operations
+-a exit,always -F arch=b64 -S bind -S connect -S accept -k network_operations

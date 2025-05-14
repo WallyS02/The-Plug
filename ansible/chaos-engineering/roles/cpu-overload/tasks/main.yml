@@ -1,0 +1,20 @@
+- name: Find pods
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: plug-namespace
+  register: pods
+
+- name: Filter only active pods
+  set_fact:
+    active_pods: "{{ pods.resources | selectattr('status.phase', 'equalto', 'Running') | list }}"
+
+- name: Filter only active pods
+  set_fact:
+    random_pod: "{{ pods.resources | random }}"
+
+- name: Overload CPU
+  shell:
+    cmd: kubectl exec {{ random_pod.metadata.name }} -- sh -c 'while true; do :; done' &
+  async: 300
+  poll: 0
+  loop: "{{ range(max_overload_processes | int) }}"
