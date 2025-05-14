@@ -1,0 +1,34 @@
+---
+- name: Install auditd
+  dnf:
+    name: audit
+    state: present
+  notify: restart auditd
+
+- name: Implement audit rules
+  template:
+    src: audit.rules.j2
+    dest: /etc/audit/rules.d/hardening.rules
+  notify: restart auditd
+
+- name: Install AIDE (File Change Detector)
+  dnf:
+    name: aide
+    state: present
+
+- name: Initialize AIDE database
+  command: aide --init
+  args:
+    creates: /var/lib/aide/aide.db.new.gz
+
+- name: Copy new AIDE database
+  command: cp -p /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+  args:
+    creates: /var/lib/aide/aide.db.gz
+
+- name: Add cron for regular AIDE scans
+  cron:
+    name: "Regular AIDE scan"
+    minute: "0"
+    hour: "3"
+    job: "/usr/sbin/aide --check"

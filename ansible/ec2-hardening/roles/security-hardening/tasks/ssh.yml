@@ -1,0 +1,12 @@
+---
+- name: Update SSH configuration
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+  notify: restart sshd
+
+- name: Install fail2ban
+  dnf:
+    name: fail2ban
+    state: present
+  notify: restart fail2ban

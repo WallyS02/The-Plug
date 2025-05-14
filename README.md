@@ -73,6 +73,7 @@ This will start the development server, and you can access the application at ht
 
 ## Important directories and files
 * **.github** - directory that contains GitHub Actions pipelines
+* **ansible** - directory that contains Ansible configurations that can be used in project
 * **aws** - directory that contains AWS cloud architecture for application and it's implementation using IaC practise with Terraform
 * **backend** - directory that contains backend application code
 * **documentation** - directory that contains application design and it's diagrams

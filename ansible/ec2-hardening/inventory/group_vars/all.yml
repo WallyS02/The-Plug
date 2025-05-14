@@ -1,0 +1,6 @@
+admin_email: "admin@admin.com"
+
+# Hardening SSH
+ssh_port: 22
+disable_root_ssh_password: true
+disable_ssh_password_auth: true
