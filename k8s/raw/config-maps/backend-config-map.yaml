@@ -6,7 +6,9 @@ metadata:
   labels:
     plug: backend-config-map
 data:
-  DB_HOST: db-service
-  WEB_APP_URL: http://frontend-service
+  DB_HOST: "db-service:5432"
   ALLOWED_HOSTS: "*"
   DEBUG: '1'
+  USE_CACHE: '0'
+  CACHE_ENDPOINT: 'no'
+  CACHE_PASSWORD: 'no'

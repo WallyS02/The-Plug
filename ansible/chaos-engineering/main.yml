@@ -1,0 +1,6 @@
+---
+- name: Minikube cluster chaos engineering
+  hosts: local
+  roles:
+    - kill-pod
+    - cpu-overload
