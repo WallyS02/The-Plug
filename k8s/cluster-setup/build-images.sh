@@ -10,4 +10,4 @@ cd ..
 cd ../frontend/the_plug_svelte_frontend
 docker build -t wallys02/the-plug-frontend:latest .
 cd ..
-cd ../k8s/raw
+cd ../k8s/cluster-setup
