@@ -1,0 +1,17 @@
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+
+config:
+  datasource:
+    host: db-service.plug-namespace.svc.cluster.local
+    port: "5432"
+    database: postgres
+    userSecret:
+      name: db-secret
+      key: POSTGRES_USER
+    passwordSecret:
+      name: db-secret
+      key: POSTGRES_PASSWORD

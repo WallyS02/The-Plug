@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: prometheus-grafana
+  name: backend
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      plug: backend-pods
+  endpoints:
+    - port: http
+      targetPort: 8080
+      path: /metrics
+      interval: 30s

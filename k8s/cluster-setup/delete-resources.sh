@@ -1,15 +1,15 @@
 #!/bin/bash -i
 source ~/.bashrc
-k config set-context --current --namespace=plug-namespace
-k delete ing plug-ingress
-k delete networkpolicy --all
-k delete hpa --all
-k delete svc --all
-k delete deploy --all
-k delete statefulset --all
-k delete secrets --all
-k delete configmap backend-config-map
-k delete pvc --all
-k delete storageclasses db-storage-class
-k delete namespace plug-namespace
-k config set-context --current --namespace=default
+kubectl config set-context --current --namespace=plug-namespace
+kubectl delete ing plug-ingress
+kubectl delete networkpolicy --all
+kubectl delete hpa --all
+kubectl delete svc --all
+kubectl delete deploy --all
+kubectl delete statefulset --all
+kubectl delete secrets --all
+kubectl delete configmap backend-config-map
+kubectl delete pvc --all
+kubectl delete storageclasses db-storage-class
+kubectl delete namespace plug-namespace
+kubectl config set-context --current --namespace=default
