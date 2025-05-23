@@ -1,8 +1,13 @@
 serviceMonitor:
+  selfMonitor:
+    enabled: true
+    labels:
+      release: prometheus-grafana
+
   enabled: true
-  namespace: monitoring
-  labels:
-    release: prometheus-grafana
+  defaults:
+    labels:
+      release: prometheus-grafana
 
   targets:
     - name: backend

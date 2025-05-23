@@ -10,6 +10,11 @@ helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs
     --set nfs.server=nfs-server \
     --set nfs.path=/var/nfs
 
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0/deploy/static/provider/cloud/deploy.yaml
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values ./ingress-nginx/values.yml
+
 set -o allexport
 source ../raw/secrets/.env
 set +o allexport
@@ -31,8 +36,6 @@ helm upgrade --install blackbox-exporter prometheus-community/prometheus-blackbo
 helm upgrade --install pg-exporter prometheus-community/prometheus-postgres-exporter --namespace monitoring --values ./monitoring/exporters/pg-exporter/pg-values.yml
 helm upgrade --install nginx-exporter prometheus-community/prometheus-nginx-exporter --namespace monitoring --values ./monitoring/exporters/nginx-exporter/nginx-values.yml
 kubectl apply -f ./monitoring/exporters/django/backend-service-monitor.yml
-
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0/deploy/static/provider/cloud/deploy.yaml
 
 chmod +x ./build-images.sh
 ./build-images.sh
