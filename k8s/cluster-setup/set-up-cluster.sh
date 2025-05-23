@@ -10,7 +10,6 @@ helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs
     --set nfs.server=nfs-server \
     --set nfs.path=/var/nfs
 
-# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0/deploy/static/provider/cloud/deploy.yaml
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values ./ingress-nginx/values.yml
@@ -23,6 +22,8 @@ envsubst < ../raw/secrets/db-secret.yaml > ../raw/secrets/db-secret-resolved.yam
 envsubst < ../raw/secrets/pgadmin-secret.yaml > ../raw/secrets/pgadmin-secret-resolved.yaml
 
 minikube addons enable metrics-server
+
+for file in ./monitoring/grafana/dashboards/*; do kubectl apply --server-side=true -f $file; done
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
