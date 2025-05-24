@@ -2,13 +2,10 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: backend
-  namespace: monitoring
+  namespace: plug-namespace
   labels:
     release: prometheus-grafana
 spec:
-  namespaceSelector:
-    matchNames:
-      - plug-namespace
   selector:
     matchLabels:
       plug: backend-pods
