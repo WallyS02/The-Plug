@@ -2,7 +2,7 @@
 source ~/.bashrc
 minikube start
 
-docker run -d --rm --privileged --name nfs-server  -v /var/nfs:/var/nfs  phico/nfs-server:latest
+docker run -d --privileged --name nfs-server  -v /var/nfs:/var/nfs  phico/nfs-server:latest
 docker network connect minikube nfs-server
 helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 helm repo update
@@ -24,6 +24,8 @@ envsubst < ../raw/secrets/pgadmin-secret.yaml > ../raw/secrets/pgadmin-secret-re
 minikube addons enable metrics-server
 
 for file in ./monitoring/grafana/dashboards/*; do kubectl apply --server-side=true -f $file; done
+for file in ./monitoring/prometheus/alerts/*; do kubectl apply -f $file; done
+kubectl apply -f ./monitoring/loki/alerts.yml
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts

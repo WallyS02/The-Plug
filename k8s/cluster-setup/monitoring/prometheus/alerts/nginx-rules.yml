@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nginx-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  groups:
+    - name: nginx.rules
+      rules:
+      - alert: HighWaitingConnections
+        expr: sum by (service) (nginx_connections_waiting) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Too many waiting connections in frontend NGINX server monitored by {{ $labels.service }}"
+          description: "The number of waiting connections in frontend NGINX server monitored by {{ $labels.service }} has exceeded 100 in the last 5 minutes."

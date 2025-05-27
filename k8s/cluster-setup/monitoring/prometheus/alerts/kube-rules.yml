@@ -1,0 +1,65 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kube-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  groups:
+    - name: kube.rules
+      rules:
+        - alert: ClusterDiskFull
+          expr: |
+            (sum by (instance) (node_filesystem_avail_bytes) / sum by (instance) (node_filesystem_size_bytes != 0)) < 0.10
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Low available disk space on node {{ $labels.instance }}"
+            description: "Available disk space on node {{ $labels.instance }}'s primary disk has dropped below 10%."
+        - alert: DiskIOWait
+          expr: |
+            avg by (instance) (rate(node_cpu_seconds_total{mode="iowait"}[5m])) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High disk operation latency on node {{ $labels.instance }}"
+            description: "The average wait time for disk operations on node {{ $labels.instance }} exceeded 10% for more than 5 minutes."
+        - alert: HighCPUUsage
+          expr: |
+            1 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m]))) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage on node {{ $labels.instance }}"
+            description: "CPU usage on node {{ $labels.instance }} has exceeded 80% for more than 5 minutes."
+        - alert: HighDNSLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(coredns_dns_request_duration_seconds_bucket[5m])) by (le, service)) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High DNS latency in DNS instance monitored by {{ $labels.service }}"
+            description: "The 95th percentile DNS response time in DNS instance monitored by {{ $labels.service }} exceeded 500ms for more than 5 minutes."
+        - alert: KubePodCrashLooping
+          expr: |
+            kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} in CrashLoopBackOff status"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been in a CrashLoopBackOff state for more than 10 minutes."
+        - alert: NodeOutOfMemory
+          expr: |
+            sum by (instance) (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Low available memory on node {{ $labels.instance }}"
+            description: "Available memory on node {{ $labels.instance }} has dropped below 5%."

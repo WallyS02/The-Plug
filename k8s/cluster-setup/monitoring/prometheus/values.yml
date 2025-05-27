@@ -27,3 +27,15 @@ prometheus:
       matchNames:
         - monitoring
         - plug-namespace
+
+# Alertmanager notifications config
+# alertmanager:
+#   config:
+#      route:
+#        receiver: 'slack-notifications'
+#      receivers:
+#        - name: 'slack-notifications'
+#          slack_configs:
+#            - api_url: 'https://hooks.slack.com/services/XXX/YYY/ZZZ'
+#              channel: '#alerts'
+#              send_resolved: true

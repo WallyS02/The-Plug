@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  groups:
+    - name: network.rules
+      rules:
+        - alert: Ingress5xxErrors
+          expr: |
+            sum by (ingress) (rate(nginx_ingress_controller_requests{status=~"5.."}[5m])) / sum by (ingress) (rate(nginx_ingress_controller_requests[5m]) != 0) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High percentage of 5xx errors in Ingress"
+            description: "The percentage of 5xx errors in the Ingress controller exceeded 5% for more than 5 minutes."
+        - alert: PacketLoss
+          expr: |
+            sum by (instance) (rate(node_network_receive_errs_total[5m]) / (rate(node_network_receive_packets_total[5m]) != 0)) > 0.01
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High packet loss on node {{ $labels.instance }}"
+            description: "Packet loss exceeded 1% on node {{ $labels.instance }} for more than 5 minutes."

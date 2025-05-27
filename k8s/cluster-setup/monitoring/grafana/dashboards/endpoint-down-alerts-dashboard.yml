@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: endpoint-down-alerts-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: 'true'
+data:
+  dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 38,
+      "links": [],
+      "panels": [
+        {
+          "description": "Blackbox Exporter has been unable to reach {{ $labels.target }} endpoint for over a minute",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "EndpointDown",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Endpoint Down",
+          "type": "alertlist"
+        }
+      ],
+      "preload": false,
+      "schemaVersion": 41,
+      "tags": [
+        "alert"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Endpoint Down Alerts",
+      "uid": "fc5cad64-55cb-4055-b4a9-338cffde52f5",
+      "version": 5
+    }
