@@ -140,6 +140,43 @@ data:
           "pluginVersion": "12.0.0",
           "title": "TCP Connection Flood",
           "type": "alertlist"
+        },
+        {
+          "description": "In the last 5 minutes, there were more than 50 unsuccessful login attempts to the API on pod {{ $labels.pod }}",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          },
+          "id": 4,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "BruteForceAttempt",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Brute Force Attempt",
+          "type": "alertlist"
         }
       ],
       "preload": false,

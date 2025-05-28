@@ -36,3 +36,12 @@ spec:
           annotations:
             summary: "Potential TCP Connection Flood attack on node {{ $labels.instance }}"
             description: "The number of active TCP connections has exceeded 1000 on node {{ $labels.instance }} for more than 5 minutes."
+        - alert: BruteForceAttempt
+          expr: |
+            sum by (pod) (increase(django_http_responses_total_by_status_view_method_total{view="login",status="404",method="POST"}[5m])) > 50
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Possible Brute Force attempt on pod {{ $labels.pod }}"
+            description: "In the last 5 minutes, there were more than 50 unsuccessful login attempts to the API on pod {{ $labels.pod }}."
