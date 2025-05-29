@@ -79,7 +79,10 @@ This will start the development server, and you can access the application at ht
 * **documentation** - directory that contains application design and it's diagrams
 * **frontend** - directory that contains frontend application code
 * **jenkins** - directory that contains local Jenkins configuration files
-* **k8s** - directory that contains raw Kubernetes manifests and Helm charts for application, also contains some utility bash scripts
+* **k8s** - directory containing Minikube cluster and k8s application configuration
+  * **cluster-setup** - directory that contains cluster configurations (including NGINX Ingress Controller, Prometheus, Grafana and Loki monitoring) and scripts that run and configure cluster
+  * **helm** - directory that contains Helm charts for application
+  * **raw** - directory that contains raw Kubernetes manifests for application
 * **.gitlab-ci.yml** - main GitLab CI/CD pipeline, which uses gitlab-ci-local, that triggers child pipelines located in backend, frontend and k8s subdirectories
 * **docker-compose-local.yml** - docker-compose file that allows running application locally
 
