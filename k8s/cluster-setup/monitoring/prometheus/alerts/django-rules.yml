@@ -11,13 +11,13 @@ spec:
       rules:
         - alert: APILatencySpike
           expr: |
-            histogram_quantile(0.95, sum(rate(django_http_requests_latency_seconds_by_view_method_bucket[5m])) by (le, pod)) > 1
+            histogram_quantile(0.95, sum(rate(django_http_requests_latency_seconds_by_view_method_bucket[5m])) by (le, pod)) > 0.8
           for: 5m
           labels:
             severity: warning
           annotations:
             summary: "API latency in pod {{ $labels.pod }} increased"
-            description: "The 95th percentile API response time in pod {{ $labels.pod }} exceeded 1 second in the last 5 minutes."
+            description: "The 95th percentile API response time in pod {{ $labels.pod }} exceeded 800 miliseconds in the last 5 minutes."
         - alert: HighErrorRatePerEndpoint
           expr: |
             sum by (view, method) (

@@ -24,8 +24,6 @@ envsubst < ../raw/secrets/pgadmin-secret.yaml > ../raw/secrets/pgadmin-secret-re
 minikube addons enable metrics-server
 
 for file in ./monitoring/grafana/dashboards/*; do kubectl apply --server-side=true -f $file; done
-for file in ./monitoring/prometheus/alerts/*; do kubectl apply -f $file; done
-kubectl apply -f ./monitoring/loki/alerts.yml
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -35,10 +33,16 @@ kubectl apply -f ../raw/secrets/db-secret-resolved.yaml --namespace monitoring
 helm upgrade --install loki grafana/loki --namespace monitoring --values ./monitoring/loki/values.yml
 helm upgrade --install alloy grafana/alloy --namespace monitoring --values ./monitoring/loki/alloy.yml
 helm upgrade --install prometheus-grafana prometheus-community/kube-prometheus-stack --namespace monitoring --values ./monitoring/prometheus/values.yml
+for file in ./monitoring/prometheus/alerts/*; do kubectl apply -f $file; done
 helm upgrade --install blackbox-exporter prometheus-community/prometheus-blackbox-exporter --namespace monitoring --values ./monitoring/exporters/blackbox-exporter/blackbox-values.yml
 helm upgrade --install pg-exporter prometheus-community/prometheus-postgres-exporter --namespace monitoring --values ./monitoring/exporters/pg-exporter/pg-values.yml
 helm upgrade --install nginx-exporter prometheus-community/prometheus-nginx-exporter --namespace monitoring --values ./monitoring/exporters/nginx-exporter/nginx-values.yml
 kubectl apply -f ./monitoring/exporters/django/backend-service-monitor.yml
+
+helm repo add sloth https://slok.github.io/sloth
+helm repo update
+helm upgrade --install sloth sloth/sloth --namespace monitoring
+for file in ./monitoring/prometheus/slos/*; do kubectl apply -f $file; done
 
 chmod +x ./build-images.sh
 ./build-images.sh

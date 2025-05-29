@@ -20,13 +20,13 @@ spec:
             description: "At least one deadlock was detected in database monitored by {{ $labels.service }} in the last 5 minutes."
         - alert: HighTransactionLatency
           expr: |
-            sum by (service) (pg_stat_activity_max_tx_duration{state="active"}) > 1
+            sum by (service) (pg_stat_activity_max_tx_duration{state="active"}) > 0.5
           for: 5m
           labels:
             severity: warning
           annotations:
             summary: "High latency active transaction detected in database monitored by {{ $labels.service }}"
-            description: "Detected active transaction that has exceeded 1 second completion time in database monitored by {{ $labels.service }} for more than 5 minutes."
+            description: "Detected active transaction that has exceeded 500 miliseconds completion time in database monitored by {{ $labels.service }} for more than 5 minutes."
         - alert: PostgresConnectionPoolExhausted
           expr: |
             sum by (service) (pg_stat_activity_count{state="active"}) / sum by (service) (pg_settings_max_connections) > 0.9

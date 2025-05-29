@@ -29,13 +29,13 @@ spec:
             description: "The average wait time for disk operations on node {{ $labels.instance }} exceeded 10% for more than 5 minutes."
         - alert: HighCPUUsage
           expr: |
-            1 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m]))) > 0.8
+            1 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m]))) > 0.7
           for: 5m
           labels:
             severity: warning
           annotations:
             summary: "High CPU usage on node {{ $labels.instance }}"
-            description: "CPU usage on node {{ $labels.instance }} has exceeded 80% for more than 5 minutes."
+            description: "CPU usage on node {{ $labels.instance }} has exceeded 70% for more than 5 minutes."
         - alert: HighDNSLatency
           expr: |
             histogram_quantile(0.95, sum(rate(coredns_dns_request_duration_seconds_bucket[5m])) by (le, service)) > 0.5

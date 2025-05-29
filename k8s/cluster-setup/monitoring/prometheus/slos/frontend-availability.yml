@@ -1,0 +1,30 @@
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: frontend-availability
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  service: "frontend"
+  slos:
+    - name: "nginx-availability"
+      objective: 99.95
+      description: "SLO for frontend NGINX server availability"
+      sli:
+        events:
+          totalQuery: count_over_time(nginx_up[{{.window}}:1m])
+          errorQuery: count_over_time((nginx_up == 0)[{{.window}}:1m])
+      alerting:
+        name: NginxDown
+        labels:
+          severity: critical
+          category: "availability"
+        annotations:
+          summary: "NGINX server is down"
+        pageAlert:
+          labels:
+            severity: critical
+        ticketAlert:
+          labels:
+            severity: critical

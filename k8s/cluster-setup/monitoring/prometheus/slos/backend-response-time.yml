@@ -1,0 +1,29 @@
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: backend-response-time
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  service: "backend"
+  slos:
+    - name: "response-time"
+      objective: 90
+      description: "SLO for backend response time below 500 ms"
+      sli:
+        events:
+          totalQuery: sum(rate(django_http_requests_latency_seconds_by_view_method_bucket[{{.window}}]))
+          errorQuery: sum(rate(django_http_requests_latency_seconds_by_view_method_bucket{le="0.5"}[{{.window}}]))
+      alerting:
+        name: HighBackendResponseTime
+        labels:
+          severity: warning
+        annotations:
+          summary: "High backend response time"
+        pageAlert:
+          labels:
+            severity: critical
+        ticketAlert:
+          labels:
+            severity: warning
