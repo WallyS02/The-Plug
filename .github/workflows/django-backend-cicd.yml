@@ -1,14 +1,14 @@
 name: The Plug Django REST backend CI/CD
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - backend/the_plug_backend_django/**
-  pull_request:
-    branches: [ main ]
-    paths:
-      - backend/the_plug_backend_django/**
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - backend/the_plug_backend_django/**
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - backend/the_plug_backend_django/**
   workflow_dispatch:
 
 env:
