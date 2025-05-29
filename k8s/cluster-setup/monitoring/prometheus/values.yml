@@ -1,0 +1,41 @@
+grafana:
+  adminUser: admin
+  adminPassword: admin
+
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: 'true'
+      searchNamespace: ALL
+
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local/
+      isDefault: false
+
+prometheus:
+  prometheus-spec:
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector:
+      matchNames:
+        - monitoring
+        - plug-namespace
+
+# Alertmanager notifications config
+# alertmanager:
+#   config:
+#      route:
+#        receiver: 'slack-notifications'
+#      receivers:
+#        - name: 'slack-notifications'
+#          slack_configs:
+#            - api_url: 'https://hooks.slack.com/services/XXX/YYY/ZZZ'
+#              channel: '#alerts'
+#              send_resolved: true

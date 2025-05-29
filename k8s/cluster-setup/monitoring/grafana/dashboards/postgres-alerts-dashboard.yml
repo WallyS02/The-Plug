@@ -1,0 +1,236 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-alerts-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: 'true'
+data:
+  dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 43,
+      "links": [],
+      "panels": [
+        {
+          "description": "Database monitored by {{ $labels.service }} has been down for more than a minute",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 4,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "PostgresDown",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Postgres Down",
+          "type": "alertlist"
+        },
+        {
+          "description": "At least one deadlock was detected in database monitored by {{ $labels.service }} in the last 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 8
+          },
+          "id": 1,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "DeadlocksDetected",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Deadlocks Detected",
+          "type": "alertlist"
+        },
+        {
+          "description": "Detected active transaction that has exceeded 1 second completion time in database monitored by {{ $labels.service }} for more than 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 16
+          },
+          "id": 2,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "HighTransactionLatency",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "High Transaction Latency",
+          "type": "alertlist"
+        },
+        {
+          "description": "The number of active connections has exceeded 90% of the maximum connections in database monitored by {{ $labels.service }} for more than 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          },
+          "id": 3,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "PostgresConnectionPoolExhausted",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Postgres Connection Pool Exhausted",
+          "type": "alertlist"
+        },
+        {
+          "description": "Database replication lag exceeded 5 minutes on database monitored by {{ $labels.service }} for more than 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 32
+          },
+          "id": 5,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "ReplicationLag",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Replication Lag",
+          "type": "alertlist"
+        }
+      ],
+      "preload": false,
+      "schemaVersion": 41,
+      "tags": [
+        "alert"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Postgres Alerts",
+      "uid": "3af72e36-61ab-4288-92de-1d73828cc361",
+      "version": 1
+    }

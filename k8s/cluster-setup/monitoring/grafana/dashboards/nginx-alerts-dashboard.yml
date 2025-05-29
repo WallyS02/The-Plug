@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-alerts-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: 'true'
+data:
+  dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 42,
+      "links": [],
+      "panels": [
+        {
+          "description": "The number of waiting connections in frontend NGINX server monitored by {{ $labels.service }} has exceeded 100 in the last 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "HighWaitingConnections",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "High Waiting Connections",
+          "type": "alertlist"
+        }
+      ],
+      "preload": false,
+      "schemaVersion": 41,
+      "tags": [
+        "alert"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "NGINX Frontend Alerts",
+      "uid": "99e7a342-810d-4d20-8bbf-2ddf405993e5",
+      "version": 2
+    }

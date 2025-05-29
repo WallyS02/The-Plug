@@ -1,0 +1,199 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-alerts-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: 'true'
+data:
+  dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 44,
+      "links": [],
+      "panels": [
+        {
+          "description": "There have been more than 20 query errors (code 400) reported in the last 5 minutes, which may indicate an attempted SQL Injection attack on the {{ $labels.pod }} API pod",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "SQLInjectionAttempt",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "SQL Injection Attempt",
+          "type": "alertlist"
+        },
+        {
+          "description": "In the last 5 minutes, there were more than 50 unauthorized access attempts (code 403) to the API on pod {{ $labels.pod }}",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 8
+          },
+          "id": 2,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "UnauthorizedAPIAccess",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Unauthorized API Access",
+          "type": "alertlist"
+        },
+        {
+          "description": "The number of active TCP connections has exceeded 1000 on node {{ $labels.instance }} for more than 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 16
+          },
+          "id": 3,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "TCPConnectionFlood",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "TCP Connection Flood",
+          "type": "alertlist"
+        },
+        {
+          "description": "In the last 5 minutes, there were more than 50 unsuccessful login attempts to the API on pod {{ $labels.pod }}",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          },
+          "id": 4,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "BruteForceAttempt",
+            "dashboardAlerts": false,
+            "datasource": "Prometheus",
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Brute Force Attempt",
+          "type": "alertlist"
+        }
+      ],
+      "preload": false,
+      "schemaVersion": 41,
+      "tags": [
+        "alert"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Security Alerts",
+      "uid": "5f359f11-0b05-4d6f-8d19-2bf72c1c3e76",
+      "version": 1
+    }

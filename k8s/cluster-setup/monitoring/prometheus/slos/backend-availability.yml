@@ -1,0 +1,30 @@
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: backend-availability
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  service: "backend"
+  slos:
+    - name: "http-availability"
+      objective: 99.95
+      description: "SLO for backend HTTP request availability"
+      sli:
+        events:
+          totalQuery: sum(rate(django_http_responses_total_by_status_view_method_total[{{.window}}]))
+          errorQuery: sum(rate(django_http_responses_total_by_status_view_method_total{status=~"5.."}[{{.window}}]))
+      alerting:
+        name: BackendHighErrorRate
+        labels:
+          severity: warning
+          category: "availability"
+        annotations:
+          summary: "High error rate on backend requests"
+        pageAlert:
+          labels:
+            severity: critical
+        ticketAlert:
+          labels:
+            severity: critical

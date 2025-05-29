@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: blackbox-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  groups:
+    - name: blackbox.rules
+      rules:
+      - alert: EndpointDown
+        expr: sum by (target) (probe_success) == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.target }} endpoint is down"
+          description: "Blackbox Exporter has been unable to reach {{ $labels.target }} endpoint for over a minute."

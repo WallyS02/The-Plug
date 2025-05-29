@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgres-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  groups:
+    - name: postgres.rules
+      rules:
+        - alert: DeadlocksDetected
+          expr: |
+            sum by (service) (increase(pg_stat_database_deadlocks[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deadlocks detected in database database monitored by {{ $labels.service }}"
+            description: "At least one deadlock was detected in database monitored by {{ $labels.service }} in the last 5 minutes."
+        - alert: HighTransactionLatency
+          expr: |
+            sum by (service) (pg_stat_activity_max_tx_duration{state="active"}) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High latency active transaction detected in database monitored by {{ $labels.service }}"
+            description: "Detected active transaction that has exceeded 500 miliseconds completion time in database monitored by {{ $labels.service }} for more than 5 minutes."
+        - alert: PostgresConnectionPoolExhausted
+          expr: |
+            sum by (service) (pg_stat_activity_count{state="active"}) / sum by (service) (pg_settings_max_connections) > 0.9
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Exhausted connection pool in database monitored by {{ $labels.service }}"
+            description: "The number of active connections has exceeded 90% of the maximum connections in database monitored by {{ $labels.service }} for more than 5 minutes."
+        - alert: PostgresDown
+          expr: sum by (service) (pg_up) == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Database monitored by {{ $labels.service }} is unavailable"
+            description: "Database monitored by {{ $labels.service }} has been down for more than a minute."
+        - alert: ReplicationLag
+          expr: |
+            sum by (service) (pg_replication_lag_seconds) > 300
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Database replication lag on database monitored by {{ $labels.service }}"
+            description: "Database replication lag exceeded 5 minutes on database monitored by {{ $labels.service }} for more than 5 minutes."

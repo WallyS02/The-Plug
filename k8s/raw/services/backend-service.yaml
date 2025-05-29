@@ -3,11 +3,14 @@ kind: Service
 metadata:
   name: backend-service
   namespace: plug-namespace
+  labels:
+    plug: backend-pods
 spec:
   selector:
     plug: backend-pods
   ports:
-  - protocol: TCP
+  - name: http
+    protocol: TCP
     port: 8080
     targetPort: 8080
   type: ClusterIP

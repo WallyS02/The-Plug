@@ -1,0 +1,267 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-alerts-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: 'true'
+data:
+  dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 40,
+      "links": [],
+      "panels": [
+        {
+          "description": "Available disk space on node {{ $labels.instance }}'s primary disk has dropped below 10%",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "ClusterDiskFull",
+            "dashboardAlerts": false,
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Cluster Disk Full",
+          "type": "alertlist"
+        },
+        {
+          "description": "The average wait time for disk operations on node {{ $labels.instance }} exceeded 10% for more than 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 8
+          },
+          "id": 2,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "DiskIOWait",
+            "dashboardAlerts": false,
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Disk IO Wait",
+          "type": "alertlist"
+        },
+        {
+          "description": "CPU usage on node {{ $labels.instance }} has exceeded 80% for more than 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 16
+          },
+          "id": 3,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "HighCPUUsage",
+            "dashboardAlerts": false,
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "High CPU Usage",
+          "type": "alertlist"
+        },
+        {
+          "description": "The 95th percentile DNS response time in DNS instance monitored by {{ $labels.service }} exceeded 500ms for more than 5 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          },
+          "id": 4,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "HighDNSLatency",
+            "dashboardAlerts": false,
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "High DNS Latency",
+          "type": "alertlist"
+        },
+        {
+          "description": "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been in a CrashLoopBackOff state for more than 10 minutes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 32
+          },
+          "id": 5,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "KubePodCrashLooping",
+            "dashboardAlerts": false,
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Kube Pod Crash Looping",
+          "type": "alertlist"
+        },
+        {
+          "description": "Available memory on node {{ $labels.instance }} has dropped below 5%",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 40
+          },
+          "id": 6,
+          "options": {
+            "alertInstanceLabelFilter": "",
+            "alertName": "NodeOutOfMemory",
+            "dashboardAlerts": false,
+            "groupBy": [],
+            "groupMode": "default",
+            "maxItems": 20,
+            "showInactiveAlerts": true,
+            "sortOrder": 1,
+            "stateFilter": {
+              "error": true,
+              "firing": true,
+              "noData": true,
+              "normal": true,
+              "pending": true,
+              "recovering": true
+            },
+            "viewMode": "list"
+          },
+          "pluginVersion": "12.0.0",
+          "title": "Node Out Of Memory",
+          "type": "alertlist"
+        }
+      ],
+      "preload": false,
+      "schemaVersion": 41,
+      "tags": [
+        "alert"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Kube Alerts",
+      "uid": "74558f48-e0fd-438f-9fe2-c2ba8b247f51",
+      "version": 2
+    }

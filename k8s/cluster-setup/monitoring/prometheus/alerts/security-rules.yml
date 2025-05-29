@@ -1,0 +1,47 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: security-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  groups:
+    - name: security.rules
+      rules:
+        - alert: SQLInjectionAttempt
+          expr: |
+            sum by (pod) (increase(django_http_responses_total_by_status_total{status="400"}[5m])) > 20
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Suspected SQL Injection attack on API pod {{ $labels.pod }}"
+            description: "There have been more than 20 query errors (code 400) reported in the last 5 minutes, which may indicate an attempted SQL Injection attack on the {{ $labels.pod }} API pod."
+        - alert: UnauthorizedAPIAccess
+          expr: |
+            sum by (pod) (increase(django_http_responses_total_by_status_total{status="403"}[5m])) > 50
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Unauthorized API access on pod {{ $labels.pod }}"
+            description: "In the last 5 minutes, there were more than 50 unauthorized access attempts (code 403) to the API on pod {{ $labels.pod }}."
+        - alert: TCPConnectionFlood
+          expr: |
+            sum by (instance) (node_netstat_Tcp_CurrEstab) > 1000
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Potential TCP Connection Flood attack on node {{ $labels.instance }}"
+            description: "The number of active TCP connections has exceeded 1000 on node {{ $labels.instance }} for more than 5 minutes."
+        - alert: BruteForceAttempt
+          expr: |
+            sum by (pod) (increase(django_http_responses_total_by_status_view_method_total{view="login",status="404",method="POST"}[5m])) > 50
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Possible Brute Force attempt on pod {{ $labels.pod }}"
+            description: "In the last 5 minutes, there were more than 50 unsuccessful login attempts to the API on pod {{ $labels.pod }}."

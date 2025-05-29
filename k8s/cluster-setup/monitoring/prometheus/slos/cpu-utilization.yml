@@ -1,0 +1,29 @@
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: cpu-utilization
+  namespace: monitoring
+  labels:
+    release: prometheus-grafana
+spec:
+  service: "kubernetes"
+  slos:
+    - name: "cpu-utilization"
+      objective: 80
+      description: "SLO for cluster CPU utilization by below 80%"
+      sli:
+        events:
+          totalQuery: sum(rate(node_cpu_seconds_total[{{.window}}]))
+          errorQuery: sum(rate(node_cpu_seconds_total{mode!="idle"}[{{.window}}]))
+      alerting:
+        name: HighCpuUtilization
+        labels:
+          severity: warning
+        annotations:
+          summary: "High cluster CPU utilization"
+        pageAlert:
+          labels:
+            severity: critical
+        ticketAlert:
+          labels:
+            severity: warning

@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 
 
 class AppUserManager(BaseUserManager):
@@ -24,7 +25,7 @@ class AppUserManager(BaseUserManager):
         return self.create_user(username, password, **extra_fields)
 
 
-class AppUser(AbstractUser):
+class AppUser(ExportModelOperationsMixin('user'), AbstractUser):
     username = models.CharField(max_length=50, unique=True)
     isPartner = models.BooleanField(default=False)
     isSlanderer = models.BooleanField(default=False)
@@ -43,14 +44,14 @@ class AppUser(AbstractUser):
         return self.username
 
 
-class Plug(models.Model):
+class Plug(ExportModelOperationsMixin('plug'), models.Model):
     rating = models.FloatField(blank=True, null=True)
     isPartner = models.BooleanField(default=False)
     isSlanderer = models.BooleanField(default=False)
     minimal_break_between_meetings_in_minutes = models.IntegerField(default=30)
 
 
-class Location(models.Model):
+class Location(ExportModelOperationsMixin('location'), models.Model):
     longitude = models.FloatField()
     latitude = models.FloatField()
     street_name = models.CharField(max_length=50, blank=True)
@@ -62,7 +63,7 @@ class Location(models.Model):
         return str(self.longitude) + ', ' + str(self.latitude)
 
 
-class Meeting(models.Model):
+class Meeting(ExportModelOperationsMixin('meeting'), models.Model):
     id = models.AutoField(primary_key=True)
     isAcceptedByPlug = models.BooleanField(default=False)
     date = models.DateTimeField()
@@ -77,7 +78,7 @@ class Meeting(models.Model):
         return str(self.id) + ', ' + str(self.date)
 
 
-class ChosenOffer(models.Model):
+class ChosenOffer(ExportModelOperationsMixin('chosen-offer'), models.Model):
     number_of_grams = models.IntegerField()
     herb_offer = models.ForeignKey('HerbOffer', on_delete=models.CASCADE)
     meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
@@ -86,7 +87,7 @@ class ChosenOffer(models.Model):
         return str(self.id)
 
 
-class HerbOffer(models.Model):
+class HerbOffer(ExportModelOperationsMixin('herb-offer'), models.Model):
     id = models.AutoField(primary_key=True)
     grams_in_stock = models.IntegerField()
     price_per_gram = models.FloatField()
@@ -99,7 +100,7 @@ class HerbOffer(models.Model):
         return str(self.id) + ', ' + str(self.grams_in_stock) + ', ' + str(self.price_per_gram)
 
 
-class Herb(models.Model):
+class Herb(ExportModelOperationsMixin('herb'), models.Model):
     name = models.CharField(max_length=50, unique=True)
     wikipedia_link = models.URLField(max_length=500)
 

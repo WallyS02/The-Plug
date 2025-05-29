@@ -1,0 +1,7 @@
+nginxServer: "http://frontend-service.plug-namespace.svc.cluster.local/nginx_status"
+
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  additionalLabels:
+    release: prometheus-grafana
