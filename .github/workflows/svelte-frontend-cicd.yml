@@ -1,14 +1,14 @@
 name: The Plug Svelte frontend CI/CD
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - frontend/the_plug_svelte_frontend/**
-  pull_request:
-    branches: [ main ]
-    paths:
-      - frontend/the_plug_svelte_frontend/**
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - frontend/the_plug_svelte_frontend/**
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - frontend/the_plug_svelte_frontend/**
   workflow_dispatch:
 
 env:
