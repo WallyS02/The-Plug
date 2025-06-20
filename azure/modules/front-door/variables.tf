@@ -6,63 +6,63 @@ variable "resource_group_name" {
 variable "name" {
   type        = string
   description = "Front Door name"
-  default = "the-plug-front-door"
+  default     = "the-plug-front-door"
 }
 
 variable "custom_domain" {
   type        = string
   description = "Front Door custom domain name"
-  default = "theplug.software"
+  default     = "theplug.software"
 }
 
 variable "zone_id" {
-  type = string
+  type        = string
   description = "DNS Zone ID"
 }
 
 variable "zone_name" {
-  type = string
+  type        = string
   description = "DNS Zone name"
 }
 
 variable "frontend_healthcheck_interval" {
-  type = number
+  type        = number
   description = "Frontend healthcheck interval"
-  default = 60
+  default     = 60
 }
 
 variable "api_healthcheck_interval" {
-  type = number
+  type        = number
   description = "API healthcheck interval"
-  default = 60
+  default     = 60
 }
 
 variable "api_healthcheck_endpoint" {
-  type = string
+  type        = string
   description = "API healthcheck endpoint path"
-  default = "/api/herb/list/"
+  default     = "/api/herb/list/"
 }
 
 variable "blob_host" {
-  type = string
+  type        = string
   description = "Frontend blob storage hostname"
 }
 
 variable "aks_backend_host" {
-  type = string
+  type        = string
   description = "AKS backend API hostname"
 }
 
 variable "frontend_port" {
-  type = number
+  type        = number
   description = "Frontend port"
-  default = 80
+  default     = 80
 }
 
 variable "api_port" {
-  type = number
+  type        = number
   description = "API port"
-  default = 8080
+  default     = 8080
 }
 
 variable "storage_endpoint" {

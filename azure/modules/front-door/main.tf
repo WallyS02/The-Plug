@@ -10,7 +10,7 @@ resource "azurerm_cdn_frontdoor_profile" "this" {
 resource "azurerm_cdn_frontdoor_endpoint" "this" {
   name                     = "${var.name}-endpoint"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.this.id
-  tags                = var.tags
+  tags                     = var.tags
 }
 
 // Front Door Custom Domain
@@ -21,7 +21,7 @@ resource "azurerm_cdn_frontdoor_custom_domain" "this" {
   host_name                = var.custom_domain
 
   tls {
-    certificate_type    = "ManagedCertificate"
+    certificate_type = "ManagedCertificate"
   }
 }
 
@@ -48,20 +48,20 @@ resource "azurerm_cdn_frontdoor_origin_group" "static_group" {
   }
 
   health_probe {
-    protocol             = "Https"
-    path                 = "/"
-    request_type         = "HEAD"
-    interval_in_seconds  = var.frontend_healthcheck_interval
+    protocol            = "Https"
+    path                = "/"
+    request_type        = "HEAD"
+    interval_in_seconds = var.frontend_healthcheck_interval
   }
 }
 
 resource "azurerm_cdn_frontdoor_origin" "static_origin" {
-  name                          = "${var.name}-static-origin"
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.static_group.id
-  host_name                     = var.blob_host
-  http_port                     = var.frontend_port
-  https_port                    = var.frontend_port
-  origin_host_header            = var.blob_host
+  name                           = "${var.name}-static-origin"
+  cdn_frontdoor_origin_group_id  = azurerm_cdn_frontdoor_origin_group.static_group.id
+  host_name                      = var.blob_host
+  http_port                      = var.frontend_port
+  https_port                     = var.frontend_port
+  origin_host_header             = var.blob_host
   certificate_name_check_enabled = false
 }
 
@@ -76,20 +76,20 @@ resource "azurerm_cdn_frontdoor_origin_group" "api_group" {
   }
 
   health_probe {
-    protocol             = "Https"
-    path                 = var.api_healthcheck_endpoint
-    request_type         = "GET"
-    interval_in_seconds  = var.api_healthcheck_interval
+    protocol            = "Https"
+    path                = var.api_healthcheck_endpoint
+    request_type        = "GET"
+    interval_in_seconds = var.api_healthcheck_interval
   }
 }
 
 resource "azurerm_cdn_frontdoor_origin" "api_origin" {
-  name                          = "${var.name}-api-origin"
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.api_group.id
-  host_name                     = var.aks_backend_host
-  http_port                     = var.api_port
-  https_port                    = var.api_port
-  origin_host_header            = var.aks_backend_host
+  name                           = "${var.name}-api-origin"
+  cdn_frontdoor_origin_group_id  = azurerm_cdn_frontdoor_origin_group.api_group.id
+  host_name                      = var.aks_backend_host
+  http_port                      = var.api_port
+  https_port                     = var.api_port
+  origin_host_header             = var.aks_backend_host
   certificate_name_check_enabled = false
 }
 
@@ -108,7 +108,7 @@ resource "azurerm_cdn_frontdoor_route" "root" {
 
   cache {
     compression_enabled = true
-    content_types_to_compress = [ 
+    content_types_to_compress = [
       "text/html",
       "application/json",
       "application/javascript",
