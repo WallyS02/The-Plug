@@ -12,7 +12,7 @@ variable "location" {
 variable "redis_name" {
   description = "Redis name"
   type        = string
-  default = "the-plug"
+  default     = "the-plug"
 }
 
 variable "capacity" {
