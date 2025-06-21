@@ -12,7 +12,7 @@ variable "location" {
 variable "storage_account_name" {
   type        = string
   description = "Storage Account name"
-  default     = "the-plug"
+  default     = "theplug"
 }
 
 variable "sku_tier" {

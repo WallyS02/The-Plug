@@ -12,7 +12,7 @@ variable "location" {
 variable "acr_name" {
   type        = string
   description = "Azure Container Registry name"
-  default     = "the-plug"
+  default     = "theplug"
 }
 
 variable "sku" {

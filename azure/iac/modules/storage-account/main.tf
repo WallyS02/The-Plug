@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "this" {
-  name                     = "${var.storage_account_name}-storage-account"
+  name                     = "${var.storage_account_name}storageaccount"
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = var.sku_tier

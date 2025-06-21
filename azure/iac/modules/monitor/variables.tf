@@ -35,6 +35,7 @@ variable "alert_rules" {
   type = list(object({
     name               = string
     target_resource_id = string
+    metric_namespace   = string
     metric_name        = string
     threshold          = number
     operator           = string # GreaterThan, LessThan

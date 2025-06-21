@@ -50,7 +50,7 @@ resource "azurerm_monitor_metric_alert" "alert" {
   window_size         = "PT5M"
 
   criteria {
-    metric_namespace = ""
+    metric_namespace = each.value.metric_namespace
     metric_name      = each.value.metric_name
     aggregation      = each.value.aggregation
     operator         = each.value.operator
