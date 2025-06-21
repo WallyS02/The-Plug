@@ -14,3 +14,8 @@ output "redis_secondary_access_key" {
   value       = azurerm_redis_cache.this.secondary_access_key
   sensitive   = true
 }
+
+output "redis_id" {
+  description = "Redis ID"
+  value       = azurerm_redis_cache.this.id
+}

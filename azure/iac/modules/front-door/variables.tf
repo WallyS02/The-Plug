@@ -65,16 +65,6 @@ variable "api_port" {
   default     = 8080
 }
 
-variable "storage_endpoint" {
-  type        = string
-  description = "Frontend Blob Storage container hostname"
-}
-
-variable "aks_host" {
-  type        = string
-  description = "AKS public entrypoint hostname"
-}
-
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

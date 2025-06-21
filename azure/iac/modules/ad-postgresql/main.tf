@@ -7,7 +7,7 @@ resource "azurerm_postgresql_server" "this" {
   administrator_login_password = var.administrator_password
 
   sku_name              = var.sku_name
-  version               = var.version
+  version               = var.postgresql_version
   storage_mb            = var.storage_mb
   backup_retention_days = 7
 
