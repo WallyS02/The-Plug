@@ -1,3 +1,6 @@
+// Azure for Students is not eligible to create any CDN network, including Front Door
+
+/*
 module "front-door" {
   source              = "./modules/front-door"
   resource_group_name = azurerm_resource_group.this.name
@@ -10,3 +13,4 @@ module "front-door" {
     Environment = "dev"
   }
 }
+*/

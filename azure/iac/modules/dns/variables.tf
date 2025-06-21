@@ -6,7 +6,12 @@ variable "resource_group_name" {
 variable "zone_name" {
   type        = string
   description = "DNS Zone name"
-  default     = "the-plug"
+  default     = "theplug.software"
+}
+
+variable "application_gateway_id" {
+  type        = string
+  description = "Application Gateway ID"
 }
 
 variable "tags" {

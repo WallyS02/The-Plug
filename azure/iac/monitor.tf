@@ -12,10 +12,10 @@ module "monitor" {
       name               = "ad-postgresql"
       target_resource_id = module.ad-postgresql.postgres_server_id
     },
-    {
+    /*{
       name               = "front-door"
       target_resource_id = module.front-door.frontdoor_id
-    },
+    },*/
     {
       name               = "aks"
       target_resource_id = module.aks.aks_cluster_id
@@ -57,7 +57,7 @@ module "monitor" {
       aggregation        = "Average"
       severity           = 2
     },
-    {
+    /*{
       name               = "frontdoor-http5xx-errors"
       target_resource_id = module.front-door.frontdoor_id
       metric_namespace   = "Microsoft.Network/frontdoors"
@@ -66,7 +66,7 @@ module "monitor" {
       operator           = "GreaterThan"
       aggregation        = "Total"
       severity           = 3
-    },
+    },*/
     {
       name               = "keyvault-throttled-requests"
       target_resource_id = module.key-vault.keyvault_id

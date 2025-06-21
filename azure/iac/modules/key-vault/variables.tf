@@ -20,9 +20,9 @@ variable "tenant_id" {
   description = "Azure Tenant ID (Entra ID)"
 }
 
-variable "object_ids" {
-  type        = list(string)
-  description = "Principal ID list (eg. Entra identities) with access to Key Vault"
+variable "object_id" {
+  type        = string
+  description = "Azure Object ID (Entra ID)"
 }
 
 variable "subnet_ids" {

@@ -12,6 +12,8 @@ resource "azurerm_subnet" "public_a" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [var.public_subnet_a_prefix]
+
+  service_endpoints = ["Microsoft.KeyVault"]
 }
 
 resource "azurerm_subnet" "public_b" {
@@ -19,6 +21,8 @@ resource "azurerm_subnet" "public_b" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [var.public_subnet_b_prefix]
+
+  service_endpoints = ["Microsoft.KeyVault"]
 }
 
 resource "azurerm_subnet" "private" {
@@ -26,6 +30,8 @@ resource "azurerm_subnet" "private" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [var.private_subnet_prefix]
+  
+  service_endpoints = ["Microsoft.KeyVault"]
 }
 
 // NSG for public subnets
@@ -72,7 +78,7 @@ resource "azurerm_subnet_network_security_group_association" "assoc_public_b" {
 }
 
 // Public IP for NAT Gateway
-resource "azurerm_public_ip" "this" {
+resource "azurerm_public_ip" "nat-pip" {
   name                = "${var.vnet_name}-pip-nat"
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -92,7 +98,7 @@ resource "azurerm_nat_gateway" "this" {
 
 // Associate NAT Gateway to Public IP
 resource "azurerm_nat_gateway_public_ip_association" "this" {
-  public_ip_address_id = azurerm_public_ip.this.id
+  public_ip_address_id = azurerm_public_ip.nat-pip.id
   nat_gateway_id       = azurerm_nat_gateway.this.id
 }
 

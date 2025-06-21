@@ -25,5 +25,5 @@ output "nat_gateway_id" {
 
 output "public_ip_nat" {
   description = "NAT Gateway Public IP"
-  value       = azurerm_public_ip.this.ip_address
+  value       = azurerm_public_ip.nat-pip.ip_address
 }

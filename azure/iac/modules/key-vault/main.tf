@@ -14,24 +14,62 @@ resource "azurerm_key_vault" "this" {
     virtual_network_subnet_ids = var.subnet_ids
   }
 
-  dynamic "access_policy" {
-    for_each = var.object_ids
-    content {
-      tenant_id = var.tenant_id
-      object_id = access_policy.value
+  access_policy {
+    tenant_id = var.tenant_id
+    object_id = var.object_id
 
-      secret_permissions = [
-        "get",
-        "list",
-        "set",
-        "delete"
-      ]
+    secret_permissions = [
+      "Backup",
+      "Delete",
+      "Get",
+      "List",
+      "Purge",
+      "Recover",
+      "Restore",
+      "Set"
+    ]
 
-      key_permissions = [
-        "get",
-        "list"
-      ]
-    }
+    key_permissions = [
+      "Backup",
+      "Create",
+      "Decrypt",
+      "Delete",
+      "Encrypt",
+      "Get",
+      "Import",
+      "List",
+      "Purge",
+      "Recover",
+      "Restore",
+      "Sign",
+      "UnwrapKey",
+      "Update",
+      "Verify",
+      "WrapKey",
+      "Release",
+      "Rotate",
+      "GetRotationPolicy",
+      "SetRotationPolicy"
+    ]
+
+    certificate_permissions = [
+      "Backup",
+      "Create",
+      "Delete",
+      "DeleteIssuers",
+      "Get",
+      "GetIssuers",
+      "Import",
+      "List",
+      "ListIssuers",
+      "ManageContacts",
+      "ManageIssuers",
+      "Purge",
+      "Recover",
+      "Restore",
+      "SetIssuers",
+      "Update"
+    ]
   }
 
   tags = var.tags
