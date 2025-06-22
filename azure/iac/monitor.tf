@@ -5,24 +5,14 @@ module "monitor" {
 
   monitored_resources = [
     {
-      name               = "ac-redis"
-      target_resource_id = module.ac-redis.redis_id
-    },
-    {
       name               = "ad-postgresql"
       target_resource_id = module.ad-postgresql.postgres_server_id
+      log_categories     = ["PostgreSQLLogs"]
     },
-    /*{
-      name               = "front-door"
-      target_resource_id = module.front-door.frontdoor_id
-    },*/
     {
       name               = "aks"
       target_resource_id = module.aks.aks_cluster_id
-    },
-    {
-      name               = "key-vault"
-      target_resource_id = module.key-vault.keyvault_id
+      log_categories     = ["kube-apiserver", "kube-controller-manager", "kube-scheduler"]
     }
   ]
 
@@ -30,9 +20,9 @@ module "monitor" {
     {
       name               = "cpu-high"
       target_resource_id = module.aks.aks_cluster_id
-      metric_namespace   = "Microsoft.ContainerService/managedClusters"
-      metric_name        = "Percentage CPU"
-      threshold          = 80
+      metric_namespace   = "microsoft.kubernetes/connectedClusters"
+      metric_name        = "node_cpu_usage_percentage"
+      threshold          = 90
       operator           = "GreaterThan"
       aggregation        = "Average"
       severity           = 2
@@ -41,8 +31,8 @@ module "monitor" {
       name               = "redis-memory-usage"
       target_resource_id = module.ac-redis.redis_id
       metric_namespace   = "Microsoft.Cache/redis"
-      metric_name        = "used_memory_percentage"
-      threshold          = 75
+      metric_name        = "allusedmemorypercentage"
+      threshold          = 80
       operator           = "GreaterThan"
       aggregation        = "Average"
       severity           = 3
@@ -57,24 +47,24 @@ module "monitor" {
       aggregation        = "Average"
       severity           = 2
     },
-    /*{
-      name               = "frontdoor-http5xx-errors"
-      target_resource_id = module.front-door.frontdoor_id
-      metric_namespace   = "Microsoft.Network/frontdoors"
-      metric_name        = "Http5xx"
+    {
+      name               = "application-gateway-errors"
+      target_resource_id = module.application-gateway.application_gateway_id
+      metric_namespace   = "Microsoft.Network/applicationgateways"
+      metric_name        = "FailedRequests"
       threshold          = 10
       operator           = "GreaterThan"
       aggregation        = "Total"
       severity           = 3
-    },*/
+    },
     {
-      name               = "keyvault-throttled-requests"
+      name               = "keyvault-availability"
       target_resource_id = module.key-vault.keyvault_id
       metric_namespace   = "Microsoft.KeyVault/vaults"
-      metric_name        = "ClientThrottledRequests"
-      threshold          = 10
-      operator           = "GreaterThan"
-      aggregation        = "Total"
+      metric_name        = "Availability"
+      threshold          = 75
+      operator           = "LessThan"
+      aggregation        = "Average"
       severity           = 3
     }
   ]

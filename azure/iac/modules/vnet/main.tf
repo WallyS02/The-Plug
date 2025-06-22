@@ -30,7 +30,7 @@ resource "azurerm_subnet" "private" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [var.private_subnet_prefix]
-  
+
   service_endpoints = ["Microsoft.KeyVault"]
 }
 
@@ -60,6 +60,18 @@ resource "azurerm_network_security_group" "this" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-Application-Gateway-Ports"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "65200-65535"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }

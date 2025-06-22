@@ -26,6 +26,7 @@ variable "monitored_resources" {
   type = list(object({
     name               = string
     target_resource_id = string
+    log_categories     = list(string)
   }))
   default = []
 }

@@ -55,6 +55,16 @@ variable "acr_id" {
   type        = string
 }
 
+variable "gateway_id" {
+  description = "Application Gateway ID to be configured as Application Gateway Ingress Controller"
+  type        = string
+}
+
+variable "key_vault_id" {
+  description = "Key Vault ID"
+  type        = string
+}
+
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

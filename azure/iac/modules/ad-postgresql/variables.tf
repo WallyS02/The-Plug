@@ -18,13 +18,13 @@ variable "postgres_name" {
 variable "sku_name" {
   description = "PostgreSQL server SKU"
   type        = string
-  default     = "B_Gen5_2"
+  default     = "B_Standard_B1ms"
 }
 
 variable "storage_mb" {
   description = "Disk capacity in MB"
   type        = number
-  default     = 5120 # 5 GB
+  default     = 32768 # 32 GB
 }
 
 variable "administrator_login" {
@@ -41,12 +41,7 @@ variable "administrator_password" {
 variable "postgresql_version" {
   description = "PostgreSQL version"
   type        = string
-  default     = "11"
-}
-
-variable "subnet_id" {
-  description = "Vnet subnet ID, where server should be created"
-  type        = string
+  default     = "16"
 }
 
 variable "tags" {

@@ -25,12 +25,6 @@ variable "object_id" {
   description = "Azure Object ID (Entra ID)"
 }
 
-variable "subnet_ids" {
-  type        = list(string)
-  description = "Subnet ID list Lista with access to Key Vault"
-  default     = []
-}
-
 variable "tags" {
   description = "Resource tag map"
   type        = map(string)

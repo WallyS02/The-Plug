@@ -55,15 +55,18 @@ resource "azurerm_application_gateway" "this" {
     host_names                     = [var.custom_domain]
   }
 
+  http_listener {
+    name                           = "listener-http"
+    frontend_ip_configuration_name = "${var.name}-frontend-ip"
+    frontend_port_name             = "port-http"
+    protocol                       = "Http"
+    host_names                     = [var.custom_domain]
+  }
+
   # Backend pools
   backend_address_pool {
     name  = "pool-blob"
     fqdns = [var.blob_host]
-  }
-
-  backend_address_pool {
-    name  = "pool-aks"
-    fqdns = [var.aks_backend_host]
   }
 
   # HTTP settings
@@ -76,15 +79,6 @@ resource "azurerm_application_gateway" "this" {
     pick_host_name_from_backend_address = true
   }
 
-  backend_http_settings {
-    name                                = "setting-aks"
-    cookie_based_affinity               = "Disabled"
-    port                                = var.api_port
-    protocol                            = "Http"
-    request_timeout                     = var.request_timeout
-    pick_host_name_from_backend_address = true
-  }
-
   # Path‑based routing
   url_path_map {
     name                               = "url-path-map"
@@ -92,10 +86,10 @@ resource "azurerm_application_gateway" "this" {
     default_backend_http_settings_name = "setting-blob"
 
     path_rule {
-      name                       = "api-rule"
-      paths                      = ["/api/*"]
-      backend_address_pool_name  = "pool-aks"
-      backend_http_settings_name = "setting-aks"
+      name                       = "frontend-rule"
+      paths                      = ["/*"]
+      backend_address_pool_name  = "pool-blob"
+      backend_http_settings_name = "setting-blob"
     }
   }
 
@@ -113,6 +107,7 @@ resource "azurerm_application_gateway" "this" {
     rule_type                   = "Basic"
     http_listener_name          = "listener-http"
     redirect_configuration_name = "redirect-http-to-https"
+    priority                    = 1
   }
 
   # Main HTTPS routing
@@ -121,7 +116,29 @@ resource "azurerm_application_gateway" "this" {
     rule_type          = "PathBasedRouting"
     http_listener_name = "listener-https"
     url_path_map_name  = "url-path-map"
+    priority           = 2
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.agw_identity.id]
   }
 
   tags = var.tags
+}
+
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_user_assigned_identity" "agw_identity" {
+  name                = "${var.name}-identity"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+}
+
+resource "azurerm_key_vault_access_policy" "appgw_policy" {
+  key_vault_id = var.key_vault_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_application_gateway.this.identity[0].principal_id
+
+  certificate_permissions = ["Get", "List"]
 }

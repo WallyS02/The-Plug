@@ -23,7 +23,7 @@ variable "custom_domain" {
 
 variable "request_timeout" {
   type        = number
-  description = "Backends request timeout"
+  description = "Backend request timeout"
   default     = 30
 }
 
@@ -32,15 +32,9 @@ variable "blob_host" {
   description = "Frontend blob storage hostname"
 }
 
-variable "aks_backend_host" {
+variable "key_vault_id" {
   type        = string
-  description = "AKS backend API hostname"
-}
-
-variable "api_port" {
-  type        = number
-  description = "API port"
-  default     = 8080
+  description = "Key Vault ID"
 }
 
 variable "key_vault_certificate_secret_id" {

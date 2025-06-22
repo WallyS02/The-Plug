@@ -4,14 +4,71 @@ module "key-vault" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
   object_id           = data.azurerm_client_config.current.object_id
 
-  subnet_ids = [module.vnet.public_subnet_a_id, module.vnet.public_subnet_b_id, module.vnet.private_subnet_id]
-
   tags = {
     Environment = "dev"
   }
 }
 
 data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault_access_policy" "hcp" {
+  key_vault_id = module.key-vault.keyvault_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azurerm_client_config.current.object_id
+
+  secret_permissions = [
+    "Backup",
+    "Delete",
+    "Get",
+    "List",
+    "Purge",
+    "Recover",
+    "Restore",
+    "Set"
+  ]
+
+  key_permissions = [
+    "Backup",
+    "Create",
+    "Decrypt",
+    "Delete",
+    "Encrypt",
+    "Get",
+    "Import",
+    "List",
+    "Purge",
+    "Recover",
+    "Restore",
+    "Sign",
+    "UnwrapKey",
+    "Update",
+    "Verify",
+    "WrapKey",
+    "Release",
+    "Rotate",
+    "GetRotationPolicy",
+    "SetRotationPolicy"
+  ]
+
+  certificate_permissions = [
+    "Backup",
+    "Create",
+    "Delete",
+    "DeleteIssuers",
+    "Get",
+    "GetIssuers",
+    "Import",
+    "List",
+    "ListIssuers",
+    "ManageContacts",
+    "ManageIssuers",
+    "Purge",
+    "Recover",
+    "Restore",
+    "SetIssuers",
+    "Update"
+  ]
+}
 
 resource "random_password" "db-password" {
   length           = 16
@@ -29,6 +86,8 @@ resource "azurerm_key_vault_secret" "db-password" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [azurerm_key_vault_access_policy.hcp]
 }
 
 resource "azurerm_key_vault_secret" "email-host-user" {
@@ -39,6 +98,8 @@ resource "azurerm_key_vault_secret" "email-host-user" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [azurerm_key_vault_access_policy.hcp]
 }
 
 resource "azurerm_key_vault_secret" "email-host-password" {
@@ -49,6 +110,8 @@ resource "azurerm_key_vault_secret" "email-host-password" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [azurerm_key_vault_access_policy.hcp]
 }
 
 resource "azurerm_key_vault_secret" "secret-key" {
@@ -59,6 +122,8 @@ resource "azurerm_key_vault_secret" "secret-key" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [azurerm_key_vault_access_policy.hcp]
 }
 
 resource "azurerm_key_vault_certificate" "this" {
@@ -118,4 +183,6 @@ resource "azurerm_key_vault_certificate" "this" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [azurerm_key_vault_access_policy.hcp]
 }
