@@ -7,3 +7,8 @@ output "application_gateway_public_ip" {
   description = "Application Gateway Public IP"
   value       = azurerm_public_ip.agw-pip.ip_address
 }
+
+output "application_gateway_public_ip_id" {
+  description = "Application Gateway Public IP ID"
+  value       = azurerm_public_ip.agw-pip.id
+}

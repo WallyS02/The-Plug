@@ -21,22 +21,16 @@ variable "address_space" {
   default     = ["10.0.0.0/16"]
 }
 
-variable "public_subnet_a_prefix" {
+variable "public_subnet_prefix" {
   type        = string
   description = "Public subnet A CIDR"
   default     = "10.0.1.0/24"
 }
 
-variable "public_subnet_b_prefix" {
-  type        = string
-  description = "Public subnet B CIDR"
-  default     = "10.0.2.0/24"
-}
-
 variable "private_subnet_prefix" {
   type        = string
   description = "Private subnet CIDR"
-  default     = "10.0.3.0/24"
+  default     = "10.0.2.0/24"
 }
 
 variable "nat_gateway_sku" {
@@ -49,6 +43,28 @@ variable "public_ip_sku" {
   type        = string
   description = "NAT Gateway Public IP SKU"
   default     = "Standard"
+}
+
+variable "redis_id" {
+  type        = string
+  description = "Redis server ID"
+}
+
+variable "postgres_id" {
+  type        = string
+  description = "PostgreSQL server ID"
+}
+
+variable "redis_private_link_hostname" {
+  type        = string
+  description = "Redis private link hostname"
+  default     = "privatelink.redis.cache.windows.net"
+}
+
+variable "postgres_private_link_hostname" {
+  type        = string
+  description = "PostgreSQL private link hostname ID"
+  default     = "privatelink.postgres.db.windows.net"
 }
 
 variable "tags" {

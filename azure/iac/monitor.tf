@@ -20,7 +20,7 @@ module "monitor" {
     {
       name               = "cpu-high"
       target_resource_id = module.aks.aks_cluster_id
-      metric_namespace   = "microsoft.kubernetes/connectedClusters"
+      metric_namespace   = "Microsoft.ContainerService/managedClusters"
       metric_name        = "node_cpu_usage_percentage"
       threshold          = 90
       operator           = "GreaterThan"

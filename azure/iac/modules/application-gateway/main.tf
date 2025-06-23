@@ -125,6 +125,8 @@ resource "azurerm_application_gateway" "this" {
   }
 
   tags = var.tags
+
+  depends_on = [azurerm_key_vault_access_policy.appgw_policy]
 }
 
 data "azurerm_client_config" "current" {}
@@ -138,7 +140,8 @@ resource "azurerm_user_assigned_identity" "agw_identity" {
 resource "azurerm_key_vault_access_policy" "appgw_policy" {
   key_vault_id = var.key_vault_id
   tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_application_gateway.this.identity[0].principal_id
+  object_id    = azurerm_user_assigned_identity.agw_identity.principal_id
 
   certificate_permissions = ["Get", "List"]
+  secret_permissions      = ["Get", "List"]
 }

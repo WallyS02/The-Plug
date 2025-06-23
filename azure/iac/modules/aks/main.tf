@@ -30,25 +30,58 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.aks_identity.id]
+  }
+
+  kubelet_identity {
+    client_id                 = azurerm_user_assigned_identity.kubelet_identity.client_id
+    object_id                 = azurerm_user_assigned_identity.kubelet_identity.principal_id
+    user_assigned_identity_id = azurerm_user_assigned_identity.kubelet_identity.id
+  }
+
+  key_vault_secrets_provider {
+    secret_rotation_enabled = true
   }
 
   tags = var.tags
+
+  depends_on = [azurerm_key_vault_access_policy.aks_policy, azurerm_role_assignment.aks_agw_contributor, azurerm_role_assignment.kubelet_acr_pull, azurerm_role_assignment.kubelet_mi_operator, azurerm_key_vault_access_policy.aks_kubelet_policy]
 }
 
-resource "azurerm_role_assignment" "this" {
-  principal_id                     = azurerm_kubernetes_cluster.this.kubelet_identity[0].object_id
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_user_assigned_identity" "kubelet_identity" {
+  name                = "${var.aks_name}-kubelet-identity"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+}
+
+resource "azurerm_role_assignment" "kubelet_acr_pull" {
+  principal_id                     = azurerm_user_assigned_identity.kubelet_identity.principal_id
   role_definition_name             = "AcrPull"
   scope                            = var.acr_id
   skip_service_principal_aad_check = true
 }
 
-data "azurerm_client_config" "current" {}
+resource "azurerm_key_vault_access_policy" "aks_kubelet_policy" {
+  key_vault_id = var.key_vault_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_user_assigned_identity.kubelet_identity.principal_id
+
+  secret_permissions = ["Get", "List"]
+}
+
+resource "azurerm_user_assigned_identity" "aks_identity" {
+  name                = "${var.aks_name}-identity"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+}
 
 resource "azurerm_key_vault_access_policy" "aks_policy" {
   key_vault_id = var.key_vault_id
   tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_kubernetes_cluster.this.identity[0].principal_id
+  object_id    = azurerm_user_assigned_identity.aks_identity.principal_id
 
   secret_permissions = ["Get", "List"]
 }
@@ -56,5 +89,11 @@ resource "azurerm_key_vault_access_policy" "aks_policy" {
 resource "azurerm_role_assignment" "aks_agw_contributor" {
   scope                = var.gateway_id
   role_definition_name = "Contributor"
-  principal_id         = azurerm_kubernetes_cluster.this.identity[0].principal_id
+  principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
+}
+
+resource "azurerm_role_assignment" "kubelet_mi_operator" {
+  scope                = azurerm_user_assigned_identity.kubelet_identity.id
+  role_definition_name = "Managed Identity Operator"
+  principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
 }

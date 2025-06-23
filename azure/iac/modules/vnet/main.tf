@@ -7,22 +7,11 @@ resource "azurerm_virtual_network" "this" {
   tags                = var.tags
 }
 
-resource "azurerm_subnet" "public_a" {
-  name                 = "${var.vnet_name}-public-subnet-a"
+resource "azurerm_subnet" "public" {
+  name                 = "${var.vnet_name}-public-subnet"
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = [var.public_subnet_a_prefix]
-
-  service_endpoints = ["Microsoft.KeyVault"]
-}
-
-resource "azurerm_subnet" "public_b" {
-  name                 = "${var.vnet_name}-private-subnet-b"
-  resource_group_name  = var.resource_group_name
-  virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = [var.public_subnet_b_prefix]
-
-  service_endpoints = ["Microsoft.KeyVault"]
+  address_prefixes     = [var.public_subnet_prefix]
 }
 
 resource "azurerm_subnet" "private" {
@@ -30,8 +19,69 @@ resource "azurerm_subnet" "private" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [var.private_subnet_prefix]
+}
 
-  service_endpoints = ["Microsoft.KeyVault"]
+// Private Endpoints for private subnet
+resource "azurerm_private_endpoint" "redis_pe" {
+  name                = "${var.vnet_name}-ps-pe-redis"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = azurerm_subnet.private.id
+
+  private_service_connection {
+    name                           = "psconn-redis"
+    private_connection_resource_id = var.redis_id
+    subresource_names              = ["redisCache"]
+    is_manual_connection           = false
+  }
+
+  private_dns_zone_group {
+    name                 = "${var.vnet_name}-redis-dns-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.redis_zone.id]
+  }
+}
+
+resource "azurerm_private_endpoint" "postgres_pe" {
+  name                = "${var.vnet_name}-ps-pe-postgres"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = azurerm_subnet.private.id
+
+  private_service_connection {
+    name                           = "psconn-postgres"
+    private_connection_resource_id = var.postgres_id
+    subresource_names              = ["postgresqlServer"]
+    is_manual_connection           = false
+  }
+
+  private_dns_zone_group {
+    name                 = "${var.vnet_name}-postgres-dns-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.postgres_zone.id]
+  }
+}
+
+resource "azurerm_private_dns_zone" "redis_zone" {
+  name                = var.redis_private_link_hostname
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "redis_link" {
+  name                  = "${var.vnet_name}-redis-link"
+  resource_group_name   = var.resource_group_name
+  private_dns_zone_name = azurerm_private_dns_zone.redis_zone.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
+resource "azurerm_private_dns_zone" "postgres_zone" {
+  name                = var.postgres_private_link_hostname
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "postgres_link" {
+  name                  = "${var.vnet_name}-postgres-link"
+  resource_group_name   = var.resource_group_name
+  private_dns_zone_name = azurerm_private_dns_zone.postgres_zone.name
+  virtual_network_id    = azurerm_virtual_network.this.id
 }
 
 // NSG for public subnets
@@ -79,13 +129,8 @@ resource "azurerm_network_security_group" "this" {
   tags = var.tags
 }
 
-resource "azurerm_subnet_network_security_group_association" "assoc_public_a" {
-  subnet_id                 = azurerm_subnet.public_a.id
-  network_security_group_id = azurerm_network_security_group.this.id
-}
-
-resource "azurerm_subnet_network_security_group_association" "assoc_public_b" {
-  subnet_id                 = azurerm_subnet.public_b.id
+resource "azurerm_subnet_network_security_group_association" "assoc_public" {
+  subnet_id                 = azurerm_subnet.public.id
   network_security_group_id = azurerm_network_security_group.this.id
 }
 
