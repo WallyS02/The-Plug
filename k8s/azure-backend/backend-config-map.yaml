@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config-map
+  namespace: plug-namespace
+  labels:
+    plug: backend-config-map
+data:
+  DB_HOST: 'theplug.privatelink.postgres.database.azure.com:5432'
+  DB_NAME: 'the-plug-database'
+  DB_USER: 'plug'
+  ALLOWED_HOSTS: "*"
+  DEBUG: '1'
+  USE_CACHE: '1'
+  CACHE_ENDPOINT: 'rediss://theplug.privatelink.redis.cache.windows.net:6380/0'
+  CACHE_PASSWORD: <key>

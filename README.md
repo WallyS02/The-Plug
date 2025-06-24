@@ -75,11 +75,13 @@ This will start the development server, and you can access the application at ht
 * **.github** - directory that contains GitHub Actions pipelines
 * **ansible** - directory that contains Ansible configurations that can be used in project
 * **aws** - directory that contains AWS cloud architecture for application and it's implementation using IaC practise with Terraform
+* **azure** - directory that contains Azure cloud architecture implementation using IaC practise with Terraform
 * **backend** - directory that contains backend application code
 * **documentation** - directory that contains application design and it's diagrams
 * **frontend** - directory that contains frontend application code
 * **jenkins** - directory that contains local Jenkins configuration files
 * **k8s** - directory containing Minikube cluster and k8s application configuration
+  * **azure-backend** - Kubernetes manifests prepared to deploy in Azure cloud for The Plug
   * **cluster-setup** - directory that contains cluster configurations (including NGINX Ingress Controller, Prometheus, Grafana and Loki monitoring) and scripts that run and configure cluster
   * **helm** - directory that contains Helm charts for application
   * **raw** - directory that contains raw Kubernetes manifests for application
