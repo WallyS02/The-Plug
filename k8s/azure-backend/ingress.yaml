@@ -5,11 +5,11 @@ metadata:
   namespace: plug-namespace
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/cache-enabled: "true"
+    appgw.ingress.kubernetes.io/cache-duration: "3600"
 spec:
-  ingressClassName: nginx
   rules:
-  - host: theplug.software
-    http:
+  -  http:
       paths:
       - path: /api
         pathType: Prefix

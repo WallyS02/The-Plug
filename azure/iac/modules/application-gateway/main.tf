@@ -69,6 +69,11 @@ resource "azurerm_application_gateway" "this" {
     fqdns = [var.blob_host]
   }
 
+  backend_address_pool {
+    name         = "pool-agic"
+    ip_addresses = [var.agic_ip]
+  }
+
   # HTTP settings
   backend_http_settings {
     name                                = "setting-blob"
@@ -79,6 +84,25 @@ resource "azurerm_application_gateway" "this" {
     pick_host_name_from_backend_address = true
   }
 
+  backend_http_settings {
+    name                  = "setting-agic"
+    cookie_based_affinity = "Disabled"
+    port                  = 80
+    protocol              = "Http"
+    request_timeout       = var.request_timeout
+    probe_name            = "agic-probe"
+  }
+
+  probe {
+    name                = "agic-probe"
+    protocol            = "Http"
+    host                = "127.0.0.1"
+    path                = "/api/herb/list/"
+    interval            = 30
+    timeout             = 30
+    unhealthy_threshold = 3
+  }
+
   # Path‑based routing
   url_path_map {
     name                               = "url-path-map"
@@ -86,10 +110,10 @@ resource "azurerm_application_gateway" "this" {
     default_backend_http_settings_name = "setting-blob"
 
     path_rule {
-      name                       = "frontend-rule"
-      paths                      = ["/*"]
-      backend_address_pool_name  = "pool-blob"
-      backend_http_settings_name = "setting-blob"
+      name                       = "agic-rule"
+      paths                      = ["/api/*"]
+      backend_address_pool_name  = "pool-agic"
+      backend_http_settings_name = "setting-agic"
     }
   }
 

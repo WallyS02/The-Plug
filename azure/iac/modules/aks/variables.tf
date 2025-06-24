@@ -3,6 +3,11 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "resource_group_id" {
+  description = "Resource Group ID"
+  type        = string
+}
+
 variable "location" {
   description = "Azure Region"
   type        = string
@@ -55,8 +60,18 @@ variable "acr_id" {
   type        = string
 }
 
-variable "gateway_id" {
-  description = "Application Gateway ID to be configured as Application Gateway Ingress Controller"
+variable "agic_id" {
+  description = "AGIC ID"
+  type        = string
+}
+
+variable "agic_identity_id" {
+  description = "AGIC identity ID"
+  type        = string
+}
+
+variable "agic_subnet_id" {
+  description = "AGIC subnet ID"
   type        = string
 }
 

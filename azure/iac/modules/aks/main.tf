@@ -1,3 +1,4 @@
+// Kubernetes Cluster
 resource "azurerm_kubernetes_cluster" "this" {
   name                      = var.aks_name
   location                  = var.location
@@ -17,7 +18,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   ingress_application_gateway {
-    gateway_id = var.gateway_id
+    gateway_id = var.agic_id
   }
 
   oidc_issuer_enabled = true
@@ -46,11 +47,12 @@ resource "azurerm_kubernetes_cluster" "this" {
 
   tags = var.tags
 
-  depends_on = [azurerm_key_vault_access_policy.aks_policy, azurerm_role_assignment.aks_agw_contributor, azurerm_role_assignment.kubelet_acr_pull, azurerm_role_assignment.kubelet_mi_operator, azurerm_key_vault_access_policy.aks_kubelet_policy]
+  depends_on = [azurerm_key_vault_access_policy.aks_policy, azurerm_role_assignment.aks_agw_contributor, azurerm_role_assignment.kubelet_acr_pull, azurerm_role_assignment.kubelet_mi_operator, azurerm_key_vault_access_policy.aks_kubelet_policy, azurerm_key_vault_access_policy.aks_kubelet_policy]
 }
 
 data "azurerm_client_config" "current" {}
 
+// Kubelet identity + it's role assignments
 resource "azurerm_user_assigned_identity" "kubelet_identity" {
   name                = "${var.aks_name}-kubelet-identity"
   resource_group_name = var.resource_group_name
@@ -72,6 +74,13 @@ resource "azurerm_key_vault_access_policy" "aks_kubelet_policy" {
   secret_permissions = ["Get", "List"]
 }
 
+resource "azurerm_role_assignment" "aks_kubelet_agw_contributor" {
+  scope                = var.agic_id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.kubelet_identity.principal_id
+}
+
+// AKS identity + it's role assignments
 resource "azurerm_user_assigned_identity" "aks_identity" {
   name                = "${var.aks_name}-identity"
   resource_group_name = var.resource_group_name
@@ -87,7 +96,7 @@ resource "azurerm_key_vault_access_policy" "aks_policy" {
 }
 
 resource "azurerm_role_assignment" "aks_agw_contributor" {
-  scope                = var.gateway_id
+  scope                = var.agic_id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
 }
@@ -96,4 +105,37 @@ resource "azurerm_role_assignment" "kubelet_mi_operator" {
   scope                = azurerm_user_assigned_identity.kubelet_identity.id
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
+}
+
+// AGIC identity role assignments
+resource "azurerm_role_assignment" "agic_rg_reader" {
+  scope                = var.resource_group_id
+  role_definition_name = "Reader"
+  principal_id         = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+
+  depends_on = [azurerm_kubernetes_cluster.this]
+}
+
+resource "azurerm_role_assignment" "agic_agw_contributor" {
+  scope                = var.agic_id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+
+  depends_on = [azurerm_kubernetes_cluster.this]
+}
+
+resource "azurerm_role_assignment" "agic_mi_operator" {
+  scope                = var.agic_identity_id
+  role_definition_name = "Managed Identity Operator"
+  principal_id         = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+
+  depends_on = [azurerm_kubernetes_cluster.this]
+}
+
+resource "azurerm_role_assignment" "agic_network_contributor" {
+  scope                = var.agic_subnet_id
+  role_definition_name = "Network Contributor"
+  principal_id         = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+
+  depends_on = [azurerm_kubernetes_cluster.this]
 }

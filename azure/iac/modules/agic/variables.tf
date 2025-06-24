@@ -11,13 +11,13 @@ variable "location" {
 
 variable "name" {
   type        = string
-  description = "Application Gateway name"
-  default     = "the-plug-application-gateway"
+  description = "AGIC name"
+  default     = "the-plug-agic"
 }
 
 variable "custom_domain" {
   type        = string
-  description = "Application Gateway custom domain name"
+  description = "AGIC custom domain name"
   default     = "theplug.software"
 }
 
@@ -27,29 +27,9 @@ variable "request_timeout" {
   default     = 30
 }
 
-variable "blob_host" {
-  type        = string
-  description = "Frontend blob storage hostname"
-}
-
-variable "agic_ip" {
-  type        = string
-  description = "AGIC IP address"
-}
-
-variable "key_vault_id" {
-  type        = string
-  description = "Key Vault ID"
-}
-
-variable "key_vault_certificate_secret_id" {
-  type        = string
-  description = "Key Vault certificate secret ID"
-}
-
 variable "subnet_id" {
   type        = string
-  description = "Application Gateway subnet ID"
+  description = "AGIC subnet ID"
 }
 
 variable "tags" {

@@ -168,6 +168,9 @@ if bool(int(env('USE_CACHE'))) is True:
             'OPTIONS': {
                 'PASSWORD': env('CACHE_PASSWORD'),
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                "CONNECTION_POOL_KWARGS": {
+                    "ssl_cert_reqs": False
+                }
             }
         }
     }

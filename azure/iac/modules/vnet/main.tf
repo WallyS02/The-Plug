@@ -21,7 +21,7 @@ resource "azurerm_subnet" "private" {
   address_prefixes     = [var.private_subnet_prefix]
 }
 
-// Private Endpoints for private subnet
+// Private Endpoints (Redis, PostgreSQL) for private subnet
 resource "azurerm_private_endpoint" "redis_pe" {
   name                = "${var.vnet_name}-ps-pe-redis"
   location            = var.location
@@ -39,6 +39,26 @@ resource "azurerm_private_endpoint" "redis_pe" {
     name                 = "${var.vnet_name}-redis-dns-zone-group"
     private_dns_zone_ids = [azurerm_private_dns_zone.redis_zone.id]
   }
+}
+
+resource "azurerm_private_dns_zone" "redis_zone" {
+  name                = var.redis_private_link_hostname
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "redis_link" {
+  name                  = "${var.vnet_name}-redis-link"
+  resource_group_name   = var.resource_group_name
+  private_dns_zone_name = azurerm_private_dns_zone.redis_zone.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
+resource "azurerm_private_dns_a_record" "redis_record" {
+  name                = var.service_name
+  zone_name           = azurerm_private_dns_zone.redis_zone.name
+  resource_group_name = var.resource_group_name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.redis_pe.private_service_connection[0].private_ip_address]
 }
 
 resource "azurerm_private_endpoint" "postgres_pe" {
@@ -60,18 +80,6 @@ resource "azurerm_private_endpoint" "postgres_pe" {
   }
 }
 
-resource "azurerm_private_dns_zone" "redis_zone" {
-  name                = var.redis_private_link_hostname
-  resource_group_name = var.resource_group_name
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "redis_link" {
-  name                  = "${var.vnet_name}-redis-link"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.redis_zone.name
-  virtual_network_id    = azurerm_virtual_network.this.id
-}
-
 resource "azurerm_private_dns_zone" "postgres_zone" {
   name                = var.postgres_private_link_hostname
   resource_group_name = var.resource_group_name
@@ -84,7 +92,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgres_link" {
   virtual_network_id    = azurerm_virtual_network.this.id
 }
 
-// NSG for public subnets
+resource "azurerm_private_dns_a_record" "pg_record" {
+  name                = var.service_name
+  zone_name           = azurerm_private_dns_zone.postgres_zone.name
+  resource_group_name = var.resource_group_name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.postgres_pe.private_service_connection[0].private_ip_address]
+}
+
+// NSG for public subnet
 resource "azurerm_network_security_group" "this" {
   name                = "${var.vnet_name}-nsg-public"
   location            = var.location
@@ -132,35 +148,4 @@ resource "azurerm_network_security_group" "this" {
 resource "azurerm_subnet_network_security_group_association" "assoc_public" {
   subnet_id                 = azurerm_subnet.public.id
   network_security_group_id = azurerm_network_security_group.this.id
-}
-
-// Public IP for NAT Gateway
-resource "azurerm_public_ip" "nat-pip" {
-  name                = "${var.vnet_name}-pip-nat"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  allocation_method   = "Static"
-  sku                 = var.public_ip_sku
-  tags                = var.tags
-}
-
-// NAT Gateway
-resource "azurerm_nat_gateway" "this" {
-  name                = "${var.vnet_name}-nat-gateway"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  sku_name            = var.nat_gateway_sku
-  tags                = var.tags
-}
-
-// Associate NAT Gateway to Public IP
-resource "azurerm_nat_gateway_public_ip_association" "this" {
-  public_ip_address_id = azurerm_public_ip.nat-pip.id
-  nat_gateway_id       = azurerm_nat_gateway.this.id
-}
-
-// Associate NAT Gateway to private subnet
-resource "azurerm_subnet_nat_gateway_association" "assoc_private_a" {
-  subnet_id      = azurerm_subnet.private.id
-  nat_gateway_id = azurerm_nat_gateway.this.id
 }

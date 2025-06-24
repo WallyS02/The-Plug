@@ -33,12 +33,6 @@ variable "private_subnet_prefix" {
   default     = "10.0.2.0/24"
 }
 
-variable "nat_gateway_sku" {
-  type        = string
-  description = "NAT Gateway SKU"
-  default     = "Standard"
-}
-
 variable "public_ip_sku" {
   type        = string
   description = "NAT Gateway Public IP SKU"
@@ -63,8 +57,14 @@ variable "redis_private_link_hostname" {
 
 variable "postgres_private_link_hostname" {
   type        = string
-  description = "PostgreSQL private link hostname ID"
-  default     = "privatelink.postgres.db.windows.net"
+  description = "PostgreSQL private link hostname"
+  default     = "privatelink.postgres.database.azure.com"
+}
+
+variable "service_name" {
+  type        = string
+  description = "Redis and PostgreSQL services name for private DNS"
+  default     = "theplug"
 }
 
 variable "tags" {
